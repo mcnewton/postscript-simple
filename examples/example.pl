@@ -1,132 +1,99 @@
-#!/usr/bin/perl
+#! /usr/bin/perl -w
 
-use PostScript::Simple;
+# Examples for PostScript::Simple module
+# Matthew Newton
+# 09 November 2003
 
-$t = new PostScript::Simple(landscape => 0,
-#            xsize => 100,
-#            ysize => 100,
-            eps => 0,
-            papersize => "a4",
-            colour => 1,
-            clip => 0,
-            units => "mm");
+use strict;
+use lib qw(../lib);
+use PostScript::Simple 0.06;
 
-$t->newpage(-1);
+my $ps;
+my $eps;
+my $y;
 
-$t->line(10,10, 10,50);
-$t->setlinewidth(8);
-$t->line(90,10, 90,50);
-$t->linextend(40,90);
-$t->setcolour("brightred");
-$t->circle({filled=>1}, 40, 90, 30);
-$t->setcolour("darkgreen");
-$t->setlinewidth(0.1);
-for ($i=0; $i<360; $i+=20)
+# First, create an EPS file for use later
+
+$ps = new PostScript::Simple(xsize => 100,
+                                ysize => 100,
+                                colour => 1,
+                                eps => 1,
+                                reencode => undef);
+
+$ps->setlinewidth(5);
+$ps->box(10, 10, 90, 90);
+$ps->setlinewidth("thin");
+$ps->line(0, 50, 100, 50);
+$ps->line(50, 0, 50, 100);
+$ps->line(0, 40, 0, 60);
+$ps->line(100, 40, 100, 60);
+$ps->line(40, 0, 60, 0);
+$ps->line(40, 100, 60, 100);
+$ps->output("demo-square.eps");
+undef $ps;
+
+# Now generate the demo document. Start by creating the A4 document.
+$ps = new PostScript::Simple(papersize => "a4",
+                             units => "mm",
+                             colour => 1,
+                             eps => 0,
+                             reencode => undef);
+
+# Create a page 
+mynewpage($ps, "EPS import functions");
+$ps->setfont("Courier", 10);
+
+$ps->setcolour("red");
+$ps->box(20, 210, 45, 260);
+$ps->importepsfile("demo-square.eps", 20, 210, 45, 260);
+$ps->setcolour("darkred");
+$ps->text({rotate => -90}, 14, 270, '$ps->importepsfile("demo-square.eps", 20, 210, 45, 260);');
+
+$ps->setcolour("green");
+$ps->box(80, 210, 105, 260);
+$ps->importepsfile({stretch => 1}, "demo-square.eps", 80, 210, 105, 260);
+$ps->setcolour("darkgreen");
+$ps->text({rotate => -90}, 74, 270, '$ps->importepsfile({stretch => 1}, "demo-square.eps", 80, 210, 105, 260);');
+
+$ps->setcolour("blue");
+$ps->box(140, 210, 165, 260);
+$ps->importepsfile({overlap => 1}, "demo-square.eps", 140, 210, 165, 260);
+$ps->setcolour("darkblue");
+$ps->text({rotate => -90}, 134, 270, '$ps->importepsfile({overlap => 1}, "demo-square.eps", 140, 210, 165, 260);');
+
+$ps->setcolour(200, 0, 200);
+$ps->box(30, 30, 90, 90);
+
+$eps = new PostScript::Simple::EPS(file => "demo-square.eps", clip => 1);
+$eps->scale(60/100);
+$eps->translate(50, 50);
+$eps->rotate(20);
+$eps->translate(-50, -50);
+$ps->importeps($eps, 30, 30);
+$ps->setfont("Courier", 10);
+$y = 90;
+$ps->text(100, $y-=5, '$eps = new PostScript::Simple::EPS');
+$ps->text(110, $y-=5, '(file => "demo-square.eps");');
+$ps->text(100, $y-=5, '$eps->scale(60/100);');
+$ps->text(100, $y-=5, '$eps->translate(50, 50);');
+$ps->text(100, $y-=5, '$eps->rotate(20);');
+$ps->text(100, $y-=5, '$eps->translate(-50, -50);');
+$ps->text(100, $y-=5, '$ps->importeps($eps, 30, 30);');
+
+
+# Write out the document.
+$ps->output("demo.ps");
+                
+
+sub mynewpage
 {
-  $t->polygon({offset=>[0,0], rotate=>[$i,70,90], filled=>0}, 40,90, 69,92, 75,84);#, 70,88, 40,90);
+  my $ps = shift;
+  my $title = shift;
+
+  $ps->newpage;
+  $ps->box(10, 10, 200, 287);
+  $ps->line(10, 277, 200, 277);
+  $ps->setfont("Times-Roman", 14);
+  $ps->text(15, 280, "PostScript::Simple example file: $title");
 }
 
-$t->setlinewidth("thin");
-$t->setcolour("darkgreen");
-$t->box(20, 10, 80, 20);
-$t->setcolour("grey30");
-$t->box({filled=>1}, 20, 30, 80, 40);
-$t->setcolour("grey10");
-$t->setfont("Bookman", 12);
-$t->text(5,5, "Matthew");
-
-$t->newpage;
-$t->line((10, 20), (30, 40));
-$t->linextend(60, 50);
-
-$t->line(10,12, 20,12);
-$t->polygon(10,10, 20,10);
-
-$t->setcolour("grey90");
-$t->polygon({offset=>[5,5], filled=>0}, 10,10, 15,20, 25,20, 30,10, 15,15, 10,10);
-$t->setcolour("black");
-$t->polygon({offset=>[10,10], rotate=>[45,20,20], filled=>1}, 10,10, 15,20, 25,20, 30,10, 15,15, 10,10);
-
-$t->line((0, 100), (100, 0), (255, 0, 0));
-
-$t->newpage(30);
-
-$s = new PostScript::Simple(xsize => 50,
-            ysize => 200);
-
-$s->box(10, 10, 40, 190);
-
-$o = 10;
-for ($i=12; $i<80; $i+=2)
-{
-  $t->setcolour($i*3, 0, 0);
-  $t->box({filled=>1}, $o, 10, $i, 40);
-  $o = $i;
-}
-
-$t->line((40, 30), (30, 10));
-$t->linextend(60, 0);
-
-$t->line((0, 100), (100, 0),(0, 255, 0));
-
-#$t->display();
-
-$t->output("test-a.ps");
-$s->output("test-b.eps");
-
-
-  
-# create a new PostScript object
-$p = new PostScript::Simple(papersize => "a4",
-          colour => 1,
-          units => "in");
-
-# draw some lines and other shapes
-$p->line(1,1, 1,4);
-$p->linextend(2,4);
-$p->box(1.5,1, 2,3.5);
-$p->circle(2,2, 1);
-
-# draw a rotated polygon in a different colour
-$p->setcolour(0,100,200);
-$p->polygon({rotate=>45}, 1,1, 1,2, 2,2, 2,1, 1,1);
-
-# add some text in red
-$p->setcolour("red");
-$p->setfont("Times-Roman", 20);
-$p->text(1,1, "Hello");
-
-# write the output to a file
-$p->output("test-c.eps");
-  
-
-
-
-# create a new PostScript object
-$p = new PostScript::Simple(papersize => "a4",
-          eps => 0,
-          colour => 1,
-          coordorigin => "RightTop",
-          direction => "LeftDown",
-          units => "in");
-
-$p->newpage;
-
-# draw some lines and other shapes
-$p->line(1,1, 1,4);
-$p->linextend(2,4);
-$p->box(1.5,1, 2,3.5);
-$p->circle(2,2, 1);
-
-# draw a rotated polygon in a different colour
-$p->setcolour(0,100,200);
-$p->polygon({rotate=>45}, 1,1, 1,2, 2,2, 2,1, 1,1);
-
-# add some text in red
-$p->setcolour("red");
-$p->setfont("Times-Roman", 20);
-$p->text(1,1, "Hello");
-
-# write the output to a file
-$p->output("test-d.eps");
-  
