@@ -1,22 +1,32 @@
 package PostScript::Simple;
 
 use strict;
+use vars qw($VERSION @ISA @EXPORT @EXPORT_OK);
 
-my $VERSION = 0.01;
+require Exporter;
+require AutoLoader;
 
+@ISA = qw(Exporter AutoLoader);
+# Items to export into callers namespace by default. Note: do not export
+# names by default without a very good reason. Use EXPORT_OK instead.
+# Do not simply export all your public functions/methods/constants.
+@EXPORT = qw(
+  
+);
+$VERSION = '0.02';
 
 =head1 NAME
 
-F<PS.pm> - Produce PostScript files from Perl
+PostScript::Simple - Produce PostScript files from Perl
 
 =head1 SYNOPSIS
 
-    use PS;
+    use PostScript::Simple;
     
     # create a new PostScript object
-    $p = new PS(papersize => "A4",
-                colour => 1,
-                units => "in");
+    $p = new PostScript::Simple(papersize => "A4",
+                                colour => 1,
+                                units => "in");
     
     # create a new page
     $p->newpage;
@@ -39,27 +49,32 @@ F<PS.pm> - Produce PostScript files from Perl
     # write the output to a file
     $p->output("file.ps");
 
+
 =head1 DESCRIPTION
 
-F<PS.pm> allows you to have a simple method of writing PostScript
-files from Perl. It has several graphics primitives that allow
-lines, circles, polygons and boxes to be drawn. Text can be
-added to the page using standard PostScript fonts.
+PostScript::Simple allows you to have a simple method of writing PostScript
+files from Perl. It has several graphics primitives that allow lines, circles,
+polygons and boxes to be drawn. Text can be added to the page using standard
+PostScript fonts.
 
-The images can be single page EPS files, or multipage PostScript
-files. The image size can be set by using a recognised paper size
-("C<A4>", for example) or by giving dimensions. The units used can
-be specified ("C<mm>" or "C<in>", etc) and are the same as those used in
-TeX. The default unit is a bp, or a PostScript point, unlike TeX.
+The images can be single page EPS files, or multipage PostScript files. The
+image size can be set by using a recognised paper size ("C<A4>", for example) or
+by giving dimensions. The units used can be specified ("C<mm>" or "C<in>", etc)
+and are the same as those used in TeX. The default unit is a bp, or a PostScript
+point, unlike TeX.
 
-It is hoped that one day there may be a GD to PS wrapper, but this
-does not currently exist.
+It is hoped that one day there may be a GD to PS wrapper, but this does not
+currently exist.
 
 =head1 PREREQUISITES
 
 This module requires the C<strict> module.
 
-=head1 PS Methods
+=head2 EXPORT
+
+None by default.
+
+=head1 PostScript::Simple Methods
 
 =over 4
 
@@ -179,20 +194,20 @@ finding your pages easier. See also the C<newpage> method. (Default: 1)
 
 Example:
 
-    $ref = new PS(landscape => 1,
-                  eps => 0,
-                  xsize => 4,
-                  ysize => 3,
-                  units => "in");
+    $ref = new PostScript::Simple(landscape => 1,
+                                  eps => 0,
+                                  xsize => 4,
+                                  ysize => 3,
+                                  units => "in");
 
 Create a document that is 4 by 3 inches and prints landscape on a page. It is
 not an EPS file, and must therefore use the C<newpage> method.
 
-    $ref = new PS(eps => 1,
-                  colour => 1,
-                  xsize => 12,
-                  ysize => 12,
-                  units => "cm");
+    $ref = new PostScript::Simple(eps => 1,
+                                  colour => 1,
+                                  xsize => 12,
+                                  ysize => 12,
+                                  units => "cm");
 
 Create a 12 by 12 cm EPS image that is in colour. Note that "C<eps =E<gt> 1>" does
 not have to be specified because this is the default.
@@ -428,7 +443,7 @@ sub output
   print OUT "\n";
   print OUT "\%\%Title: ($file)\n";
   print OUT "\%\%LanguageLevel: 1\n";
-  print OUT "\%\%Creator: PS.pm perl module by Matthew Newton and Mark Withall\n";
+  print OUT "\%\%Creator: PostScript::Simple perl module by Matthew Newton and Mark Withall\n";
   print OUT "\%\%CreationDate: $date\n";
   print OUT "\%\%For: $user\n";
   print OUT $self->{pscomments};
@@ -447,7 +462,7 @@ sub output
 # Prolog Section
   print OUT "\%\%BeginProlog\n";
   print OUT $self->{psprolog};
-  print OUT "\%\%BeginResource: PS.pm\n";
+  print OUT "\%\%BeginResource: PostScript::Simple\n";
   print OUT $self->{psfunctions};
   print OUT "\%\%EndResource\n";
   print OUT "\%\%EndProlog\n";
@@ -486,7 +501,7 @@ Sets the new drawing colour to the values specified in C<red>, C<green> and
 C<blue>. The values range from 0 to 255.
 
 Alternatively, a colour name may be specified. Those currently defined are
-listed at the top of F<PS.pm> in the C<%pscolours> hash.
+listed at the top of the PostScript::Simple module in the C<%pscolours> hash.
 
 Example:
 
@@ -549,7 +564,7 @@ Sets the new line width to C<width> units.
 Example:
 
     # draw a line 10mm long and 4mm wide
-    $p = new PS(units => "mm");
+    $p = new PostScript::Simple(units => "mm");
     $p->setlinewidth(4);
     $p->line(10,10, 20,10);
 
@@ -914,7 +929,6 @@ sub text
   $self->{pspages} .= "newpath $x u $y u moveto ($text) show stroke\n";
 }
 
-
 # Display method for debugging internal variables
 #
 #sub display {
@@ -927,70 +941,29 @@ sub text
 #  }
 #}
 
-
-1;
-
 =back
 
 =head1 BUGS
 
 Some current functionality may not be as expected, and/or may not work correctly.
 
-More functions need to be added. See the bottom of the F<PS.pm> file.
+More functions need to be added. See the README file.
 
 =head1 AUTHOR
 
-The F<PS.pm> perl module was written by Matthew Newton, with a small amount of help
-and suggestions from Mark Withall.
+The PostScript::Simple module was written by Matthew Newton, with a small amount
+of help and suggestions from Mark Withall.
 
-The idea for the module came from the two aforementioned whilst (apparently) thinking.
+The idea for the module came from the two aforementioned whilst (apparently)
+thinking.
 
+=head1 SEE ALSO
+
+L<GD>
 
 =cut
 
 
-
-
-# To-Do / Done list:
-
-# Done:
-
-#   landscape seems to work ok
-#   xsize and ysize set fine
-#   colour option works. need to alter colour->grey calculation (i know how to)
-#   clipping works
-#   eps option works (but output needs slight modification save/restore etc)
-#   page option works. setpage allows page number/name to be changed
-#   bb[xy][12] options are in and set
-#   lines, circles and boxes work. functions only added when needed.
-#   setcolour function works. colour look-up table added.
-#   postscript DSC headers seem to be fine (for PS and EPS)
-#   colour->grey calculation (tested: this is actually ok)
-#   is this cool or wot?
-#   different line widths
-#   polygon function
-#   text and font functions
-
-# To-Do:
-
-#   define shape functions
-#   translate / scale / rotate functions?
-#   gd wrapper module
-#
-#   triangle function(s)
-#   add dd cc and sp to units
-#   different line styles (dashes)?
-#   better error reporting (postscript comments still?)
-#   code compression using single letter dictionary defs (optional?)
-#   my-printer-can-play-jingle-bells-now function?
-#   paper sizes defined and used (DSC comment added)
-#   postscript font support?
-#   ttf font support (get lost!)
-#   any postscript optimisation that can be done?
-#   (compare gd module for functions that we could do with)
-#   pie slices / arcs
-#   how about "write this out as a PDF file" option?
-#   write out as xfig file option?
-#   write out as LaTeX picture (XYPic?) file option?
-#   release as version 0.03 (or similar)
+1;
+__END__
 

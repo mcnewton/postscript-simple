@@ -1,0 +1,6 @@
+Revision history for Perl extension PostScript::Simple.
+
+0.01  Sat Jan 12 21:39:28 2002
+	- original version; created by h2xs 1.21 with options
+		-X -n PostScript::Simple
+

@@ -1,29 +1,93 @@
-Simple PostScript generator module for Perl
+PostScript/Simple version 0.02
+==============================
 
-Matthew Newton
-Version 0.01_1
+PostScript::Simple allows you to have a simple method of writing PostScript
+files from Perl. It has several graphics primitives that allow lines, circles,
+polygons and boxes to be drawn. Text can be added to the page using standard
+PostScript fonts.
 
-This is the initial release of a module to create simple PostScript documents
-using Perl. Features include:
+Features include:
 
-  Generation of multi-page PostScript files
-  Generation of single-page EPS files
-  Creating lines/circles etc.
-  Rectangles and boxes
-  Text
-  Colour
-  Pre-defined paper sizes
-  Etc. etc.
+    Generation of multi-page PostScript files
+    Generation of single-page EPS files
+    Creating lines/circles etc.
+    Rectangles and boxes
+    Text
+    Colour
+    Pre-defined paper sizes
+    Etc. etc.
 
 A module that provides compatibility with the GD module calls might also one day
 be written, so that programs may be easily be converted to produce PostScript.
 Don't hold your breath.
 
-A test file (test.pl) is included that gives some example of how it is used.
+The file example.pl provides some examples of what this module does.
 
-Apologies for the lack of a Makefile.PL, but I haven't got a clue how to make it
-work properly yet, and haven't had the time to work it out.
 
-Matthew Newton
-perl@newtoncomputing.co.uk
+INSTALLATION
+
+To install this module type the following:
+
+   perl Makefile.PL
+   make
+   make test
+   make install
+
+
+COPYRIGHT AND LICENCE
+
+Copyright (C) 2002 Matthew C. Newton / Newton Computing
+
+This program is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free Software
+Foundation, version 2.
+
+This program is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+PARTICULAR PURPOSE. See the GNU General Public License for more details,
+available at http://www.gnu.org/licenses/gpl.html.
+
+
+To-Do / Done lists:
+
+Done:
+
+  landscape seems to work ok
+  xsize and ysize set fine
+  colour option works. need to alter colour->grey calculation (i know how to)
+  clipping works
+  eps option works (but output needs slight modification save/restore etc)
+  page option works. setpage allows page number/name to be changed
+  bb[xy][12] options are in and set
+  lines, circles and boxes work. functions only added when needed.
+  setcolour function works. colour look-up table added.
+  postscript DSC headers seem to be fine (for PS and EPS)
+  colour->grey calculation (tested: this is actually ok)
+  is this cool or wot?
+  different line widths
+  polygon function
+  text and font functions
+
+To-Do:
+
+  define shape functions
+  translate / scale / rotate functions?
+  gd wrapper module
+
+  triangle function(s)
+  add dd cc and sp to units
+  different line styles (dashes)?
+  better error reporting (postscript comments still?)
+  code compression using single letter dictionary defs (optional?)
+  my-printer-can-play-jingle-bells-now function?
+  paper sizes defined and used (DSC comment added)
+  postscript font support?
+  ttf font support (get lost!)
+  any postscript optimisation that can be done?
+  (compare gd module for functions that we could do with)
+  pie slices / arcs
+  how about "write this out as a PDF file" option?
+  write out as xfig file option?
+  write out as LaTeX picture (XYPic?) file option?
+  release as version 0.03 (or similar)
 
