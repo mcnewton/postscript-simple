@@ -84,7 +84,12 @@ $t->line((0, 100), (100, 0),(0, 255, 0));
 #$t->display();
 $s->output("test-b.eps");
 
-$t->importeps({stretched=>1}, "test-b.eps", 10, 100, 200, 200);
+#$t->importeps({stretched=>1}, "test-b.eps", 10, 100, 200, 200);
+my $ep = new PostScript::Simple::EPS(file => "test-b.eps");
+$ep->rotate(30);
+$t->importeps($ep, 10, 100);
+$t->importepsfile({stretched=>1}, "test-b.eps", 10, 100, 200, 200);
+$t->importepsfile({overlap=>1}, "test-b.eps", 10, 100, 200, 200);
 
 $t->output("test-a.ps");
 

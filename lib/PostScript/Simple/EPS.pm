@@ -144,7 +144,7 @@ sub init# {{{
   open EPS, "< $$self{file}" || croak "can't open eps file $$self{file}";
   SCAN: while (<EPS>)
   {
-    if (/^\%\%BoundingBox:\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)$/)
+    if (/^\%\%BoundingBox:\s+(-?\d+)\s+(-?\d+)\s+(-?\d+)\s+(-?\d+)$/)
     {
       $$self{bbx1} = $1; 
       $$self{bby1} = $2; 
@@ -157,6 +157,12 @@ sub init# {{{
   close EPS;
 
   croak "EPS file must contain a BoundingBox" if (!$foundbbx);
+
+  if (($$self{bbx2} - $$self{bbx1} == 0) ||
+      ($$self{bby2} - $$self{bby1} == 0)) {
+    $self->_error("PostScript::Simple::EPS: Bounding Box has zero dimension");
+    return 0;
+  }
 
   $self->reset();
 }# }}}
@@ -252,11 +258,15 @@ Example:
 sub translate# {{{
 {
   my $self = shift;
-  my ($x, $y) = @_;
+  my ($x, $y, $unit) = @_;
 
   croak "bad arguments to translate" if (!defined $y);
 
-  push @{$$self{epsprefix}}, "$x ux $y uy translate";
+  if (!defined $unit) {
+    push @{$$self{epsprefix}}, "$x ux $y uy translate";
+  } else { # this is hopefully a temporary hack...
+    push @{$$self{epsprefix}}, "$x $y translate";
+  }
 
   return 1;
 }# }}}
@@ -277,7 +287,6 @@ sub reset# {{{
   my $self = shift;
 
   @{$$self{"epsprefix"}} = ();
-  push @{$$self{"epsprefix"}}, "/showpage{}def";
 
   return 1;
 }# }}}
