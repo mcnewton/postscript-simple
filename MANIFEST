@@ -17,3 +17,4 @@ t/99cleanup.t
 t/lib/Test/More.pm
 t/lib/Test/Simple.pm
 t/lib/Test/Utils.pm
+META.yml                                 Module meta-data (added by MakeMaker)
