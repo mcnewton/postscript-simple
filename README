@@ -1,0 +1,29 @@
+Simple PostScript generator module for Perl
+
+Matthew Newton
+Version 0.01_1
+
+This is the initial release of a module to create simple PostScript documents
+using Perl. Features include:
+
+  Generation of multi-page PostScript files
+  Generation of single-page EPS files
+  Creating lines/circles etc.
+  Rectangles and boxes
+  Text
+  Colour
+  Pre-defined paper sizes
+  Etc. etc.
+
+A module that provides compatibility with the GD module calls might also one day
+be written, so that programs may be easily be converted to produce PostScript.
+Don't hold your breath.
+
+A test file (test.pl) is included that gives some example of how it is used.
+
+Apologies for the lack of a Makefile.PL, but I haven't got a clue how to make it
+work properly yet, and haven't had the time to work it out.
+
+Matthew Newton
+perl@newtoncomputing.co.uk
+
