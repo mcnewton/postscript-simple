@@ -53,6 +53,8 @@ ok( $lines eq CANNED() );
 
 sub CANNED {
 return q[%!PS-Adobe-3.0
+/ll 1 def systemdict /languagelevel known {
+/ll languagelevel def } if
 /ux {72 mul} def
 /uy {72 mul} def
 /u {72 mul} def
@@ -65,6 +67,7 @@ return q[%!PS-Adobe-3.0
 /circle {newpath 0 360 arc closepath} bind def
 /rotabout {3 copy pop translate rotate exch 0 exch
 sub exch 0 exch sub translate} def
+ll 2 ge { << /PageSize [ 595.27559 841.88976 ] /ImagingBBox null >> setpagedevice } if
 /pagelevel save def
 newpath
 1 ux 1 uy moveto

@@ -211,7 +211,10 @@ sub exch 0 exch sub translate} def
 }
 
 sub BODY {
-	return q[%%Page: -1 1
+	return q[%%BeginSetup
+ll 2 ge { << /PageSize [ 595.27559 841.88976 ] /ImagingBBox null >> setpagedevice } if
+%%EndSetup
+%%Page: -1 1
 %%BeginPageSetup
 /pagelevel save def
 %%EndPageSetup

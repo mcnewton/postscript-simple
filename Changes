@@ -1,5 +1,10 @@
 Revision history for Perl extension PostScript::Simple.
 
+0.06p4 - 1 April 2004
+  Matthew Newton:
+    - added /ll languagelevel check
+    - added setpagedevice for languagelevel >= 2
+
 0.06p3 - 29 March 2004
   Matthew Newton:
     - added geteps method
