@@ -12,7 +12,7 @@ define shape functions
 translate / scale / rotate functions?
 generate PostScript using a stack, rather than writing
   to the end of a text variable? could lead to some rather
-  neat stuff (loops etc)
-different line styles (dashes)? (easy)
+  neat stuff (loops etc) (moved to ps:s "next gen")
+different line styles (dashes) (easy)
 ttf font support? (get lost!)
 

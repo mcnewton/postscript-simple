@@ -1,10 +1,5 @@
-PostScript/Simple version 0.06p4
-================================
-
-********************************************************************************
-This is a pre-release of version 0.06. Expect things to Not Work, and please
-let me know if they do (or don't!). Thanks!
-********************************************************************************
+PostScript/Simple version 0.06
+==============================
 
 PostScript::Simple allows you to have a simple method of writing PostScript
 files from Perl. It has several graphics primitives that allow lines, circles,
@@ -22,26 +17,22 @@ Features include:
     Pre-defined paper sizes
     Etc. etc.
 
-A module that provides compatibility with the GD module calls might also one day
-be written, so that programs may be easily be converted to produce PostScript.
-Don't hold your breath.
-
 The file examples/example.pl provides some bad examples of what this module
 does.
 
-Changes from 0.04: Watch Out! Several functions now have options passed by hash
-reference, rather than the method used before. Your programs might break!  This
-way is a lot tidier... sorry if this caused any problems.
+An experimental Subversion repository of PostScript::Simple is now available at
+http://svn.newtoncomputing.co.uk/pss. Username is "anonymous" with a blank
+password. The latest version can be checked out with the following command:
 
-For example, before:
-  $p->box(10,10,20,20, 1);
-  $p->text(15, 15, "Hello", 'right');
-  $p->polygon("rotate=45", 1,1, 1,2, 2,2, 2,1, 1,1);
+  svn co http://svn.newtoncomputing.co.uk/pss/trunk simple
 
-now:
-  $p->box({filled=>1}, 10,10, 20,20);
-  $p->text({align=>"right"}, 15,15, "Hello");
-  $p->polygon({rotate=>45}, 1,1, 1,2, 2,2, 2,1, 1,1);
+This will put the files in a directory named "simple". To take a look at the
+next generation version of PostScript::Simple, currently in very slow
+development, try:
+
+  svn co http://svn.newtoncomputing.co.uk/pss/branches/nextgen
+
+Which will create the directory "nextgen" for the files to go in.
 
 
 INSTALLATION
@@ -70,23 +61,16 @@ available at http://www.gnu.org/licenses/gpl.html.
 
 ACKNOWLEDGEMENTS
 
-Thanks go to the following:
+Many people have contributed in different ways to PostScript::Simple. Thanks go
+to everyone involved! People who have helped include (in no particular order):
 
-  Mark Withall for help with the initial idea
-  Andreas Riechert for help with the distribution
-  P Kent for many updates and fixes
-  Flemming Frandsen for updates for font encoding, text alignment and more
-  Michael Tomuschat for several updates (not yet merged)
-  Vladi Belperchinov-Shabanski for text rotate / align update stuff
-  Martin McCarthy for lots of useful discussion
-  Eric Voisard for useful chats about page sizes and landscape
-  Eric Wilhelm for the arc function
-  Peter Kuehn for inserting ps and eps code (not yet merged)
-  Glen Harris for circletext function and inserteps code
+  Mark Withall, Andreas Riechert, P Kent, Flemming Frandsen,
+  Michael Tomuschat, Vladi Belperchinov-Shabanski, Eric Voisard,
+  Martin McCarthy, Eric Wilhelm, Glen Harris,
+  Peter Kuehn, Tomas Karlsson
 
-  ...and probably more, apologies if you are missing from this list and have
-  contributed something.
+I apologise if you should be here and I have missed you, please let me know.
 
-  If you have sent me a patch for this module, and had no reply, please re-send
-  it. I'm particularly bad at missing e-mails...
+If you have sent me a patch for this module, and had no reply, please re-send
+it. I'm particularly bad at missing e-mails...
 
