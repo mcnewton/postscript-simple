@@ -2,6 +2,7 @@ Changes
 MANIFEST
 Makefile.PL
 README
+TODO
 examples/example.pl
 examples/oldexample.pl
 examples/demo.ps
