@@ -1897,11 +1897,6 @@ sub _error {# {{{
 Some current functionality may not be as expected, and/or may not work correctly.
 That's the fun with using code in development!
 
-The way of giving options to methods has changed since version 0.04, this may break
-your code; sorry.
-
-More functions need to be added. See the README file.
-
 =head1 AUTHOR
 
 The PostScript::Simple module was created by Matthew Newton, with ideas
@@ -1910,10 +1905,13 @@ and suggestions from Mark Withall.
 Contributions to the work (either code or suggestions / improvements) have been
 gratefully received from: Andreas Marcel, P Kent, Flemming Frandsen, Michael
 Tomuschat, Vladi Belperchinov-Shabanski, Eric Wilhelm, Peter Kuhn, Glen Harris.
-Apologies if you have contributed and I have missed you; thanks!
+
+Apologies if you have contributed and I have missed you... please let me know so
+I can add your name to the next release.
 
 =head1 SEE ALSO
 
+L<PostScript::Simple::EPS>
 L<GD>
 
 =cut

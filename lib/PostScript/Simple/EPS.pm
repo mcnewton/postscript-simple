@@ -97,9 +97,16 @@ Example:
 Scale the EPS file by x0.5 in both directions.
 
     $ps->newpage();
-    $ps->add_eps($eps, 1, 1);
+    $ps->importeps($eps, 1, 1);
 
 Add the EPS file to the PostScript document at coords (1,1).
+
+    $ps->importepsfile("another.eps", 1, 2, 4, 4);
+
+Easily add an EPS file to the PostScript document using bounding box (1,2),(4,4).
+
+The methods C<importeps> and C<importepsfile> are described in the documentation
+of C<PostScript::Simple>.
 
 =back
 
@@ -227,12 +234,21 @@ sub scale# {{{
 
 =item C<rotate(deg)>
 
-Rotates the EPS file by C<deg> degrees anti-clockwise.
+Rotates the EPS file by C<deg> degrees anti-clockwise. The EPS file is rotated
+about it's own origin (as defined by it's bounding box). To rotate by a particular
+co-ordinate (again, relative to the EPS file, not the main PostScript document),
+use translate, too.
 
 Example:
 
     $eps->rotate(180);        # turn upside-down
 
+To rotate 30 degrees about point (50,50):
+
+    $eps->translate(50, 50);
+    $eps->rotate(30);
+    $eps->translate(-50, -50);
+    
 =cut
 
 sub rotate# {{{
@@ -273,7 +289,7 @@ sub translate# {{{
 
 =item C<reset>
 
-Reset all translate, rotate and scale operations.
+Clear all translate, rotate and scale operations.
 
 Example:
 
@@ -324,7 +340,7 @@ sub load# {{{
 Experimental: defines the EPS at in the document prolog, and just runs a
 command to insert it each time it is used. C<object> is a PostScript::Simple
 object. If the EPS file is included more than once in the PostScript file then
-this will probably shrink the filesize a lot.
+this will probably shrink the filesize quite a lot.
 
 Can not be used at the same time as C<load>.
 
@@ -348,7 +364,7 @@ sub preload# {{{
 
   for my $i (0..7)
   {
-    $randcode .= chr(int(rand()*26)+65);
+    $randcode .= chr(int(rand()*26)+65); # yuk
   }
 
   $$self{"epsfile"} = "eps$randcode\n";
@@ -366,7 +382,6 @@ sub preload# {{{
 
   return 1;
 }# }}}
-
 
 
 ### PRIVATE
@@ -418,13 +433,15 @@ sub _error {# {{{
 
 =head1 BUGS
 
-Some current functionality may not be as expected, and/or may not work
-correctly.
+This is software in development; some current functionality may not be as
+expected, and/or may not work correctly.
 
 =head1 AUTHOR
 
-The PostScript::Simple::EPS module was written by Matthew Newton, after
-prods for such a feature from several people around the world.
+The PostScript::Simple::EPS module was written by Matthew Newton, after prods
+for such a feature from several people around the world. A useful importeps
+function that provides scaling and aspect ratio operations was gratefully
+received from Glen Harris, and merged into this module.
 
 =head1 SEE ALSO
 
