@@ -1,3 +1,5 @@
+#! /usr/bin/perl
+
 package PostScript::Simple;
 
 use strict;
@@ -6,7 +8,7 @@ use Exporter;
 
 @ISA = qw(Exporter);
 @EXPORT = qw();
-$VERSION = '0.05';
+$VERSION = '0.06';
 
 =head1 NAME
 
@@ -233,7 +235,12 @@ remember the size of paper using PostScript points. Valid choices are currently
 =item landscape
 
 Use the landscape option to rotate the page by 90 degrees. The paper dimensions
-are also rotated, so that clipping will still work. (Default: 0)
+are also rotated, so that clipping will still work. (Note that the printer will
+still think that the paper is portrait.) (Default: 0)
+
+=item copies
+
+Set the number of copies that should be printed. (Default: 1)
 
 =item clip
 
@@ -317,36 +324,41 @@ sub new# {{{
 {
   my ($class, %data) = @_;
   my $self = {
-    xsize        => undef,
-    ysize        => undef,
-    papersize    => undef,
-    units        => "bp",     # measuring units (see below)
-    landscape    => 0,        # rotate the page 90 degrees
-    colour       => 0,        # use colour
-    clip         => 0,        # clip to the bounding box
-    eps          => 1,        # create eps file
-    page         => 1,        # page number to start at
-    reencode     => "ISOLatin1Encoding", # Re-encode the 13 std fonts in this encoding
+    xsize          => undef,
+    ysize          => undef,
+    papersize      => undef,
+    units          => "bp",     # measuring units (see below)
+    landscape      => 0,        # rotate the page 90 degrees
+    copies         => 1,        # number of copies
+    colour         => 0,        # use colour
+    clip           => 0,        # clip to the bounding box
+    eps            => 1,        # create eps file
+    page           => 1,        # page number to start at
+    reencode       => "ISOLatin1Encoding", # Re-encode the 13 standard
+                                           # fonts in this encoding
 
-    bbx1         => 0,        # Bounding Box definitions
-    bby1         => 0,
-    bbx2         => 0,
-    bby2         => 0,
+    bbx1           => 0,        # Bounding Box definitions
+    bby1           => 0,
+    bbx2           => 0,
+    bby2           => 0,
 
-    pscomments   => "",       # the following entries store data
-    psprolog     => "",       # for the same DSC areas of the
-    psfunctions  => "",       # postscript file.
-    pssetup      => "",
-    pspages      => "",
-    pstrailer    => "",
+    pscomments     => "",       # the following entries store data
+    psprolog       => "",       # for the same DSC areas of the
+    psfunctions    => "",       # postscript file.
+    pssetup        => "",
+    pspages        => "",
+    pstrailer      => "",
 
-    pspagecount  => 0,
-    usedcircle   => 0,
-    usedbox      => 0,
-    usedrotabout => 0,
+    lastfontsize   => 0,
+    pspagecount    => 0,
+    usedcircle     => 0,
+    usedcircletext => 0,
+    usedbox        => 0,
+    usedrotabout   => 0,
+    usedimporteps  => 0,
 
-    coordorigin  => 'LeftBottom',
-    direction    => 'RightUp',
+    coordorigin    => 'LeftBottom',
+    direction      => 'RightUp',
   };
 
   foreach (keys %data)
@@ -457,7 +469,10 @@ sub init# {{{
   90 rotate
 } bind def
 ";
-    $self->{pscomments} .= "\%\%Orientation: Landscape\n";
+    # I now think that Portrait is the correct thing here, as the page is
+    # rotated.
+    $self->{pscomments} .= "\%\%Orientation: Portrait\n";
+#    $self->{pscomments} .= "\%\%Orientation: Landscape\n";
     $swap = $self->{bbx2};
     $self->{bbx2} = $self->{bby2};
     $self->{bby2} = $swap;
@@ -733,9 +748,13 @@ sub output# {{{
   print "\%\%EndProlog\n";
 
 # Setup Section
-  if (length($self->{pssetup}))
+  if (length($self->{pssetup}) || ($self->{copies} > 1))
   {
     print "\%\%BeginSetup\n";
+    if ($self->{copies} > 1)
+    {
+      print "/#copies " . $self->{copies} . " def\n";
+    }
     print $self->{pssetup};
     print "\%\%EndSetup\n";
   }
@@ -952,6 +971,63 @@ sub linextend# {{{
   return 1;
 }# }}}
 
+=item C<arc([options,] x,y, radius, start_angle, end_angle)>
+
+Draws an arc on the circle of radius C<radius> with centre (C<x>,C<y>). The arc
+starts at angle C<start_angle> and finishes at C<end_angle>. Angles are specified
+in degrees, where 0 is at 3 o'clock, and the direction of travel is anti-clockwise.
+
+Any options are passed in a hash reference as the first parameter. The available
+option is:
+
+=over 4
+
+=item filled => 1
+
+If C<filled> is 1 then the arc will be filled in.
+
+=back
+
+Example:
+
+    # semi-circle
+    $p->arc(10, 10, 5, 0, 180);
+
+    # complete filled circle
+    $p->arc({filled=>1}, 30, 30, 10, 0, 360);
+
+=cut
+
+sub arc# {{{
+{
+  my $self = shift;
+  my %opt = ();
+
+  if (ref($_[0])) {
+    %opt = %{; shift};
+  }
+
+  if ((!$self->{pspagecount}) and (!$self->{eps})) {
+# Cannot draw on to non-page when not an eps file XXXXX
+    return 0;
+  }
+
+  my ($x, $y, $r, $sa, $ea) = @_;
+
+  unless (@_ == 5) {
+    $self->_error("arc: wrong number of arguments");
+    return 0;
+  }
+
+  $self->{pspages} .= "$x ux $y uy $r u $sa $ea arc ";
+  if ($opt{'filled'}) {
+    $self->{pspages} .= "fill\n"
+  } else {
+    $self->{pspages} .= "stroke\n"
+  }
+  
+  return 1;
+}# }}}
 
 =item C<polygon([options,] x1,y1, x2,y2, ..., xn,yn)>
 
@@ -1175,6 +1251,123 @@ sub circle# {{{
   return 1;
 }# }}}
 
+=item C<circletext([options,] x, y, r, a, text)>
+
+Draw text in an arc centered about angle C<a> with circle midpoint (C<x>,C<y>)
+and radius C<r>.
+
+There is only one option.
+
+=over 4
+
+=item align => "alignment"
+
+C<alignment> can be 'inside' or 'outside'. The default is 'inside'.
+
+=back
+
+Example:
+
+    # outside the radius, centered at 90 degrees from the origin
+    $p->circletext(40, 40, 20, 90, "Hello, Outside World!");
+    # inside the radius centered at 270 degrees from the origin
+    $p->circletext( {align => "inside"}, 40, 40, 20, 270, "Hello, Inside World!");
+
+=cut
+
+
+sub circletext# {{{
+{
+  my $self = shift;
+  my %opt = ();
+
+  if (ref($_[0]))
+  {
+    %opt = %{; shift};
+  }
+
+  my ($x, $y, $r, $a, $text) = @_;
+
+  unless (@_ == 5) {
+    $self->_error("circletext: wrong number of arguments");
+    return 0;
+  }
+
+  unless (defined $self->{lastfontsize}) {
+    $self->_error("circletext: must set font first");
+    return 0;
+  }
+
+  if (!$self->{usedcircletext}) {
+    $self->{psfunctions} .= <<'EOCT';
+/outsidecircletext
+  { $circtextdict begin
+      /radius exch def
+      /centerangle exch def
+      /ptsize exch def
+      /str exch def
+      /xradius radius ptsize 4 div add def
+      gsave
+        centerangle str findhalfangle add rotate
+        str { /charcode exch def ( ) dup 0 charcode put outsideshowcharandrotate } forall
+      grestore
+    end
+  } def
+       
+/insidecircletext
+  { $circtextdict begin
+      /radius exch def
+      /centerangle exch def
+      /ptsize exch def
+      /str exch def
+      /xradius radius ptsize 3 div sub def
+      gsave
+        centerangle str findhalfangle sub rotate
+        str { /charcode exch def ( ) dup 0 charcode put insideshowcharandrotate } forall
+      grestore
+    end
+  } def
+/$circtextdict 16 dict def
+$circtextdict begin
+  /findhalfangle
+    { stringwidth pop 2 div 2 xradius mul pi mul div 360 mul
+    } def
+  /outsideshowcharandrotate
+    { /char exch def
+      /halfangle char findhalfangle def
+      gsave
+        halfangle neg rotate radius 0 translate -90 rotate
+        char stringwidth pop 2 div neg 0 moveto char show
+      grestore
+      halfangle 2 mul neg rotate
+    } def
+  /insideshowcharandrotate
+    { /char exch def
+      /halfangle char findhalfangle def
+      gsave
+        halfangle rotate radius 0 translate 90 rotate
+        char stringwidth pop 2 div neg 0 moveto char show
+      grestore
+      halfangle 2 mul rotate
+    } def
+  /pi 3.1415926 def
+end
+EOCT
+    $self->{usedcircletext} = 1;
+  }
+
+  $self->{pspages} .= "gsave\n";
+  $self->{pspages} .= "  $x ux $y uy translate\n";
+  $self->{pspages} .= "  ($text) $self->{lastfontsize} $a $r u ";
+  if ($opt{'align'} && ($opt{'align'} eq "outside")) {
+    $self->{pspages} .= "outsidecircletext\n";
+  } else {
+    $self->{pspages} .= "insidecircletext\n";
+  }
+  $self->{pspages} .= "grestore\n";
+  
+  return 1;
+}# }}}
 
 =item C<box(x1,y1, x2,y2 [, options])>
 
@@ -1246,6 +1439,178 @@ sub box# {{{
 }# }}}
 
 
+=item C<importeps([options,] filename, x1,y1, x2,y2)>
+
+Imports an EPS file and scales/translates its bounding box to fill
+the area defined by lower left co-ordinates (x1,y1) and upper right
+co-ordinates (x2,y2). By default, if the co-ordinates have a different
+aspect ratio from the bounding box, the scaling is constrained on the
+greater dimension to keep the EPS fully inside the area.
+
+Options are:
+
+=over 4
+
+=item overlap => 1
+
+If C<overlap> is 1 then the scaling is calculated on the lesser dimension
+and the EPS can overlap the area.
+
+=item stretch => 1
+
+If C<stretch> is 1 then fill the entire area, ignoring the aspect ratio.
+This option overrides C<overlap> if both are given.
+
+=back
+
+Example:
+
+    # Assume smiley.eps is a round smiley face in a square bounding box
+
+    # Scale it to a (10,10)(20,20) box
+    $p->importeps("smiley.eps", 10,10, 20,20);
+
+    # Keeps aspect ratio, constrained to smallest fit
+    $p->importeps("smiley.eps", 10,10, 30,20);
+
+    # Keeps aspect ratio, allowed to overlap for largest fit
+    $p->importeps( {overlap => 1}, "smiley.eps", 10,10, 30,20);
+
+    # Aspect ratio is changed to give exact fit
+    $p->importeps( {stretch => 1}, "smiley.eps", 10,10, 30,20);
+
+=cut
+
+
+sub importeps# {{{
+{
+  my $self = shift;
+
+  my $bbllx;
+  my $bblly;
+  my $bburx;
+  my $bbury;
+  my $bbw;
+  my $bbh;
+  my $w;
+  my $h;
+  my $scalex;
+  my $scaley;
+  my $line;
+  my $done = 0;
+
+  my %opt = ();
+
+  if (ref($_[0])) {
+    %opt = %{; shift};
+  }
+
+  my ($file, $x1, $y1, $x2, $y2) = @_;
+
+  unless (@_ == 5) {
+    $self->_error("importeps: wrong number of arguments");
+    return 0;
+  }
+
+  $opt{'overlap'} = 0 if (!defined($opt{'overlap'}));
+  $opt{'stretch'} = 0 if (!defined($opt{'stretch'}));
+  
+  unless ($self->{usedimporteps}) {
+    $self->{psfunctions} .= <<'EOEPS';
+/BeginEPSF { %def
+    /b4_Inc_state save def
+    /dict_count countdictstack def
+    /op_count count 1 sub def
+    userdict begin
+    /showpage { } def
+    0 setgray 0 setlinecap
+    1 setlinewidth 0 setlinejoin
+    10 setmiterlimit [ ] 0 setdash newpath
+    /languagelevel where {
+        pop
+        languagelevel 1 ne {
+            false setstrokeadjust false setoverprint
+        } if
+    } if
+} bind def
+
+/EndEPSF { %def
+    count op_count sub {pop} repeat
+    countdictstack dict_count sub {end} repeat
+    b4_Inc_state restore
+} bind def
+EOEPS
+    $self->{usedimporteps} = 1;
+  }
+
+  local *IN;
+  open(IN, '<'.$file) or die("Cannot read from file $file: $!");
+  $line = <IN>;
+  while (!eof(IN) && !$done) {
+    if ($line =~ m/^%%BoundingBox:\s(-?\d+(\.\d*)?)\s(-?\d+(\.\d*)?)\s(-?\d+(\.\d*)?)\s(-?\d+(\.\d*)?)/ig) {
+      $bbllx = $1;
+      $bblly = $3;
+      $bburx = $5;
+      $bbury = $7;
+      $done = 1;
+    }
+    $line = <IN>;
+  }
+  seek(IN, 0, 0);
+
+  if ($done != 1) {
+    $self->_error("importeps: cannot find Bounding Box in EPS file ");
+    return 0;
+  }
+
+  $w = $x2 - $x1;
+  $h = $y2 - $y1;
+
+  $bbw = $bburx - $bbllx;
+  $bbh = $bbury - $bblly;
+
+  if (($bbw == 0) || ($bbh == 0)) {
+    $self->_error("importeps: Bounding Box has zero dimension");
+    return 0;
+  }
+
+  $scalex = $w / $bbw;
+  $scaley = $h / $bbh;
+
+  if ($opt{'stretch'} == 0) {
+    if ($opt{'overlap'} == 0) {
+      if ($scalex > $scaley) {
+        $scalex = $scaley;
+      } else {
+        $scaley = $scalex;
+      }
+    } else {
+      if ($scalex > $scaley) {
+        $scaley = $scalex;
+      } else {
+        $scalex = $scaley;
+      }
+    }
+  }
+
+  $self->{pspages} .= "BeginEPSF\n";
+
+  $self->{pspages} .= "$x1 ux $y1 uy translate\n";
+#  $self->{pspages} .= "$scalex ux $scaley uy scale\n";
+  $self->{pspages} .= "$scalex $scaley scale\n";
+  $self->{pspages} .= "-$bbllx ux -$bblly uy translate\n";
+
+  $self->{pspages} .= "\%\%BeginDocument: $file\n";
+  while (<IN>) {
+    $self->{pspages} .= $_;
+  }
+  $self->{pspages} .= "\n\%\%EndDocument\n";
+  $self->{pspages} .= "EndEPSF\n";
+
+  return 1;
+}# }}}
+
+
 =item C<setfont(font, size)>
 
 Set the current font to the PostScript font C<font>. Set the size in PostScript
@@ -1270,6 +1635,8 @@ sub setfont# {{{
 
 # set font y size XXXXX
   $self->{pspages} .= "/$name findfont $size scalefont setfont\n";
+
+  $self->{lastfontsize} = $size;
 
   return 1;
 }# }}}
@@ -1491,6 +1858,7 @@ sub _error {# {{{
 =head1 BUGS
 
 Some current functionality may not be as expected, and/or may not work correctly.
+That's the fun with using code in development!
 
 The way of giving options to methods has changed since version 0.04, this may break
 your code; sorry.
@@ -1499,12 +1867,13 @@ More functions need to be added. See the README file.
 
 =head1 AUTHOR
 
-The PostScript::Simple module was initially created by Matthew Newton, with
-ideas and suggestions from Mark Withall.
+The PostScript::Simple module was created by Matthew Newton, with ideas
+and suggestions from Mark Withall.
 
 Contributions to the work (either code or suggestions / improvements) have been
 gratefully received from: Andreas Marcel, P Kent, Flemming Frandsen, Michael
-Tomuschat, Vladi Belperchinov-Shabanski
+Tomuschat, Vladi Belperchinov-Shabanski, Eric Wilhelm, Peter Kuhn, Glen Harris.
+Apologies if you have contributed and I have missed you; thanks!
 
 =head1 SEE ALSO
 

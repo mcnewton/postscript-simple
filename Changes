@@ -1,5 +1,11 @@
 Revision history for Perl extension PostScript::Simple.
 
+0.06 -
+  Eric Wilhelm:
+    - arc function
+  Matthew Newton:
+    - update/add some pod documentation
+
 0.05 - 
   Matthew Newton:
     - fold all functions in the code to make it easier to read

@@ -50,7 +50,7 @@ To install this module type the following:
 
 COPYRIGHT AND LICENCE
 
-Copyright (C) 2002 Matthew C. Newton / Newton Computing
+Copyright (C) 2002-2003 Matthew C. Newton / Newton Computing
 
 This program is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free Software
@@ -66,13 +66,17 @@ ACKNOWLEDGEMENTS
 
 Thanks go to the following:
 
-  m.s.withall2@lut.ac.uk for help with the initial idea
+  Mark Withall for help with the initial idea
   Andreas Riechert for help with the distribution
   P Kent for many updates and fixes
   Flemming Frandsen for updates for font encoding, text alignment and more
   Michael Tomuschat for several updates (not yet merged)
   Vladi Belperchinov-Shabanski for text rotate / align update stuff
   Martin McCarthy for lots of useful discussion
+  Eric Voisard for useful chats about page sizes and landscape
+  Eric Wilhelm for the arc function
+  Peter Kuehn for inserting ps and eps code (not yet merged)
+  Glen Harris for circletext and inserteps functions
 
   ...and probably more, apologies if you are missing from this list and have
   contributed something.
@@ -87,7 +91,7 @@ Done:
 
   landscape seems to work ok
   xsize and ysize set fine
-  colour option works. need to alter colour->grey calculation (i know how to)
+  colour option works
   clipping works
   eps option works (but output needs slight modification save/restore etc)
   page option works. setpage allows page number/name to be changed
@@ -104,33 +108,21 @@ Done:
   font encoding for european etc.
   add dd cc and sp to units
   text rotate / align
+  import eps files into the postscript
+  pie slices / arcs (well, arcs anyway)
 
 To-Do:
 
   PostScript "compression", i.e. /n {newpath} bind def
+  code compression using single letter dictionary defs (optional?)
   any postscript optimisation that can be done?
-  import eps files into the postscript
   hope that units are now correct... check
   postscript font support?
   define shape functions
   translate / scale / rotate functions?
-  gd wrapper module
   generate PostScript using a stack, rather than writing
     to the end of a text variable? could lead to some rather
     neat stuff (loops etc)
-  triangle function(s)
-    probably not... polygon does this
   different line styles (dashes)?
-  code compression using single letter dictionary defs (optional?)
-  my-printer-can-play-jingle-bells-now function?
-    nope, we're not trying to write BeetHoven files...
   ttf font support (get lost!)
-  (compare gd module for functions that we could do with)
-  pie slices / arcs
-  how about "write this out as a PDF file" option?
-    possibly, as pdf is related... nope, use pstopdf
-  write out as xfig file option?
-    nope, this is a postscript module. maybe Graphics::Vector next?
-  write out as LaTeX picture (XYPic?) file option?
-    nope, see above
 
