@@ -10,7 +10,7 @@ use PostScript::Simple::EPS;
 
 @ISA = qw(Exporter);
 @EXPORT = qw();
-$VERSION = '0.06p1';
+$VERSION = '0.06p2';
 
 =head1 NAME
 
@@ -703,85 +703,137 @@ document in memory is not cleared, and can still be extended.
 =cut
 
 
-sub output# {{{
+sub _buildpage# {{{
 {
   my $self = shift;
-  my $file = shift || die("Must supply a filename for output");
+  my $title = shift;
   
-  my $eps = $self->{eps};
+  my $page;
   my $date = scalar localtime;
   my $user;
+
+  $title = 'undefined' unless $title;
+
+  $page = [];
 
 # getlogin is unimplemented on some systems
   eval { $user = getlogin; };
   $user = 'Console' unless $user;
 
-  local *OUT;
-  open(OUT, '>'.$file) or die("Cannot write to file $file: $!");
-  select OUT;
-
 # Comments Section
-  print "%!PS-Adobe-3.0";
-  if ($eps) { print " EPSF-1.2" }
-  print "\n";
-  print "\%\%Title: ($file)\n";
-  print "\%\%LanguageLevel: 1\n";
-  print "\%\%Creator: PostScript::Simple perl module version $VERSION\n";
-  print "\%\%CreationDate: $date\n";
-  print "\%\%For: $user\n";
-  print $self->{pscomments};
-#  print "\%\%DocumentFonts: \n";
-  if ($eps)
+  push @$page, "%!PS-Adobe-3.0";
+  push @$page, " EPSF-1.2" if ($self->{eps});
+  push @$page, "\n";
+  push @$page, "\%\%Title: ($title)\n";
+  push @$page, "\%\%LanguageLevel: 1\n";
+  push @$page, "\%\%Creator: PostScript::Simple perl module version $VERSION\n";
+  push @$page, "\%\%CreationDate: $date\n";
+  push @$page, "\%\%For: $user\n";
+  push @$page, \$self->{pscomments};
+#  push @$page, "\%\%DocumentFonts: \n";
+  if ($self->{eps})
   {
-    print "\%\%BoundingBox: $self->{bbx1} $self->{bby1} $self->{bbx2} $self->{bby2}\n";
+    push @$page, "\%\%BoundingBox: $self->{bbx1} $self->{bby1} $self->{bbx2} $self->{bby2}\n";
   }
   else
   {
-    print "\%\%Pages: $self->{pspagecount}\n";
+    push @$page, "\%\%Pages: $self->{pspagecount}\n";
   }
-  print "\%\%EndComments\n";
+  push @$page, "\%\%EndComments\n";
   
 # Prolog Section
-  print "\%\%BeginProlog\n";
-  print $self->{psprolog};
-  print "\%\%BeginResource: PostScript::Simple\n";
-  print $self->{psfunctions};
-  print "\%\%EndResource\n";
-  print "\%\%EndProlog\n";
+  push @$page, "\%\%BeginProlog\n";
+  push @$page, \$self->{psprolog};
+  push @$page, "\%\%BeginResource: PostScript::Simple\n";
+  push @$page, \$self->{psfunctions};
+  push @$page, "\%\%EndResource\n";
+  push @$page, "\%\%EndProlog\n";
 
 # Setup Section
   if (length($self->{pssetup}) || ($self->{copies} > 1))
   {
-    print "\%\%BeginSetup\n";
+    push @$page, "\%\%BeginSetup\n";
     if ($self->{copies} > 1)
     {
-      print "/#copies " . $self->{copies} . " def\n";
+      push @$page, "/#copies " . $self->{copies} . " def\n";
     }
-    print $self->{pssetup};
-    print "\%\%EndSetup\n";
+    push @$page, \$self->{pssetup};
+    push @$page, "\%\%EndSetup\n";
   }
 
 # Pages
-  print $self->{pspages};
-  if ((!$eps) && ($self->{pspagecount} > 0))
+  push @$page, \$self->{pspages};
+  if ((!$self->{eps}) && ($self->{pspagecount} > 0))
   {
-    print "\%\%PageTrailer\n";
-    print "pagelevel restore\n";
-    print "showpage\n";
+    push @$page, "\%\%PageTrailer\n";
+    push @$page, "pagelevel restore\n";
+    push @$page, "showpage\n";
   }
 
 # Trailer Section
   if (length($self->{pstrailer}))
   {
-    print "\%\%Trailer\n";
-    print $self->{pstrailer};
+    push @$page, "\%\%Trailer\n";
+    push @$page, \$self->{pstrailer};
   }
-  print "\%\%EOF\n";
-  select STDOUT;
+  push @$page, "\%\%EOF\n";
+  
+  return $page;
+}# }}}
+
+sub output# {{{
+{
+  my $self = shift;
+  my $file = shift || die("Must supply a filename for output");
+  my $page;
+  my $i;
+  
+  $page = _buildpage($self, $file);
+
+  local *OUT;
+  open(OUT, '>'.$file) or die("Cannot write to file $file: $!");
+
+  foreach $i (@$page) {
+    if (ref($i) eq "SCALAR") {
+      print OUT $$i;
+    } else {
+      print OUT $i;
+    }
+  }
+
   close OUT;
   
   return 1;
 }# }}}
+
+=item C<get>
+
+Returns the current document.
+
+Use this option whenever output is required as a scalar. The current PostScript
+document in memory is not cleared, and can still be extended.
+
+=cut
+
+sub get# {{{
+{
+  my $self = shift;
+  my $page;
+  my $i;
+  my $doc;
+  
+  $page = _buildpage($self, "PostScript::Simple generated page");
+  $doc = "";
+  foreach $i (@$page) {
+    if (ref($i) eq "SCALAR") {
+      $doc .= $$i;
+    } else {
+      $doc .= $i;
+    }
+  }
+  return $doc;
+}# }}}
+
 
 
 =item C<setcolour((red, green, blue)|(name))>
