@@ -3,6 +3,7 @@ MANIFEST
 Makefile.PL
 README
 examples/example.pl
+examples/demo.ps
 lib/PostScript/Simple.pm
 lib/PostScript/Simple/EPS.pm
 t/01base.t
