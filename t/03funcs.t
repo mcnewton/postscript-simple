@@ -60,7 +60,7 @@ ok( ! $s->setfont('Helvetica') );
 
 
 ok( $s->text( 10, 10, 'Hello World' ) );
-ok( ! $s->text( 10, 10, 'Hello World', 'foo' ) );
+ok( ! $s->text( 10, 10, 'Hello World', 'foo', 'wobble' ) );
 ok( ! $s->text( 10, 10 ) );
 
 
@@ -87,6 +87,108 @@ unlink 'x03.eps';
 
 sub FUNCS {
 return '/u {} def
+/STARTDIFFENC { mark } bind def
+/ENDDIFFENC { 
+
+% /NewEnc BaseEnc STARTDIFFENC number or glyphname ... ENDDIFFENC -
+	counttomark 2 add -1 roll 256 array copy
+	/TempEncode exch def
+	
+	% pointer for sequential encodings
+	/EncodePointer 0 def
+	{
+		% Get the bottom object
+		counttomark -1 roll
+		% Is it a mark?
+		dup type dup /marktype eq {
+			% End of encoding
+			pop pop exit
+		} {
+			/nametype eq {
+			% Insert the name at EncodePointer 
+
+			% and increment the pointer.
+			TempEncode EncodePointer 3 -1 roll put
+			/EncodePointer EncodePointer 1 add def
+			} {
+			% Set the EncodePointer to the number
+			/EncodePointer exch def
+			} ifelse
+		} ifelse
+	} loop	
+
+	TempEncode def
+} bind def
+
+% Define ISO Latin1 encoding if it doesnt exist
+/ISOLatin1Encoding where {
+%	(ISOLatin1 exists!) =
+	pop
+} {
+	(ISOLatin1 does not exist, creating...) =
+	/ISOLatin1Encoding StandardEncoding STARTDIFFENC
+		144 /dotlessi /grave /acute /circumflex /tilde 
+		/macron /breve /dotaccent /dieresis /.notdef /ring 
+		/cedilla /.notdef /hungarumlaut /ogonek /caron /space 
+		/exclamdown /cent /sterling /currency /yen /brokenbar 
+		/section /dieresis /copyright /ordfeminine 
+		/guillemotleft /logicalnot /hyphen /registered 
+		/macron /degree /plusminus /twosuperior 
+		/threesuperior /acute /mu /paragraph /periodcentered 
+		/cedilla /onesuperior /ordmasculine /guillemotright 
+		/onequarter /onehalf /threequarters /questiondown 
+		/Agrave /Aacute /Acircumflex /Atilde /Adieresis 
+		/Aring /AE /Ccedilla /Egrave /Eacute /Ecircumflex 
+		/Edieresis /Igrave /Iacute /Icircumflex /Idieresis 
+		/Eth /Ntilde /Ograve /Oacute /Ocircumflex /Otilde 
+		/Odieresis /multiply /Oslash /Ugrave /Uacute 
+		/Ucircumflex /Udieresis /Yacute /Thorn /germandbls 
+		/agrave /aacute /acircumflex /atilde /adieresis 
+		/aring /ae /ccedilla /egrave /eacute /ecircumflex 
+		/edieresis /igrave /iacute /icircumflex /idieresis 
+		/eth /ntilde /ograve /oacute /ocircumflex /otilde 
+		/odieresis /divide /oslash /ugrave /uacute 
+		/ucircumflex /udieresis /yacute /thorn /ydieresis
+	ENDDIFFENC
+} ifelse
+
+% Name: Re-encode Font
+% Description: Creates a new font using the named encoding. 
+
+/REENCODEFONT { % /Newfont NewEncoding /Oldfont
+	findfont dup length 4 add dict
+	begin
+		{ % forall
+			1 index /FID ne 
+			2 index /UniqueID ne and
+			2 index /XUID ne and
+			{ def } { pop pop } ifelse
+		} forall
+		/Encoding exch def
+		% defs for DPS
+		/BitmapWidths false def
+		/ExactSize 0 def
+		/InBetweenSize 0 def
+		/TransformedChar 0 def
+		currentdict
+	end
+	definefont pop
+} bind def
+
+% Reencode the std fonts: 
+/Courier-iso ISOLatin1Encoding /Courier REENCODEFONT
+/Courier-Bold-iso ISOLatin1Encoding /Courier-Bold REENCODEFONT
+/Courier-BoldOblique-iso ISOLatin1Encoding /Courier-BoldOblique REENCODEFONT
+/Courier-Oblique-iso ISOLatin1Encoding /Courier-Oblique REENCODEFONT
+/Helvetica-iso ISOLatin1Encoding /Helvetica REENCODEFONT
+/Helvetica-Bold-iso ISOLatin1Encoding /Helvetica-Bold REENCODEFONT
+/Helvetica-BoldOblique-iso ISOLatin1Encoding /Helvetica-BoldOblique REENCODEFONT
+/Helvetica-Oblique-iso ISOLatin1Encoding /Helvetica-Oblique REENCODEFONT
+/Times-Roman-iso ISOLatin1Encoding /Times-Roman REENCODEFONT
+/Times-Bold-iso ISOLatin1Encoding /Times-Bold REENCODEFONT
+/Times-BoldItalic-iso ISOLatin1Encoding /Times-BoldItalic REENCODEFONT
+/Times-Italic-iso ISOLatin1Encoding /Times-Italic REENCODEFONT
+/Symbol-iso ISOLatin1Encoding /Symbol REENCODEFONT
 /rotabout {3 copy pop translate rotate exch 0 exch
 sub exch 0 exch sub translate} def
 /circle {newpath 0 360 arc closepath} bind def
@@ -100,7 +202,9 @@ sub exch 0 exch sub translate} def
 }
 
 sub CANNED {
-return '0 0 0 setrgbcolor
+return '(error: Do not use newpage for eps files!
+) print flush
+0 0 0 setrgbcolor
 0 0 0 setrgbcolor
 (error: bad colour name \'geddy lee\'
 ) print flush
@@ -177,3 +281,4 @@ newpath
 ) print flush
 ';
 }
+

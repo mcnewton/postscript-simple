@@ -9,7 +9,8 @@ use PostScript::Simple;
 my $f = "xtest-c.ps";
 my $p = new PostScript::Simple(papersize => "a4",
             colour => 1,
-            units => "in");
+            units => "in",
+            reencode => undef);
 
 ok( $p );
 
@@ -60,6 +61,8 @@ return q[%!PS-Adobe-3.0 EPSF-1.2
 /circle {newpath 0 360 arc closepath} bind def
 /rotabout {3 copy pop translate rotate exch 0 exch
 sub exch 0 exch sub translate} def
+(error: Do not use newpage for eps files!
+) print flush
 newpath
 1 u 1 u moveto
 1 u 4 u lineto
@@ -79,3 +82,4 @@ newpath
 (Hello) show stroke
 ];
 }
+

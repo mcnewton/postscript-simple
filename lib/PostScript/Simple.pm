@@ -2,11 +2,11 @@ package PostScript::Simple;
 
 use strict;
 use vars qw($VERSION @ISA @EXPORT);
-use Exporter;	##PKENT - this makes it a compile time statement
+use Exporter;
 
 @ISA = qw(Exporter);
 @EXPORT = qw();
-$VERSION = '0.03';
+$VERSION = '0.04';
 
 =head1 NAME
 
@@ -69,6 +69,7 @@ None.
 
 =cut
 
+
 # is there another colour database that can be used instead of defining
 # this one here? what about the X-windows one? (apart from MS-Win-probs?) XXXXX
 my %pscolours = (
@@ -93,6 +94,7 @@ my %pscolours = (
   grey90        => "0.9  0.9  0.9",
   white         => "1    1    1",
 );
+
 
 # define page sizes here (a4, letter, etc)
 # should be Properly Cased
@@ -139,6 +141,23 @@ my %pspaper = (
   'EuroPostcard'        => '298 420',
 );
 
+
+# The 13 standard fonts that are available on all PS 1 implementations:
+my @fonts = ('Courier',
+             'Courier-Bold',
+             'Courier-BoldOblique',
+             'Courier-Oblique',
+             'Helvetica',
+             'Helvetica-Bold',
+             'Helvetica-BoldOblique',
+             'Helvetica-Oblique',
+             'Times-Roman',
+             'Times-Bold',
+             'Times-BoldItalic',
+             'Times-Italic',
+             'Symbol');
+
+
 # measuring units are two-letter acronyms as used in TeX:
 #  bp: postscript point (72 per inch)
 #  in: inch (72 postscript points)
@@ -158,9 +177,10 @@ my %psunits = (
   bp   => "1 1",
   cm   => "72 2.54",
   mm   => "72 25.4",
-  dd   => "4864.8648648648 1",
-  cc   => "4864.8648648648 12",
+  dd   => "72 67.567",
+  cc   => "72 810.804",
 );
+
 
 =head1 CONSTRUCTOR
 
@@ -222,6 +242,17 @@ Specifies the initial page number of the (multi page) document. The page number
 is set with the Adobe DSC comments, and is used nowhere else. It only makes
 finding your pages easier. See also the C<newpage> method. (Default: 1)
 
+=item reencode
+
+Requests that a font re-encode function be added and that the 13 standard
+PostScript fonts get re-encoded in the specified encoding. The most popular
+choice (other than undef) is 'ISOLatin1Encoding' which selects the iso8859-1
+encoding and fits most of western Europe, including the Scandinavia. Refer to
+Adobes Postscript documentation for other encodings.
+
+The output file is, by default, re-encoded to ISOLatin1Encoding. To stop this
+happening, use 'reencode => undef'.
+
 =back
 
 Example:
@@ -239,10 +270,13 @@ not an EPS file, and must therefore use the C<newpage> method.
                                   colour => 1,
                                   xsize => 12,
                                   ysize => 12,
-                                  units => "cm");
+                                  units => "cm",
+                                  reencode => "ISOLatin1Encoding");
 
-Create a 12 by 12 cm EPS image that is in colour. Note that "C<eps =E<gt> 1>" does
-not have to be specified because this is the default.
+Create a 12 by 12 cm EPS image that is in colour. Note that "C<eps =E<gt> 1>"
+does not have to be specified because this is the default. Re-encode the
+standard fonts into the iso8859-1 encoding, providing all the special characters
+used in Western Europe. The C<newpage> method should not be used.
 
 =back
 
@@ -262,6 +296,7 @@ sub new
     clip         => 0,        # clip to the bounding box
     eps          => 1,        # create eps file
     page         => 1,        # page number to start at
+    reencode     => "ISOLatin1Encoding", # Re-encode the 13 std fonts in this encoding
 
     bbx1         => 0,        # Bounding Box definitions
     bby1         => 0,
@@ -385,7 +420,125 @@ closepath clip} bind def
 ";
     if ($self->{eps}) { $self->{pssetup} .= "pageclip\n" }
   }
+
+# Font reencoding
+  if ($self->{reencode})
+  {
+    my $encoding; # The name of the encoding
+    my $ext;      # The extention to tack onto the std fontnames
+
+    if (ref $self->{reencode} eq 'ARRAY')
+    {
+      die "Custom reencoding of fonts not really implemented yet, sorry...";
+      $encoding = shift @{$self->{reencode}};
+      $ext = shift @{$self->{reencode}};
+      # TODO: Do something to add the actual encoding to the postscript code.
+    }
+    else
+    {
+      $encoding = $self->{reencode};
+      $ext = '-iso';
+    }
+
+    $self->{psfunctions} .= <<'EOP';
+/STARTDIFFENC { mark } bind def
+/ENDDIFFENC { 
+
+% /NewEnc BaseEnc STARTDIFFENC number or glyphname ... ENDDIFFENC -
+	counttomark 2 add -1 roll 256 array copy
+	/TempEncode exch def
+	
+	% pointer for sequential encodings
+	/EncodePointer 0 def
+	{
+		% Get the bottom object
+		counttomark -1 roll
+		% Is it a mark?
+		dup type dup /marktype eq {
+			% End of encoding
+			pop pop exit
+		} {
+			/nametype eq {
+			% Insert the name at EncodePointer 
+
+			% and increment the pointer.
+			TempEncode EncodePointer 3 -1 roll put
+			/EncodePointer EncodePointer 1 add def
+			} {
+			% Set the EncodePointer to the number
+			/EncodePointer exch def
+			} ifelse
+		} ifelse
+	} loop	
+
+	TempEncode def
+} bind def
+
+% Define ISO Latin1 encoding if it doesnt exist
+/ISOLatin1Encoding where {
+%	(ISOLatin1 exists!) =
+	pop
+} {
+	(ISOLatin1 does not exist, creating...) =
+	/ISOLatin1Encoding StandardEncoding STARTDIFFENC
+		144 /dotlessi /grave /acute /circumflex /tilde 
+		/macron /breve /dotaccent /dieresis /.notdef /ring 
+		/cedilla /.notdef /hungarumlaut /ogonek /caron /space 
+		/exclamdown /cent /sterling /currency /yen /brokenbar 
+		/section /dieresis /copyright /ordfeminine 
+		/guillemotleft /logicalnot /hyphen /registered 
+		/macron /degree /plusminus /twosuperior 
+		/threesuperior /acute /mu /paragraph /periodcentered 
+		/cedilla /onesuperior /ordmasculine /guillemotright 
+		/onequarter /onehalf /threequarters /questiondown 
+		/Agrave /Aacute /Acircumflex /Atilde /Adieresis 
+		/Aring /AE /Ccedilla /Egrave /Eacute /Ecircumflex 
+		/Edieresis /Igrave /Iacute /Icircumflex /Idieresis 
+		/Eth /Ntilde /Ograve /Oacute /Ocircumflex /Otilde 
+		/Odieresis /multiply /Oslash /Ugrave /Uacute 
+		/Ucircumflex /Udieresis /Yacute /Thorn /germandbls 
+		/agrave /aacute /acircumflex /atilde /adieresis 
+		/aring /ae /ccedilla /egrave /eacute /ecircumflex 
+		/edieresis /igrave /iacute /icircumflex /idieresis 
+		/eth /ntilde /ograve /oacute /ocircumflex /otilde 
+		/odieresis /divide /oslash /ugrave /uacute 
+		/ucircumflex /udieresis /yacute /thorn /ydieresis
+	ENDDIFFENC
+} ifelse
+
+% Name: Re-encode Font
+% Description: Creates a new font using the named encoding. 
+
+/REENCODEFONT { % /Newfont NewEncoding /Oldfont
+	findfont dup length 4 add dict
+	begin
+		{ % forall
+			1 index /FID ne 
+			2 index /UniqueID ne and
+			2 index /XUID ne and
+			{ def } { pop pop } ifelse
+		} forall
+		/Encoding exch def
+		% defs for DPS
+		/BitmapWidths false def
+		/ExactSize 0 def
+		/InBetweenSize 0 def
+		/TransformedChar 0 def
+		currentdict
+	end
+	definefont pop
+} bind def
+
+% Reencode the std fonts: 
+EOP
+    
+    for my $font (@fonts)
+    {
+      $self->{psfunctions} .= "/${font}$ext $encoding /$font REENCODEFONT\n";
+    }
+  }
 }
+
 
 =head1 OBJECT METHODS
 
@@ -396,8 +549,8 @@ Error message text is also drawn on the page.
 
 =item C<newpage([number])>
 
-Generates a new page on a PostScript file. If specified, C<number> gives
-the number (or name) of the page.
+Generates a new page on a PostScript file. If specified, C<number> gives the
+number (or name) of the page. This method should not be used for EPS files.
 
 The page number is automatically incremented each time this is called without
 a new page number, or decremented if the current page number is negative.
@@ -414,6 +567,7 @@ will generate five pages, numbered: 1, 2, "hello", -6, -7.
 
 =cut
 
+
 sub newpage
 {
   my $self = shift;
@@ -424,6 +578,7 @@ sub newpage
   if ($self->{eps})
   {
 # Cannot have multiple pages in an EPS file XXXXX
+    $self->_error("Do not use newpage for eps files!");
     return 0;
   }
 
@@ -463,6 +618,7 @@ document in memory is not cleared, and can still be extended.
 
 =cut
 
+
 sub output
 {
   my $self = shift;
@@ -472,13 +628,10 @@ sub output
   my $date = scalar localtime;
   my $user;
 
-  # getlogin is unimplemented on some systems
+# getlogin is unimplemented on some systems
   eval { $user = getlogin; };
-  if ($@) {
-  	$user = 'Console';
-  }
+  $user = 'Console' unless $user;
 
-  ##PKENT - and following print() statements
   local *OUT;
   open(OUT, '>'.$file) or die("Cannot write to file $file: $!");
   select OUT;
@@ -618,6 +771,7 @@ Example:
 
 =cut
 
+
 sub setlinewidth
 {
   my $self = shift;
@@ -633,6 +787,7 @@ sub setlinewidth
   
   return 1;
 }
+
 
 =item C<line(x1,y1, x2,y2 [,red, green, blue])>
 
@@ -655,6 +810,7 @@ Example:
 
 =cut
 
+
 sub line
 {
   my $self = shift;
@@ -667,7 +823,7 @@ sub line
     return 0;
   }
 
-  if ( @_ == 7 )	##PKENT
+  if ( @_ == 7 )
   {
     $self->setcolour($r, $g, $b);
   }
@@ -679,7 +835,7 @@ sub line
   
   $self->newpath;
   $self->moveto($x1, $y1);
-  $self->{pspages} .= "$x2 u $y2 u lineto stroke\n";	##PKENT
+  $self->{pspages} .= "$x2 u $y2 u lineto stroke\n";
   
   return 1;
 }
@@ -715,7 +871,7 @@ sub linextend
   	return 0;
   }
   
-  $self->{pspages} =~ s/eto stroke\n$/eto\n$x u $y u lineto stroke\n/;	##PKENT see comment
+  $self->{pspages} =~ s/eto stroke\n$/eto\n$x u $y u lineto stroke\n/;
   
   ##PKENT comments: lineto can follow a curveto or a lineto, hence the change in regexp
   ##also I thought that it'd be better to change the '.*$' in the regexp with '\n$' - perhaps
@@ -774,6 +930,7 @@ Example:
 
 =cut
 
+
 sub polygon
 {
   my $self = shift;
@@ -782,10 +939,11 @@ sub polygon
   my ($rotate, $rotatex, $rotatey) = (0,0,0);
   my $filled = 0;
 
-##PKENT comments - the first arg could be an optional hashref of options. See if it's there with ref($_[0])
-##If it is, then shift it off and use those options. Could take the form:
-## polygon( { offset => [ 10, 10 ], filled => 0, rotate => 45, rotate => [45, 10, 10] }, $x1, ...
-## it seems neater to use perl native structures instead of manipulating strings
+# PKENT comments - the first arg could be an optional hashref of options. See if
+# it's there with ref($_[0]) If it is, then shift it off and use those options.
+# Could take the form: polygon( { offset => [ 10, 10 ], filled => 0, rotate =>
+# 45, rotate => [45, 10, 10] }, $x1, ...  it seems neater to use perl native
+# structures instead of manipulating strings
 
   if ($#_ < 3)
   {
@@ -803,7 +961,7 @@ sub polygon
     $y = shift;
   }
 
-  foreach my $i (@options)	##PKENT
+  foreach my $i (@options)
   {
     if ($i =~ /^offset=([-\.\d]*),([-\.\d]*)$/) {
       $xoffset = $1;
@@ -822,18 +980,18 @@ sub polygon
         $rotatey = $y;
       }
     }
-    elsif ($i eq 'filled=1') {	##PKENT
+    elsif ($i eq 'filled=1') {
       $filled = 1;
     }
   }
 
-  unless (defined($x) && defined($y)) ##PKENT
+  unless (defined($x) && defined($y))
   {
     $self->_error( "bad polygon - no start point" );
     return 0;
   }
 
-  my $savestate = ($xoffset || $yoffset || $rotate) ? 1 : 0 ;	##PKENT
+  my $savestate = ($xoffset || $yoffset || $rotate) ? 1 : 0 ;
   
   if ( $savestate )
   {
@@ -860,7 +1018,7 @@ sub exch 0 exch sub translate} def\n";
   }
   
   $self->newpath;
-  $self->moveto($x, $y);	##PKENT
+  $self->moveto($x, $y);
   
   while ($#_ > 0)
   {
@@ -902,12 +1060,13 @@ Example:
 
 =cut
 
+
 sub circle
 {
   my $self = shift;
 
   my ($x, $y, $r, $filled) = @_;
-  ##PKENT
+
   if ( @_ < 3)
   {
     $self->_error( "not enough args for circle" );
@@ -943,14 +1102,15 @@ The C<polygon> method is far more flexible, but this method is quicker!
 
 =cut
 
+
 sub box
 {
   my $self = shift;
 
   my ($x1, $y1, $x2, $y2, $filled) = @_;
-  ##PKENT
+
   unless (@_ > 3) {
-  	$self->_error( "insufficient arguments for box" );##PKENT
+  	$self->_error( "insufficient arguments for box" );
   	return 0;
   }
   
@@ -985,13 +1145,14 @@ This method must be called on every page before the C<text> method is used.
 
 =cut
 
+
 sub setfont
 {
   my $self = shift;
   my ($name, $size, $ysize) = @_;
 
   unless (@_ > 1) {
-  	$self->_error( "wrong number of arguments for setfont" );##PKENT
+  	$self->_error( "wrong number of arguments for setfont" );
   	return 0;
   }
 
@@ -1002,27 +1163,36 @@ sub setfont
 }
 
 
-=item C<text(x,y, string)>
+=item C<text(x,y, string[, alignment])>
 
 Plot text on the current page with the lower left co-ordinates at (x,y) and 
 using the current font. The text is specified in C<string>.
+
+Alignment can be 'left', 'centre' and 'right', if not defined it will default
+to 'left'.
 
 Example:
 
     $p->setfont("Times-Roman", 12);
     $p->text(40,40, "The frog sat on the leaf in the pond.");
+    $p->text(140,40, "This is centered.",'centre');
 
 =cut
+
 
 sub text
 {
   my $self = shift;
-  my ($x, $y, $text) = @_;
+  my ($x, $y, $text, $alignment) = @_;
 
-  unless (@_ == 3)
+  unless (@_ == 3 or @_ == 4)
   {
-  	$self->_error( "wrong number of arguments for text" );##PKENT
+  	$self->_error("wrong number of arguments for text");
   	return 0;
+  }
+
+  if (!$alignment) {
+      $alignment = 'left';
   }
 
   if (not defined $text)
@@ -1030,16 +1200,35 @@ sub text
     $text = '';
   }
 
-  # escape text ##PKENT
+  # Escape text to allow parentheses
   $text =~ s|([\\\(\)])|\\$1|g;
   $text =~ s/([\x00-\x1f\x7f-\xff])/sprintf('\\%03o',ord($1))/ge;
 
   $self->newpath;
   $self->moveto($x, $y);
-  $self->{pspages} .= "($text) show stroke\n";
+
+  # Alignment stuff done by dion@swamp.dk
+  if ($alignment eq 'left')
+  {
+    $self->{pspages} .= "($text) show stroke\n";
+  }
+  elsif (($alignment eq 'centre') || ($alignment eq 'center'))
+  {
+    $self->{pspages} .= "($text) dup stringwidth pop 2 div neg 0 rmoveto show\n";
+  }
+  elsif ($alignment eq 'right')
+  {
+    $self->{pspages} .= "($text) dup stringwidth pop neg 0 rmoveto show\n";
+  }
+  else
+  {
+    $self->_error("Invalid alignment parameter passed to text: $alignment, legal " .
+                  "values are left, centre and right");
+  }
 
   return 1;
 }
+
 
 =item curve( x1, y1, x2, y2, x3, y3, x4, y4 )
 
@@ -1048,7 +1237,7 @@ control points for the start- and end-points respectively.
 
 =cut
 
-##PKENT - method added
+
 sub curve
 {
   my $self = shift;
@@ -1074,15 +1263,17 @@ sub curve
   return 1;
 }
 
+
 =item curvextend( x1, y1, x2, y2, x3, y3 )
 
-Assuming the previous command was C<line>, C<linextend>, C<curve> or C<curvextend>, extend that path 
-with another curve segment to the co-ordinates (x3, y3). (x1, y1) and (x2, y2) are the control points.
-Behaviour after any other method is unspecified.
+Assuming the previous command was C<line>, C<linextend>, C<curve> or
+C<curvextend>, extend that path with another curve segment to the co-ordinates
+(x3, y3). (x1, y1) and (x2, y2) are the control points.  Behaviour after any
+other method is unspecified.
 
 =cut
 
-##PKENT method added
+
 sub curvextend
 {
   my $self = shift;
@@ -1093,9 +1284,12 @@ sub curvextend
     return 0;
   }
   
-  $self->{pspages} =~ s/eto stroke\n$/eto\n$x1 u $y1 u $x2 u $y2 u $x3 u $y3 u curveto stroke\n/;	# curveto may follow a lineto etc...
+  # curveto may follow a lineto etc...
+  $self->{pspages} =~ s/eto stroke\n$/eto\n$x1 u $y1 u $x2 u $y2 u $x3 u $y3 u curveto stroke\n/;
+  
   return 1;
 }
+
 
 =item newpath
 
@@ -1103,13 +1297,14 @@ This method is used internally to begin a new drawing path - you should generall
 
 =cut
 
-##PKENT method added
+
 sub newpath
 {
 	my $self = shift;
 	$self->{pspages} .= "newpath\n";
 	return 1;
 }
+
 
 =item moveto( x, y )
 
@@ -1118,7 +1313,7 @@ generally NEVER use this method.
 
 =cut
 
-##PKENT method added
+
 sub moveto
 {
 	my $self = shift;
@@ -1127,14 +1322,15 @@ sub moveto
 	return 1;
 }
 
+
 ### PRIVATE
 
-##PKENT added
 sub _error {
 	my $self = shift;
 	my $msg = shift;
 	$self->{pspages} .= "(error: $msg\n) print flush\n";
 }
+
 
 # Display method for debugging internal variables
 #
@@ -1158,11 +1354,12 @@ More functions need to be added. See the README file.
 
 =head1 AUTHOR
 
-The PostScript::Simple module was written by Matthew Newton, with a small amount
-of help and suggestions from Mark Withall.
+The PostScript::Simple module was initially created by Matthew Newton, with
+ideas and suggestions from Mark Withall.
 
-The idea for the module came from the two aforementioned whilst (apparently)
-thinking.
+Contributions to the work (either code or suggestions / improvements) have been
+gratefully received from: Andreas Marcel, P Kent, Flemming Frandsen, Michael
+Tomuschat
 
 =head1 SEE ALSO
 
@@ -1171,3 +1368,4 @@ L<GD>
 =cut
 
 1;
+

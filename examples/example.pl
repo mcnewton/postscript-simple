@@ -54,7 +54,6 @@ $t->newpage(30);
 $s = new PostScript::Simple(xsize => 50,
             ysize => 200);
 
-$s->newpage;
 $s->box(10, 10, 40, 190);
 
 $o = 10;
@@ -73,7 +72,7 @@ $t->line((0, 100), (100, 0),(0, 255, 0));
 #$t->display();
 
 $t->output("test-a.ps");
-$s->output("test-b.ps");
+$s->output("test-b.eps");
 
 
   
@@ -81,9 +80,6 @@ $s->output("test-b.ps");
         $p = new PostScript::Simple(papersize => "a4",
                     colour => 1,
                     units => "in");
-    
-        # create a new page
-        $p->newpage;
     
         # draw some lines and other shapes
         $p->line(1,1, 1,4);
@@ -101,5 +97,5 @@ $s->output("test-b.ps");
         $p->text(1,1, "Hello");
     
         # write the output to a file
-        $p->output("test-c.ps");
+        $p->output("test-c.eps");
   

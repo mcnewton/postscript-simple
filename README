@@ -1,4 +1,4 @@
-PostScript/Simple version 0.03
+PostScript/Simple version 0.04
 ==============================
 
 PostScript::Simple allows you to have a simple method of writing PostScript
@@ -21,7 +21,7 @@ A module that provides compatibility with the GD module calls might also one day
 be written, so that programs may be easily be converted to produce PostScript.
 Don't hold your breath.
 
-The file example.pl provides some examples of what this module does.
+The file examples/example.pl provides some bad examples of what this module does.
 
 
 INSTALLATION
@@ -55,6 +55,8 @@ Thanks go to the following:
   m.s.withall2@lut.ac.uk for help with the initial idea
   Andreas Riechert for help with the distribution
   P Kent for many updates and fixes
+  Flemming Frandsen for updates for font encoding, text alignment and more
+  Michael Tomuschat for several updates (not yet merged)
 
 
 TO-DO / DONE LISTS:
@@ -77,26 +79,32 @@ Done:
   text and font functions
   paper sizes defined and used (DSC comment added)
   better error reporting (postscript comments still?)
+  font encoding for european etc.
+  add dd cc and sp to units
 
 To-Do:
 
   define shape functions
   translate / scale / rotate functions?
   gd wrapper module
+  hope that units are now correct...
   generate PostScript using a stack, rather than writing
     to the end of a text variable? could lead to some rather
     neat stuff (loops etc)
   triangle function(s)
-  add dd cc and sp to units
   different line styles (dashes)?
   code compression using single letter dictionary defs (optional?)
   my-printer-can-play-jingle-bells-now function?
+    nope, we're not trying to write BeetHoven files...
   postscript font support?
   ttf font support (get lost!)
   any postscript optimisation that can be done?
   (compare gd module for functions that we could do with)
   pie slices / arcs
   how about "write this out as a PDF file" option?
+    possibly, as pdf is related... nope, use pstopdf
   write out as xfig file option?
+    nope, this is a postscript module. maybe Graphics::Vector next?
   write out as LaTeX picture (XYPic?) file option?
+    nope, see above
 

@@ -1,5 +1,16 @@
 Revision history for Perl extension PostScript::Simple.
 
+0.04
+  Matthew Newton:
+    - correct the definitions for dd and cc (I hope - still untested)
+    - tidy up the code a bit
+    - update the test suite
+
+  Flemming Frandsen:
+    - font encoding
+    - text alignment
+    - getlogin bugfix
+
 0.03
   Matthew Newton:
     - Moved example.pl to a subdirectory so it doesn't get installed
