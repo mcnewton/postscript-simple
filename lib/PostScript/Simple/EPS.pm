@@ -1,0 +1,505 @@
+#! /usr/bin/perl
+
+# Is this naughty, or the correct way of doing things?
+package main;
+use PostScript::Simple;
+
+# Add some new methods to PostScript::Simple. Again, naughty or correct?
+package PostScript::Simple;
+
+sub add_eps# {{{
+{
+  my $self = shift;
+  my $thing;
+  my $xpos;
+  my $ypos;
+  my $options;
+
+  if (ref($_[0]) eq "HASH")
+  {
+    $options = shift;
+    if (ref($_[0]) eq "PostScript::Simple::EPS")
+    {
+      croak "cannot use {} options with EPS object";
+    }
+  }
+  else
+  {
+    $options = {};
+  }
+
+  if ((!$self->{pspagecount}) and (!$self->{eps}))
+  {
+    # Cannot draw on to non-page when not an eps file
+    return 0;
+  }
+
+  if ( @_ != 3 )
+  {
+  	croak "wrong number of arguments for add_eps";
+  	return 0;
+  }
+
+  ($thing, $xpos, $ypos) = @_;
+
+  if (ref($thing) eq "PostScript::Simple::EPS")
+  {
+    $self->_add_eps_obj($thing, $xpos, $ypos);
+  }
+  else
+  {
+    $self->_add_eps_file($options, $thing, $xpos, $ypos);
+  }
+  
+  return 1;
+}# }}}
+
+sub _add_eps_obj
+{
+  my $self = shift;
+  my ($obj, $xpos, $ypos) = @_;
+
+  $self->{pspages} .= $obj->_get_include_data($xpos, $ypos);
+}
+
+sub _add_eps_file
+{
+  my $self = shift;
+  my ($opt, $file, $xpos, $ypos) = @_;
+
+  print "adding eps file $file at $xpos, $ypos\n";
+}
+
+package PostScript::Simple::EPS;
+use strict;
+use Exporter;
+use Carp;
+
+use vars qw($VERSION @ISA @EXPORT);
+
+@ISA = qw(Exporter);
+@EXPORT = qw();
+$VERSION = "0.01";
+
+=head1 NAME
+
+PostScript::Simple::EPS - Add EPS support to PostScript::Simple
+
+=head1 SYNOPSIS
+
+    use PostScript::Simple;
+    use PostScript::Simple::EPS;
+    
+    # create a new PostScript object
+    $p = new PostScript::Simple(papersize => "A4",
+                                colour => 1,
+                                units => "in");
+    
+    # create a new page
+    $p->newpage;
+    
+    # add an eps file
+    $p->add_eps({xsize => 3}, "test.eps", 1,1);
+    $p->add_eps({yscale => 1.1, xscale => 1.8}, "test.eps", 4,8);
+
+    # create an eps object
+    $e = new PostScript::Simple::EPS(file => "test.eps");
+    $e->rotate(90);
+    $e->xscale(0.5);
+    $p->add_eps($e, 3, 3); # add eps object to postscript object
+    $e->xscale(2);
+    $p->add_eps($e, 2, 5); # add eps object to postscript object again
+    
+    # write the output to a file
+    $p->output("file.ps");
+
+
+=head1 DESCRIPTION
+
+PostScript::Simple::EPS allows you to add EPS files into PostScript::Simple
+objects.  Included EPS files can be scaled and rotated, and placed anywhere
+inside a PostScript::Simple page.
+
+=head1 PREREQUISITES
+
+This module requires C<PostScript::Simple>, C<strict>, C<Carp> and C<Exporter>.
+
+=head2 EXPORT
+
+None.
+
+=cut
+
+=head1 CONSTRUCTOR
+
+=over 4
+
+=item C<new(options)>
+
+Create a new PostScript::Simple::EPS object. The only option
+that can be set is:
+
+=over 4
+
+=item file
+
+EPS file to be included. This must exist when the C<new> method is called.
+
+=back
+
+Example:
+
+    $ps = new PostScript::Simple(landscape => 1,
+                                 eps => 0,
+                                 xsize => 4,
+                                 ysize => 3,
+                                 units => "in");
+
+    $eps = new PostScript::Simple::EPS(file => "test.eps");
+
+    $eps->scale(0.5);
+
+Scale the EPS file by x0.5 in both directions.
+
+    $ps->newpage();
+    $ps->add_eps($eps, 1, 1);
+
+Add the EPS file to the PostScript document at coords (1,1).
+
+=back
+
+=cut
+
+
+sub new# {{{
+{
+  my ($class, %data) = @_;
+  my $self = {
+    file         => undef,    # filename of the eps file
+    xsize        => undef,
+    ysize        => undef,
+    units        => "bp",     # measuring units (see below)
+    colour       => 0,        # use colour
+    clip         => 0,        # clip to the bounding box
+
+    bbx1         => 0,        # Bounding Box definitions
+    bby1         => 0,
+    bbx2         => 0,
+    bby2         => 0,
+
+    epsprefix    => [],
+    epsfile      => undef,
+    epspostfix   => [],
+  };
+
+  foreach (keys %data)
+  {
+    $self->{$_} = $data{$_};
+  }
+
+  croak "must provide file" if (!defined $self->{"file"});
+
+  bless $self, $class;
+  $self->init();
+
+  return $self;
+}# }}}
+
+sub init# {{{
+{
+  my $self = shift;
+  my $foundbbx = 0;
+
+  open EPS, "< $$self{file}" || croak "can't open eps file $$self{file}";
+  SCAN: while (<EPS>)
+  {
+    if (/^\%\%BoundingBox:\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)$/)
+    {
+      $$self{bbx1} = $1; 
+      $$self{bby1} = $2; 
+      $$self{bbx2} = $3; 
+      $$self{bby2} = $4; 
+      $foundbbx = 1;
+      last SCAN;
+    }
+  }
+  close EPS;
+
+  croak "EPS file must contain a BoundingBox" if (!$foundbbx);
+
+  $self->reset();
+}# }}}
+
+
+=head1 OBJECT METHODS
+
+All object methods return 1 for success or 0 in some error condition
+(e.g. insufficient arguments).  Error message text is also drawn on
+the page.
+
+=over 4
+
+=item C<get_bbox>
+
+Returns the EPS bounding box, as specified on the %%BoundingBox line
+of the EPS file. Units are standard PostScript points.
+
+Example:
+
+    ($x1, $y1, $x2, $y2) = $eps->get_bbox();
+
+=cut
+
+sub get_bbox# {{{
+{
+  my $self = shift;
+
+  return ($$self{bbx1}, $$self{bby1}, $$self{bbx2}, $$self{bby2});
+}# }}}
+
+
+=item C<scale(x, y)>
+
+Scales the EPS file. To scale in one direction only, specify 1 as the
+other scale. To scale the EPS file the same in both directions, you
+may use the shortcut of just specifying the one value.
+
+Example:
+
+    $eps->scale(1.2, 0.8); # make wider and shorter
+    $eps->scale(0.5);      # shrink to half size
+
+=cut
+
+sub scale# {{{
+{
+  my $self = shift;
+  my ($x, $y) = @_;
+
+  $y = $x if (!defined $y);
+  croak "bad arguments to scale" if (!defined $x);
+
+  push @{$$self{epsprefix}}, "$x $y scale";
+
+  return 1;
+}# }}}
+
+
+=item C<rotate(deg)>
+
+Rotates the EPS file by C<deg> degrees anti-clockwise.
+
+Example:
+
+    $eps->rotate(180);        # turn upside-down
+
+=cut
+
+sub rotate# {{{
+{
+  my $self = shift;
+  my ($d) = @_;
+
+  croak "bad arguments to rotate" if (!defined $d);
+
+  push @{$$self{epsprefix}}, "$d rotate";
+
+  return 1;
+}# }}}
+
+
+=item C<translate(x, y)>
+
+Move the EPS file by C<x>,C<y> units.
+
+Example:
+
+    $eps->translate(10, 10);      # move 10 units in both directions
+
+=cut
+
+sub translate# {{{
+{
+  my $self = shift;
+  my ($x, $y) = @_;
+
+  croak "bad arguments to translate" if (!defined $y);
+
+  push @{$$self{epsprefix}}, "$x ux $y uy translate";
+
+  return 1;
+}# }}}
+
+
+=item C<reset>
+
+Reset all translate, rotate and scale operations.
+
+Example:
+
+    $eps->reset();
+
+=cut
+
+sub reset# {{{
+{
+  my $self = shift;
+
+  @{$$self{"epsprefix"}} = ();
+  push @{$$self{"epsprefix"}}, "/showpage{}def";
+
+  return 1;
+}# }}}
+
+
+=item C<load>
+
+Reads the EPS file into memory, to save reading it from file each time if
+inserted many times into a document. Can not be used with C<preload>.
+
+=cut
+
+sub load# {{{
+{
+  my $self = shift;
+  local *EPS;
+
+  return 1 if (defined $$self{"epsfile"});
+
+  $$self{"epsfile"} = "";
+
+  open EPS, "< $$self{file}" || croak "can't open eps file $$self{file}";
+  while (<EPS>)
+  {
+    $$self{"epsfile"} .= $_;
+  }
+  close EPS;
+
+  return 1;
+}# }}}
+
+
+
+=item C<preload(object)>
+
+Experimental: defines the EPS at in the document prolog, and just runs a
+command to insert it each time it is used. C<object> is a PostScript::Simple
+object. If the EPS file is included more than once in the PostScript file then
+this will probably shrink the filesize a lot.
+
+Can not be used at the same time as C<load>.
+
+Example:
+
+    $p = new PostScript::Simple();
+    $e = new PostScript::Simple::EPS(file => "test.eps");
+    $e->preload($p);
+
+=cut
+
+sub preload# {{{
+{
+  my $self = shift;
+  my $ps = shift;
+  my $randcode = "";
+
+  croak "already loaded" if (defined $$self{"epsfile"});
+
+  croak "no PostScript::Simple module provided" if (!defined $ps);
+
+  for my $i (0..7)
+  {
+    $randcode .= chr(int(rand()*26)+65);
+  }
+
+  $$self{"epsfile"} = "eps$randcode\n";
+
+  $$ps{"psprolog"} .= "/eps$randcode {\n";
+  $$ps{"psprolog"} .= "\%\%BeginDocument: $$self{file}\n";
+  open EPS, "< $$self{file}" || croak "can't open eps file $$self{file}";
+  while (<EPS>)
+  {
+    $$ps{"psprolog"} .= $_;
+  }
+  close EPS;
+  $$ps{"psprolog"} .= "\%\%EndDocument\n";
+  $$ps{"psprolog"} .= "} def\n";
+
+  return 1;
+}# }}}
+
+
+
+### PRIVATE
+
+sub _get_include_data# {{{
+{
+  my $self = shift;
+  my ($x, $y) = @_;
+  my $data = "";
+
+  croak "argh... internal error (incorrect arguments)" if (scalar @_ != 2);
+
+  $data .= "save\n";
+
+  $data .= "$x ux $y uy translate\n";
+
+  foreach my $line (@{$$self{"epsprefix"}})
+  {
+    $data .= "$line\n";
+  }
+
+  if (defined $$self{"epsfile"})
+  {
+    $data .= $$self{"epsfile"};
+  }
+  else
+  {
+    $data .= "\%\%BeginDocument: $$self{file}\n";
+    open EPS, "< $$self{file}" || croak "can't open eps file $$self{file}";
+    while (<EPS>)
+    {
+      $data .= $_;
+    }
+    close EPS;
+    $data .= "\%\%EndDocument\n";
+  }
+
+  foreach my $line (@{$$self{"epspostfix"}})
+  {
+    $data .= "$line\n";
+  }
+
+  $data .= "restore\n";
+
+  return $data;
+}# }}}
+
+sub _error {# {{{
+	my $self = shift;
+	my $msg = shift;
+	$self->{pspages} .= "(error: $msg\n) print flush\n";
+}# }}}
+
+
+=back
+
+=head1 BUGS
+
+Some current functionality may not be as expected, and/or may not work
+correctly.
+
+=head1 AUTHOR
+
+The PostScript::Simple::EPS module was written by Matthew Newton, after
+prods for such a feature from several people around the world.
+
+=head1 SEE ALSO
+
+L<PostScript::Simple>
+
+=cut
+
+1;
+
+# vim:foldmethod=marker:
