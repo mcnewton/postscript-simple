@@ -535,6 +535,17 @@ for such a feature from several people around the world. A useful importeps
 function that provides scaling and aspect ratio operations was gratefully
 received from Glen Harris, and merged into this module.
 
+Copyright (C) 2002-2003 Matthew C. Newton / Newton Computing
+
+This program is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free Software
+Foundation, version 2.
+
+This program is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+PARTICULAR PURPOSE. See the GNU General Public License for more details,
+available at http://www.gnu.org/licenses/gpl.html.
+
 =head1 SEE ALSO
 
 L<PostScript::Simple>
