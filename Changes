@@ -1,6 +1,10 @@
 Revision history for Perl extension PostScript::Simple.
 
-0.06 -
+0.06p2 - 16 March 2004
+  Matthew Newton:
+    - added get method
+
+0.06p1 -
   Eric Wilhelm:
     - arc function
 
