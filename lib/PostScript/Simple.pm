@@ -1,19 +1,12 @@
 package PostScript::Simple;
 
 use strict;
-use vars qw($VERSION @ISA @EXPORT @EXPORT_OK);
+use vars qw($VERSION @ISA @EXPORT);
+use Exporter;	##PKENT - this makes it a compile time statement
 
-require Exporter;
-require AutoLoader;
-
-@ISA = qw(Exporter AutoLoader);
-# Items to export into callers namespace by default. Note: do not export
-# names by default without a very good reason. Use EXPORT_OK instead.
-# Do not simply export all your public functions/methods/constants.
-@EXPORT = qw(
-  
-);
-$VERSION = '0.02';
+@ISA = qw(Exporter);
+@EXPORT = qw();
+$VERSION = '0.03';
 
 =head1 NAME
 
@@ -36,6 +29,9 @@ PostScript::Simple - Produce PostScript files from Perl
     $p->linextend(2,4);
     $p->box(1.5,1, 2,3.5);
     $p->circle(2,2, 1);
+    $p->setlinewidth( 0.01 );
+    $p->curve(1,5, 1,7, 3,7, 3,5);
+    $p->curveextend(3,3, 5,3, 5,5);
     
     # draw a rotated polygon in a different colour
     $p->setcolour(0,100,200);
@@ -53,7 +49,7 @@ PostScript::Simple - Produce PostScript files from Perl
 =head1 DESCRIPTION
 
 PostScript::Simple allows you to have a simple method of writing PostScript
-files from Perl. It has several graphics primitives that allow lines, circles,
+files from Perl. It has graphics primitives that allow lines, curves, circles,
 polygons and boxes to be drawn. Text can be added to the page using standard
 PostScript fonts.
 
@@ -63,20 +59,13 @@ by giving dimensions. The units used can be specified ("C<mm>" or "C<in>", etc)
 and are the same as those used in TeX. The default unit is a bp, or a PostScript
 point, unlike TeX.
 
-It is hoped that one day there may be a GD to PS wrapper, but this does not
-currently exist.
-
 =head1 PREREQUISITES
 
-This module requires the C<strict> module.
+This module requires C<strict> and C<Exporter>.
 
 =head2 EXPORT
 
-None by default.
-
-=head1 PostScript::Simple Methods
-
-=over 4
+None.
 
 =cut
 
@@ -105,13 +94,49 @@ my %pscolours = (
   white         => "1    1    1",
 );
 
-# define page sizes here (a4, letter, etc) XXXXX
+# define page sizes here (a4, letter, etc)
 # should be Properly Cased
 my %pspaper = (
-  A3            => "841.88976 1190.5512",
-  A4            => "595.27559 841.88976",
-  A5            => "420.94488 595.27559",
-  Letter        => "612 792",
+  A0                    => '2384 3370',
+  A1                    => '1684 2384',
+  A2                    => '1191 1684',
+  A3                    => "841.88976 1190.5512",
+  A4                    => "595.27559 841.88976",
+  A5                    => "420.94488 595.27559",
+  A6                    => '297 420',
+  A7                    => '210 297',
+  A8                    => '148 210',
+  A9                    => '105 148',
+
+  B0                    => '2920 4127',
+  B1                    => '2064 2920',
+  B2                    => '1460 2064',
+  B3                    => '1032 1460',
+  B4                    => '729 1032',
+  B5                    => '516 729',
+  B6                    => '363 516',
+  B7                    => '258 363',
+  B8                    => '181 258',
+  B9                    => '127 181 ',
+  B10                   => '91 127',
+
+  Executive             => '522 756',
+  Folio                 => '595 935',
+  'Half-Letter'         => '612 397',
+  Letter                => "612 792",
+  'US-Letter'           => '612 792',
+  Legal                 => '612 1008',
+  'US-Legal'            => '612 1008',
+  Tabloid               => '792 1224',
+  'SuperB'              => '843 1227',
+  Ledger                => '1224 792',
+
+  'Comm #10 Envelope'   => '297 684',
+  'Envelope-Monarch'    => '280 542',
+  'Envelope-DL'         => '312 624',
+  'Envelope-C5'         => '461 648',
+
+  'EuroPostcard'        => '298 420',
 );
 
 # measuring units are two-letter acronyms as used in TeX:
@@ -121,22 +146,29 @@ my %pspaper = (
 #  mm: millimetre (25.4 per inch)
 #  cm: centimetre (2.54 per inch)
 #  pi: pica (12 printer's points)
+#  dd: didot point (67.567. per inch)
+#  cc: cicero (12 didot points)
 
-#  set up the others here (dd, cc, sp) XXXXX
+#  set up the others here (sp) XXXXX
 
 my %psunits = (
-  pt => "72 72.27",
-  pc => "72 6.0225",
-  in => "72 1",
-  bp => "1 1",
-  cm => "72 2.54",
-  mm => "72 25.4",
+  pt   => "72 72.27",
+  pc   => "72 6.0225",
+  in   => "72 1",
+  bp   => "1 1",
+  cm   => "72 2.54",
+  mm   => "72 25.4",
+  dd   => "4864.8648648648 1",
+  cc   => "4864.8648648648 12",
 );
 
+=head1 CONSTRUCTOR
+
+=over 4
 
 =item C<new(options)>
 
-Create a new PostScript object. The different options that can be set are:
+Create a new PostScript::Simple object. The different options that can be set are:
 
 =over 4
 
@@ -212,12 +244,15 @@ not an EPS file, and must therefore use the C<newpage> method.
 Create a 12 by 12 cm EPS image that is in colour. Note that "C<eps =E<gt> 1>" does
 not have to be specified because this is the default.
 
+=back
+
 =cut
+
 
 sub new
 {
   my ($class, %data) = @_;
-  my %fields = (
+  my $self = {
     xsize        => undef,
     ysize        => undef,
     papersize    => undef,
@@ -244,18 +279,15 @@ sub new
     usedcircle   => 0,
     usedbox      => 0,
     usedrotabout => 0,
-  );
+  };
 
   foreach (keys %data)
   {
-    $fields{$_} = $data{$_};
+    $self->{$_} = $data{$_};
   }
 
-  my $self = bless {%fields}, $class;
-
+  bless $self, $class;
   $self->init();
-
-  $self->{used_circle} = 0;
 
   return $self;
 }
@@ -279,7 +311,7 @@ sub init
   }
   else
   {
-    $self->{pspages} .= "(error: unit \"$self->{units}\" undefined\n) print flush\n";
+    $self->_error( "unit '$self->{units}' undefined" );
   }
 
   $u = "{";
@@ -309,7 +341,7 @@ sub init
     else
     {
       ($self->{xsize}, $self->{ysize}) = (100,100);
-      $self->{pspages} .= "(error: page size undefined\n) print flush\n"; # XXXXX ps comment?
+      $self->_error( "page size undefined" );
     }
   }
   else
@@ -322,6 +354,7 @@ sub init
   if ($self->{landscape})
   {
     my $swap;
+
     $self->{psfunctions} .= "/landscape {
   $self->{bbx2} 0 translate
   90 rotate
@@ -331,6 +364,7 @@ sub init
     $swap = $self->{bbx2};
     $self->{bbx2} = $self->{bby2};
     $self->{bby2} = $swap;
+
     # for EPS files, change to landscape here, as there are no pages
     if ($self->{eps}) { $self->{pssetup} .= "landscape\n" }
   }
@@ -353,6 +387,12 @@ closepath clip} bind def
   }
 }
 
+=head1 OBJECT METHODS
+
+All object methods return 1 for success or 0 in some error condition (e.g. insufficient arguments).
+Error message text is also drawn on the page.
+
+=over 4
 
 =item C<newpage([number])>
 
@@ -379,10 +419,7 @@ sub newpage
   my $self = shift;
   my $nextpage = shift;
   
-  if (defined($nextpage))
-  {
-    $self->{page} = $nextpage;
-  }
+  if (defined($nextpage)) { $self->{page} = $nextpage; }
 
   if ($self->{eps})
   {
@@ -392,9 +429,7 @@ sub newpage
 
   if ($self->{pspagecount} != 0)
   {
-    $self->{pspages} .= "\%\%PageTrailer\n";
-    $self->{pspages} .= "pagelevel restore\n";
-    $self->{pspages} .= "showpage\n";
+    $self->{pspages} .= "\%\%PageTrailer\npagelevel restore\nshowpage\n";
   }
 
   $self->{pspagecount} ++;
@@ -413,6 +448,8 @@ sub newpage
   if ($self->{landscape}) { $self->{pspages} .= "landscape\n" }
   if ($self->{clip}) { $self->{pspages} .= "pageclip\n" }
   $self->{pspages} .= "\%\%EndPageSetup\n";
+
+  return 1;
 }
 
 
@@ -429,69 +466,81 @@ document in memory is not cleared, and can still be extended.
 sub output
 {
   my $self = shift;
-  my $file = shift;
+  my $file = shift || die("Must supply a filename for output");
   
   my $eps = $self->{eps};
   my $date = scalar localtime;
-  my $user = getlogin;
+  my $user;
 
-  open OUT, "> $file";
+  # getlogin is unimplemented on some systems
+  eval { $user = getlogin; };
+  if ($@) {
+  	$user = 'Console';
+  }
+
+  ##PKENT - and following print() statements
+  local *OUT;
+  open(OUT, '>'.$file) or die("Cannot write to file $file: $!");
+  select OUT;
 
 # Comments Section
-  print OUT "%!PS-Adobe-3.0";
-  if ($eps) { print OUT " EPSF-1.2" }
-  print OUT "\n";
-  print OUT "\%\%Title: ($file)\n";
-  print OUT "\%\%LanguageLevel: 1\n";
-  print OUT "\%\%Creator: PostScript::Simple perl module by Matthew Newton and Mark Withall\n";
-  print OUT "\%\%CreationDate: $date\n";
-  print OUT "\%\%For: $user\n";
-  print OUT $self->{pscomments};
-#  print OUT "\%\%DocumentFonts: \n";
+  print "%!PS-Adobe-3.0";
+  if ($eps) { print " EPSF-1.2" }
+  print "\n";
+  print "\%\%Title: ($file)\n";
+  print "\%\%LanguageLevel: 1\n";
+  print "\%\%Creator: PostScript::Simple perl module version $VERSION\n";
+  print "\%\%CreationDate: $date\n";
+  print "\%\%For: $user\n";
+  print $self->{pscomments};
+#  print "\%\%DocumentFonts: \n";
   if ($eps)
   {
-    print OUT "\%\%Pages: 1\n";
-    print OUT "\%\%BoundingBox: $self->{bbx1} $self->{bby1} $self->{bbx2} $self->{bby2}\n";
+    print "\%\%Pages: 1\n";
+    print "\%\%BoundingBox: $self->{bbx1} $self->{bby1} $self->{bbx2} $self->{bby2}\n";
   }
   else
   {
-    print OUT "\%\%Pages: $self->{pspagecount}\n";
+    print "\%\%Pages: $self->{pspagecount}\n";
   }
-  print OUT "\%\%EndComments\n";
+  print "\%\%EndComments\n";
   
 # Prolog Section
-  print OUT "\%\%BeginProlog\n";
-  print OUT $self->{psprolog};
-  print OUT "\%\%BeginResource: PostScript::Simple\n";
-  print OUT $self->{psfunctions};
-  print OUT "\%\%EndResource\n";
-  print OUT "\%\%EndProlog\n";
+  print "\%\%BeginProlog\n";
+  print $self->{psprolog};
+  print "\%\%BeginResource: PostScript::Simple\n";
+  print $self->{psfunctions};
+  print "\%\%EndResource\n";
+  print "\%\%EndProlog\n";
 
 # Setup Section
   if (length($self->{pssetup}))
   {
-    print OUT "\%\%BeginSetup\n";
-    print OUT $self->{pssetup};
-    print OUT "\%\%EndSetup\n";
+    print "\%\%BeginSetup\n";
+    print $self->{pssetup};
+    print "\%\%EndSetup\n";
   }
 
 # Pages
-  print OUT $self->{pspages};
+  print $self->{pspages};
   if ((!$eps) && ($self->{pspagecount} > 0))
   {
-    print OUT "\%\%PageTrailer\n";
-    print OUT "pagelevel restore\n";
-    print OUT "showpage\n";
+    print "\%\%PageTrailer\n";
+    print "pagelevel restore\n";
+    print "showpage\n";
   }
 
 # Trailer Section
   if (length($self->{pstrailer}))
   {
-    print OUT "\%\%Trailer\n";
-    print OUT $self->{pstrailer};
+    print "\%\%Trailer\n";
+    print $self->{pstrailer};
   }
-  print OUT "\%\%EOF\n";
+  print "\%\%EOF\n";
+  select STDOUT;
   close OUT;
+  
+  return 1;
 }
 
 
@@ -516,24 +565,20 @@ sub setcolour
 {
   my $self = shift;
   my ($r, $g, $b) = @_;
-  my $i;
 
-  if (defined ($r) and !defined ($g) and !defined ($b))
+  if ( @_ == 1 )
   {
     $r = lc $r;
 
     if (defined $pscolours{$r})
     {
       ($r, $g, $b) = split(/\s+/, $pscolours{$r});
-    }
-    else
-    {
-# error: bad colour XXXXX
-      $self->{pspages} .= "(error: bad colour name \"$r\"\n) print flush\n";
+    } else {
+      $self->_error( "bad colour name '$r'" );
       return 0;
     }
   }
-  elsif (defined ($r) and defined ($g) and defined ($b))
+  elsif ( @_ == 3 )
   {
     $r /= 255;
     $g /= 255;
@@ -541,19 +586,22 @@ sub setcolour
   }
   else
   {
-# error: invalid arguments XXXXX
+    if (not defined $r) { $r = 'undef' }
+    if (not defined $g) { $g = 'undef' }
+    if (not defined $b) { $b = 'undef' }
+    $self->_error( "setcolour given invalid arguments: $r, $g, $b" );
     return 0;
   }
 
   if ($self->{colour})
   {
     $self->{pspages} .= "$r $g $b setrgbcolor\n";
-  }
-  else
-  {
-    $r = ($r + $g + $b) / 3;
+  } else {
+    $r = 0.3*$r + 0.59*$g + 0.11*$b;	##PKENT - better colour->grey conversion
     $self->{pspages} .= "$r setgray\n";
   }
+  
+  return 1;
 }
 
 
@@ -573,13 +621,17 @@ Example:
 sub setlinewidth
 {
   my $self = shift;
+  my $width = shift || do {
+    $self->_error( "setlinewidth not given a width" ); return 0;
+  };
 
-  my $width = shift;
-
+  ##PKENT - good idea, should we have names for line weights, like we do for colours?
   if ($width eq "thin") { $width = "0.4" }
   else { $width .= " u" }
 
   $self->{pspages} .= "$width setlinewidth\n";
+  
+  return 1;
 }
 
 =item C<line(x1,y1, x2,y2 [,red, green, blue])>
@@ -615,18 +667,27 @@ sub line
     return 0;
   }
 
-  if (defined ($r) and defined ($g) and defined ($b))
+  if ( @_ == 7 )	##PKENT
   {
     $self->setcolour($r, $g, $b);
   }
-
-  $self->{pspages} .= "newpath $x1 u $y1 u moveto $x2 u $y2 u lineto stroke\n";
+  elsif ( @_ != 4 )
+  {
+  	$self->_error( "wrong number of args for line" );
+  	return 0;
+  }
+  
+  $self->newpath;
+  $self->moveto($x1, $y1);
+  $self->{pspages} .= "$x2 u $y2 u lineto stroke\n";	##PKENT
+  
+  return 1;
 }
 
 
 =item C<linextend(x,y)>
 
-Assuming the previous command was C<line> or C<linextend>, extend that line to include
+Assuming the previous command was C<line>, C<linextend>, C<curve> or C<curvextend>, extend that line to include
 another segment to the co-ordinates (x,y). Behaviour after any other method is unspecified.
 
 Example:
@@ -648,9 +709,22 @@ sub linextend
   my $self = shift;
   my ($x, $y) = @_;
   
-  $self->{pspages} =~ s/ lineto stroke.*$/ lineto\n$x u $y u lineto stroke/;
+  unless ( @_ == 2 )
+  {
+    $self->_error( "wrong number of args for linextend" );
+  	return 0;
+  }
+  
+  $self->{pspages} =~ s/eto stroke\n$/eto\n$x u $y u lineto stroke\n/;	##PKENT see comment
+  
+  ##PKENT comments: lineto can follow a curveto or a lineto, hence the change in regexp
+  ##also I thought that it'd be better to change the '.*$' in the regexp with '\n$' - perhaps
+  ##we need something like $self->{_lastcommand} to know if operations are valid?
+    
 #  $self->{pspages} .= "$x u $y u lineto stroke\n";
 # XXXXX
+
+  return 1;
 }
 
 
@@ -705,14 +779,18 @@ sub polygon
   my $self = shift;
   my ($xoffset, $yoffset) = (0,0);
   my @options = ();
-  my $i;
   my ($rotate, $rotatex, $rotatey) = (0,0,0);
   my $filled = 0;
+
+##PKENT comments - the first arg could be an optional hashref of options. See if it's there with ref($_[0])
+##If it is, then shift it off and use those options. Could take the form:
+## polygon( { offset => [ 10, 10 ], filled => 0, rotate => 45, rotate => [45, 10, 10] }, $x1, ...
+## it seems neater to use perl native structures instead of manipulating strings
 
   if ($#_ < 3)
   {
 # cannot have polygon with just one point...
-    $self->{pspages} .= "(error: bad polygon definition\n) print flush\n";
+    $self->_error( "bad polygon - not enough points" );
     return 0;
   }
 
@@ -725,7 +803,7 @@ sub polygon
     $y = shift;
   }
 
-  foreach $i (@options)
+  foreach my $i (@options)	##PKENT
   {
     if ($i =~ /^offset=([-\.\d]*),([-\.\d]*)$/) {
       $xoffset = $1;
@@ -744,18 +822,20 @@ sub polygon
         $rotatey = $y;
       }
     }
-    elsif ($i =~ /^filled=1$/) {
+    elsif ($i eq 'filled=1') {	##PKENT
       $filled = 1;
     }
   }
 
-  if (!defined($x) || !defined($y))
+  unless (defined($x) && defined($y)) ##PKENT
   {
-    $self->{pspages} .= "(error: bad polygon definition\n) print flush\n";
+    $self->_error( "bad polygon - no start point" );
     return 0;
   }
 
-  if ($xoffset || $yoffset || $rotate)
+  my $savestate = ($xoffset || $yoffset || $rotate) ? 1 : 0 ;	##PKENT
+  
+  if ( $savestate )
   {
     $self->{pspages} .= "gsave ";
   }
@@ -779,7 +859,8 @@ sub exch 0 exch sub translate} def\n";
 #    $self->{pspages} .= "$rotate rotate -$rotatex u -$rotatey u translate\n";
   }
   
-  $self->{pspages} .= "newpath $x u $y u moveto\n";
+  $self->newpath;
+  $self->moveto($x, $y);	##PKENT
   
   while ($#_ > 0)
   {
@@ -800,10 +881,12 @@ sub exch 0 exch sub translate} def\n";
     $self->{pspages} .= "stroke\n";
   }
 
-  if ($xoffset || $yoffset || $rotate)
+  if ( $savestate )
   {
     $self->{pspages} .= "grestore\n";
   }
+  
+  return 1;
 }
 
 
@@ -824,8 +907,12 @@ sub circle
   my $self = shift;
 
   my ($x, $y, $r, $filled) = @_;
-
-  if (!defined $filled) { $filled = 0 }
+  ##PKENT
+  if ( @_ < 3)
+  {
+    $self->_error( "not enough args for circle" );
+    return 0;
+  }
   
   if (!$self->{usedcircle})
   {
@@ -836,6 +923,8 @@ sub circle
   $self->{pspages} .= "$x u $y u $r u circle ";
   if ($filled) { $self->{pspages} .= "fill\n" }
   else {$self->{pspages} .= "stroke\n" }
+  
+  return 1;
 }
 
 
@@ -859,10 +948,13 @@ sub box
   my $self = shift;
 
   my ($x1, $y1, $x2, $y2, $filled) = @_;
-
-  if (!defined $filled) { $filled = 0 }
+  ##PKENT
+  unless (@_ > 3) {
+  	$self->_error( "insufficient arguments for box" );##PKENT
+  	return 0;
+  }
   
-  if (!$self->{usedbox})
+  unless ($self->{usedbox})
   {
     $self->{psfunctions} .= "/box {
   newpath 3 copy pop exch 4 copy pop pop
@@ -877,6 +969,8 @@ sub box
   $self->{pspages} .= "$x1 u $y1 u $x2 u $y2 u box ";
   if ($filled) { $self->{pspages} .= "fill\n" }
   else {$self->{pspages} .= "stroke\n" }
+
+  return 1;
 }
 
 
@@ -896,26 +990,27 @@ sub setfont
   my $self = shift;
   my ($name, $size, $ysize) = @_;
 
-# set font y size XXXXX
+  unless (@_ > 1) {
+  	$self->_error( "wrong number of arguments for setfont" );##PKENT
+  	return 0;
+  }
 
+# set font y size XXXXX
   $self->{pspages} .= "/$name findfont $size scalefont setfont\n";
+
+  return 1;
 }
 
 
 =item C<text(x,y, string)>
 
-Plot text on the current page with the lower left co-ordinates at (x,y). The
-text is specified in C<string>.
+Plot text on the current page with the lower left co-ordinates at (x,y) and 
+using the current font. The text is specified in C<string>.
 
 Example:
 
     $p->setfont("Times-Roman", 12);
     $p->text(40,40, "The frog sat on the leaf in the pond.");
-
-Bugs
-
-The text method does not currently support using some non-alphanumeric characters,
-notably parentheses.
 
 =cut
 
@@ -924,9 +1019,121 @@ sub text
   my $self = shift;
   my ($x, $y, $text) = @_;
 
-# handle text with ( and ) in it already XXXXX
+  unless (@_ == 3)
+  {
+  	$self->_error( "wrong number of arguments for text" );##PKENT
+  	return 0;
+  }
 
-  $self->{pspages} .= "newpath $x u $y u moveto ($text) show stroke\n";
+  if (not defined $text)
+  {
+    $text = '';
+  }
+
+  # escape text ##PKENT
+  $text =~ s|([\\\(\)])|\\$1|g;
+  $text =~ s/([\x00-\x1f\x7f-\xff])/sprintf('\\%03o',ord($1))/ge;
+
+  $self->newpath;
+  $self->moveto($x, $y);
+  $self->{pspages} .= "($text) show stroke\n";
+
+  return 1;
+}
+
+=item curve( x1, y1, x2, y2, x3, y3, x4, y4 )
+
+Create a curve from (x1, y1) to (x4, y4). (x2, y2) and (x3, y3) are the
+control points for the start- and end-points respectively.
+
+=cut
+
+##PKENT - method added
+sub curve
+{
+  my $self = shift;
+  my ($x1, $y1, $x2, $y2, $x3, $y3, $x4, $y4) = @_;
+# dashed lines? XXXXX
+
+  unless ( @_ == 8 ) 
+  {
+    $self->_error( "bad curve definition, wrong number of args" );
+    return 0;
+  }
+  
+  if ((!$self->{pspagecount}) and (!$self->{eps}))
+  {
+# Cannot draw on to non-page when not an eps file XXXXX
+    return 0;
+  }
+
+  $self->newpath;
+  $self->moveto($x1, $y1);
+  $self->{pspages} .= "$x2 u $y2 u $x3 u $y3 u $x4 u $y4 u curveto stroke\n";
+
+  return 1;
+}
+
+=item curvextend( x1, y1, x2, y2, x3, y3 )
+
+Assuming the previous command was C<line>, C<linextend>, C<curve> or C<curvextend>, extend that path 
+with another curve segment to the co-ordinates (x3, y3). (x1, y1) and (x2, y2) are the control points.
+Behaviour after any other method is unspecified.
+
+=cut
+
+##PKENT method added
+sub curvextend
+{
+  my $self = shift;
+  my ($x1, $y1, $x2, $y2, $x3, $y3) = @_;
+  unless ( @_ == 6 ) 
+  {
+    $self->_error( "bad curveextend definition, wrong number of args" );
+    return 0;
+  }
+  
+  $self->{pspages} =~ s/eto stroke\n$/eto\n$x1 u $y1 u $x2 u $y2 u $x3 u $y3 u curveto stroke\n/;	# curveto may follow a lineto etc...
+  return 1;
+}
+
+=item newpath
+
+This method is used internally to begin a new drawing path - you should generally NEVER use it.
+
+=cut
+
+##PKENT method added
+sub newpath
+{
+	my $self = shift;
+	$self->{pspages} .= "newpath\n";
+	return 1;
+}
+
+=item moveto( x, y )
+
+This method is used internally to move the cursor to a new point at (x, y) - you will 
+generally NEVER use this method.
+
+=cut
+
+##PKENT method added
+sub moveto
+{
+	my $self = shift;
+	my ($x, $y) = @_;
+	$self->{pspages} .= "$x u $y u moveto\n";
+	return 1;
+}
+
+### PRIVATE
+
+##PKENT added
+sub _error {
+	my $self = shift;
+	my $msg = shift;
+	$self->{pspages} .= "(error: $msg\n) print flush\n";
 }
 
 # Display method for debugging internal variables
@@ -963,7 +1170,4 @@ L<GD>
 
 =cut
 
-
 1;
-__END__
-

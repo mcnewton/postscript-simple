@@ -3,9 +3,9 @@ use ExtUtils::MakeMaker;
 # the contents of the Makefile that is written.
 WriteMakefile(
     'NAME'		=> 'PostScript::Simple',
-    'VERSION_FROM'	=> 'Simple.pm', # finds $VERSION
+    'VERSION_FROM'	=> 'lib/PostScript/Simple.pm', # finds $VERSION
     'PREREQ_PM'		=> {}, # e.g., Module::Name => 1.1
     ($] >= 5.005 ?    ## Add these new keywords supported since 5.005
-      (ABSTRACT_FROM => 'Simple.pm', # retrieve abstract from module
+      (ABSTRACT_FROM => 'lib/PostScript/Simple.pm', # retrieve abstract from module
        AUTHOR     => 'Matthew Newton <mcnewton@cpan.org>') : ()),
 );

@@ -1,4 +1,4 @@
-PostScript/Simple version 0.02
+PostScript/Simple version 0.03
 ==============================
 
 PostScript::Simple allows you to have a simple method of writing PostScript
@@ -48,7 +48,16 @@ PARTICULAR PURPOSE. See the GNU General Public License for more details,
 available at http://www.gnu.org/licenses/gpl.html.
 
 
-To-Do / Done lists:
+ACKNOWLEDGEMENTS
+
+Thanks go to the following:
+
+  m.s.withall2@lut.ac.uk for help with the initial idea
+  Andreas Riechert for help with the distribution
+  P Kent for many updates and fixes
+
+
+TO-DO / DONE LISTS:
 
 Done:
 
@@ -63,24 +72,25 @@ Done:
   setcolour function works. colour look-up table added.
   postscript DSC headers seem to be fine (for PS and EPS)
   colour->grey calculation (tested: this is actually ok)
-  is this cool or wot?
   different line widths
   polygon function
   text and font functions
+  paper sizes defined and used (DSC comment added)
+  better error reporting (postscript comments still?)
 
 To-Do:
 
   define shape functions
   translate / scale / rotate functions?
   gd wrapper module
-
+  generate PostScript using a stack, rather than writing
+    to the end of a text variable? could lead to some rather
+    neat stuff (loops etc)
   triangle function(s)
   add dd cc and sp to units
   different line styles (dashes)?
-  better error reporting (postscript comments still?)
   code compression using single letter dictionary defs (optional?)
   my-printer-can-play-jingle-bells-now function?
-  paper sizes defined and used (DSC comment added)
   postscript font support?
   ttf font support (get lost!)
   any postscript optimisation that can be done?
@@ -89,5 +99,4 @@ To-Do:
   how about "write this out as a PDF file" option?
   write out as xfig file option?
   write out as LaTeX picture (XYPic?) file option?
-  release as version 0.03 (or similar)
 

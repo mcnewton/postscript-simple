@@ -1,6 +1,28 @@
 Revision history for Perl extension PostScript::Simple.
 
-0.01  Sat Jan 12 21:39:28 2002
+0.03
+  Matthew Newton:
+    - Moved example.pl to a subdirectory so it doesn't get installed
+    - PostScript header now includes version of PostScript::Simple
+    - added dd and cc to the list of measurements, but they might not be correct
+
+  P Kent:
+    - Generate many tests in t/
+    - Simple.pm moved to lib/PostScript/Simple.pm to make life easier
+    - moveto and newpath given new methods
+    - curve and curvextend created for generating Bezier curves
+    - all functions now return 1 for OK or 0 for fail
+    - errors are written as () print flush in the PS output
+    - many paper sizes added
+    - other small tweaks
+
+0.02  2001-01-12
+  Matthew Newton:
+    - Fixed module to now use MakeMaker, i.e. perl Makefile.PL;
+      make; make install now works.
+    - Updated some documentation errors
+
+0.01  2001-01-11
 	- original version; created by h2xs 1.21 with options
 		-X -n PostScript::Simple
 
