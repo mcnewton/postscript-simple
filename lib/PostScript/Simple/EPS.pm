@@ -67,14 +67,18 @@ None.
 
 =item C<new(options)>
 
-Create a new PostScript::Simple::EPS object. The only option
-that can be set is:
+Create a new PostScript::Simple::EPS object. The options
+that can be set are:
 
 =over 4
 
 =item file
 
 EPS file to be included. This must exist when the C<new> method is called.
+
+=item clip
+
+Set to 0 to disable clipping to the EPS bounding box. Default is to clip.
 
 =back
 
@@ -110,8 +114,7 @@ sub new# {{{
     xsize        => undef,
     ysize        => undef,
     units        => "bp",     # measuring units (see below)
-    colour       => 0,        # use colour
-    clip         => 0,        # clip to the bounding box
+    clip         => 1,        # clip to the bounding box
 
     bbx1         => 0,        # Bounding Box definitions
     bby1         => 0,
@@ -247,26 +250,22 @@ sub rotate# {{{
 
 =item C<translate(x, y)>
 
-Move the EPS file by C<x>,C<y> units.
+Move the EPS file by C<x>,C<y> PostScript points.
 
 Example:
 
-    $eps->translate(10, 10);      # move 10 units in both directions
+    $eps->translate(10, 10);      # move 10 points in both directions
 
 =cut
 
 sub translate# {{{
 {
   my $self = shift;
-  my ($x, $y, $unit) = @_;
+  my ($x, $y) = @_;
 
   croak "bad arguments to translate" if (!defined $y);
 
-  if (!defined $unit) {
-    push @{$$self{epsprefix}}, "$x ux $y uy translate";
-  } else { # this is hopefully a temporary hack...
-    push @{$$self{epsprefix}}, "$x $y translate";
-  }
+  push @{$$self{epsprefix}}, "$x $y translate";
 
   return 1;
 }# }}}
@@ -306,14 +305,14 @@ sub load# {{{
 
   return 1 if (defined $$self{"epsfile"});
 
-  $$self{"epsfile"} = "";
-
+  $$self{"epsfile"} = "\%\%BeginDocument: $$self{file}\n";
   open EPS, "< $$self{file}" || croak "can't open eps file $$self{file}";
   while (<EPS>)
   {
     $$self{"epsfile"} .= $_;
   }
   close EPS;
+  $$self{"epsfile"} .= "\%\%EndDocument\n";
 
   return 1;
 }# }}}
@@ -380,13 +379,15 @@ sub _get_include_data# {{{
 
   croak "argh... internal error (incorrect arguments)" if (scalar @_ != 2);
 
-#  $data .= "save\n";
-#  $data .= "$x ux $y uy translate\n";
-
   foreach my $line (@{$$self{"epsprefix"}}) {
     $data .= "$line\n";
   }
 
+  if ($$self{"clip"}) {
+    $data .= "newpath $$self{bbx1} $$self{bby1} moveto
+$$self{bbx2} $$self{bby1} lineto $$self{bbx2} $$self{bby2} lineto
+$$self{bbx1} $$self{bby2} lineto closepath clip\n";
+  }
   if (defined $$self{"epsfile"}) {
     $data .= $$self{"epsfile"};
   } else {
@@ -402,8 +403,6 @@ sub _get_include_data# {{{
   foreach my $line (@{$$self{"epspostfix"}}) {
     $data .= "$line\n";
   }
-
-#  $data .= "restore\n";
 
   return $data;
 }# }}}

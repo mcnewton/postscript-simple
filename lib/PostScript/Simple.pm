@@ -1861,6 +1861,7 @@ EOEPS
 
   $self->{pspages} .= "BeginEPSF\n";
   $self->{pspages} .= "$xpos ux $ypos uy translate\n";
+  $self->{pspages} .= "1 ux 1 uy scale\n";
   $self->{pspages} .= $epsobj->_get_include_data($xpos, $ypos);
   $self->{pspages} .= "EndEPSF\n";
   
