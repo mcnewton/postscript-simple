@@ -1,5 +1,12 @@
 Revision history for Perl extension PostScript::Simple.
 
+0.06p3 - 29 March 2004
+  Matthew Newton:
+    - added geteps method
+    - added source argument to PostScript::Simple::EPS constructor
+    - added width() and height() to PostScript::Simple::EPS
+    - corrected some minor documentation errors
+
 0.06p2 - 16 March 2004
   Matthew Newton:
     - added get method

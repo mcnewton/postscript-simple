@@ -10,7 +10,7 @@ use PostScript::Simple::EPS;
 
 @ISA = qw(Exporter);
 @EXPORT = qw();
-$VERSION = '0.06p2';
+$VERSION = '0.06p3';
 
 =head1 NAME
 
@@ -698,7 +698,7 @@ sub newpage# {{{
 Writes the current PostScript out to the file named C<filename>. Will destroy
 any existing file of the same name.
 
-Use this option whenever output is required to disk. The current PostScript
+Use this method whenever output is required to disk. The current PostScript
 document in memory is not cleared, and can still be extended.
 
 =cut
@@ -807,11 +807,12 @@ sub output# {{{
   return 1;
 }# }}}
 
+
 =item C<get>
 
 Returns the current document.
 
-Use this option whenever output is required as a scalar. The current PostScript
+Use this method whenever output is required as a scalar. The current PostScript
 document in memory is not cleared, and can still be extended.
 
 =cut
@@ -835,6 +836,32 @@ sub get# {{{
   return $doc;
 }# }}}
 
+
+=item C<geteps>
+
+Returns the current document as a PostScript::Simple::EPS object. Only works if
+the current document is EPS.
+
+This method calls new PostScript::Simple::EPS with all the default options. To
+change these, call it yourself as below, rather than using this method.
+
+  $eps = new PostScript::Simple::EPS(source => $ps->get);
+
+=cut
+
+sub geteps# {{{
+{
+  my $self = shift;
+  my $page;
+  my $i;
+  my $doc;
+  my $eps;
+  
+  croak "document is not EPS" unless ($$self{eps} == 1);
+
+  $eps = new PostScript::Simple::EPS(source => $self->get);
+  return $eps;
+}# }}}
 
 
 =item C<setcolour((red, green, blue)|(name))>

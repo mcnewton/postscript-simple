@@ -10,6 +10,7 @@ use PostScript::Simple 0.06;
 
 my $ps;
 my $eps;
+my $directeps;
 my $y;
 
 # First, create an EPS file for use later
@@ -30,6 +31,12 @@ $ps->line(100, 40, 100, 60);
 $ps->line(40, 0, 60, 0);
 $ps->line(40, 100, 60, 100);
 $ps->output("demo-square.eps");
+
+# Let's also create a PostScript::Simple::EPS object directly from it
+
+#$directeps = new PostScript::Simple::EPS(source => $ps->get());
+$directeps = $ps->geteps();
+
 undef $ps;
 
 # Now generate the demo document. Start by creating the A4 document.
@@ -39,8 +46,8 @@ $ps = new PostScript::Simple(papersize => "a4",
                              eps => 0,
                              reencode => undef);
 
-# Create a page 
-mynewpage($ps, "EPS import functions");
+# Create page (EPS import from a file, demo-square.eps)
+mynewpage($ps, "EPS import functions (from a file)");
 $ps->setfont("Courier", 10);
 
 $ps->setcolour("red");
@@ -79,6 +86,68 @@ $ps->text(100, $y-=5, '$eps->translate(50, 50);');
 $ps->text(100, $y-=5, '$eps->rotate(20);');
 $ps->text(100, $y-=5, '$eps->translate(-50, -50);');
 $ps->text(100, $y-=5, '$ps->importeps($eps, 30, 30);');
+
+# Create page (using generated EPS object)
+mynewpage($ps, "EPS import functions (using internal EPS object)");
+$ps->setfont("Courier", 10);
+
+$ps->setcolour("red");
+$ps->box(20, 210, 45, 260);
+#$ps->importepsfile("demo-square.eps", 20, 210, 45, 260);
+$directeps->reset();
+$directeps->scale(25/$directeps->width());
+$ps->importeps($directeps, 20, 210);
+$ps->setcolour("darkred");
+$ps->text({rotate => -60}, 30, 205, '$directeps->reset();');
+$ps->text({rotate => -60}, 25, 205, '$directeps->scale(25/$directeps->width());');
+$ps->text({rotate => -60}, 20, 205, '$ps->importeps($directeps, 20, 210);');
+
+$ps->setcolour("green");
+$ps->box(80, 210, 105, 260);
+#$ps->importepsfile({stretch => 1}, "demo-square.eps", 80, 210, 105, 260);
+$directeps->reset();
+$directeps->scale(25/$directeps->width(), 50/$directeps->height());
+$ps->importeps($directeps, 80, 210);
+$ps->setcolour("darkgreen");
+$ps->text({rotate => -60}, 90, 205, '$directeps->reset();');
+$ps->text({rotate => -60}, 85, 205, '$directeps->scale(25/$directeps->width(), 50/$directeps->height());');
+$ps->text({rotate => -60}, 80, 205, '$ps->importeps($directeps, 80, 210);');
+
+$ps->setcolour("blue");
+$ps->box(140, 210, 165, 260);
+$directeps->reset();
+$directeps->scale(50/$directeps->height());
+$ps->importeps($directeps, 140, 210);
+$ps->setcolour("darkblue");
+$ps->text({rotate => -60}, 150, 205, '$directeps->reset();');
+$ps->text({rotate => -60}, 145, 205, '$directeps->scale(50/$directeps->height());');
+$ps->text({rotate => -60}, 140, 205, '$ps->importeps($directeps, 140, 210);');
+
+$ps->setcolour(200, 0, 200);
+$ps->box(30, 30, 90, 90);
+
+$directeps->reset();
+$directeps->translate(50, 50);
+$directeps->rotate(20);
+$directeps->translate(-50, -50);
+$eps = new PostScript::Simple(eps => 1, xsize => 100, ysize => 100);
+$eps->importeps($directeps, 0, 0);
+$directeps = $eps->geteps();
+$directeps->scale(60/100);
+$ps->importeps($directeps, 30, 30);
+$ps->setfont("Courier", 10);
+$y = 80;
+$ps->text(100, $y-=5, '$directeps->reset();');
+$ps->text(100, $y-=5, '$directeps->translate(50, 50);');
+$ps->text(100, $y-=5, '$directeps->rotate(20);');
+$ps->text(100, $y-=5, '$directeps->translate(-50, -50);');
+$ps->text(100, $y-=5, '# round-about way to set clipping path');
+$ps->text(100, $y-=5, '$eps = new PostScript::Simple(eps => 1,');
+$ps->text(110, $y-=5, 'xsize => 100, ysize => 100);');
+$ps->text(100, $y-=5, '$eps->importeps($directeps, 0, 0);');
+$ps->text(100, $y-=5, '$directeps = $eps->geteps();');
+$ps->text(100, $y-=5, '$directeps->scale(60/100);');
+$ps->text(100, $y-=5, '$ps->importeps($directeps, 30, 30);');
 
 
 # Write out the document.

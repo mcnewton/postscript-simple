@@ -1,4 +1,4 @@
-PostScript/Simple version 0.06p1
+PostScript/Simple version 0.06p3
 ================================
 
 ********************************************************************************
@@ -89,46 +89,4 @@ Thanks go to the following:
 
   If you have sent me a patch for this module, and had no reply, please re-send
   it. I'm particularly bad at missing e-mails...
-
-
-TO-DO / DONE LISTS:
-
-Done:
-
-  landscape seems to work ok
-  xsize and ysize set fine
-  colour option works
-  clipping works
-  eps option works (but output needs slight modification save/restore etc)
-  page option works. setpage allows page number/name to be changed
-  bb[xy][12] options are in and set
-  lines, circles and boxes work. functions only added when needed.
-  setcolour function works. colour look-up table added.
-  postscript DSC headers seem to be fine (for PS and EPS)
-  colour->grey calculation (tested: this is actually ok)
-  different line widths
-  polygon function
-  text and font functions
-  paper sizes defined and used (DSC comment added)
-  better error reporting (postscript comments still?)
-  font encoding for european etc.
-  add dd cc and sp to units
-  text rotate / align
-  import eps files into the postscript (in progress, core finished)
-  pie slices / arcs (well, arcs anyway)
-
-To-Do:
-
-  PostScript "compression", i.e. /n {newpath} bind def
-  code compression using single letter dictionary defs (optional?)
-  any postscript optimisation that can be done?
-  hope that units are now correct... check
-  postscript font support?
-  define shape functions
-  translate / scale / rotate functions?
-  generate PostScript using a stack, rather than writing
-    to the end of a text variable? could lead to some rather
-    neat stuff (loops etc)
-  different line styles (dashes)? (easy)
-  ttf font support (get lost!)
 

@@ -51,6 +51,9 @@ PostScript::Simple::EPS allows you to add EPS files into PostScript::Simple
 objects.  Included EPS files can be scaled and rotated, and placed anywhere
 inside a PostScript::Simple page.
 
+Remember when using translate/scale/rotate that you will normally need to do
+the operations in the reverse order to that which you expect.
+
 =head1 PREREQUISITES
 
 This module requires C<PostScript::Simple>, C<strict>, C<Carp> and C<Exporter>.
@@ -74,7 +77,13 @@ that can be set are:
 
 =item file
 
-EPS file to be included. This must exist when the C<new> method is called.
+EPS file to be included. This or C<source> must exist when the C<new> method is
+called.
+
+=item source
+
+PostScript code for the EPS document. Either this or C<file> must be set when
+C<new> is called.
 
 =item clip
 
@@ -138,7 +147,12 @@ sub new# {{{
     $self->{$_} = $data{$_};
   }
 
-  croak "must provide file" if (!defined $self->{"file"});
+  if ((!defined $self->{"file"}) && (!defined $self->{"source"})) {
+    croak "must provide file or source";
+  }
+  if ((defined $self->{"file"}) && (defined $self->{"source"})) {
+    croak "cannot provide both file and source";
+  }
 
   bless $self, $class;
   $self->init();
@@ -146,11 +160,12 @@ sub new# {{{
   return $self;
 }# }}}
 
-sub init# {{{
+sub _getfilebbox# {{{
 {
   my $self = shift;
   my $foundbbx = 0;
 
+  return 0 if (!defined $$self{file});
   open EPS, "< $$self{file}" || croak "can't open eps file $$self{file}";
   SCAN: while (<EPS>)
   {
@@ -166,7 +181,45 @@ sub init# {{{
   }
   close EPS;
 
-  croak "EPS file must contain a BoundingBox" if (!$foundbbx);
+  return $foundbbx;
+}# }}}
+
+sub _getsourcebbox# {{{
+{
+  my $self = shift;
+
+  return 0 if (!defined $$self{epsfile});
+  if ($$self{epsfile} =~
+      /^\%\%BoundingBox:\s+(-?\d+)\s+(-?\d+)\s+(-?\d+)\s+(-?\d+)$/m)
+  {
+    $$self{bbx1} = $1; 
+    $$self{bby1} = $2; 
+    $$self{bbx2} = $3; 
+    $$self{bby2} = $4; 
+    return 1;
+  }
+
+  return 0;
+}# }}}
+
+sub init# {{{
+{
+  my $self = shift;
+  my $foundbbx = 0;
+
+  if (defined($$self{source})) {
+# with dynamic generated file, what do we do with {Begin,End}Document?
+#  $$self{"epsfile"} = "\%\%BeginDocument: $$self{file}\n";
+#  $$self{"epsfile"} .= "\%\%EndDocument\n";
+
+    $$self{"epsfile"} = $$self{"source"};
+    delete $$self{"source"};
+    croak "EPS file must contain a BoundingBox" if (!$self->_getsourcebbox());
+  }
+  else
+  {
+    croak "EPS file must contain a BoundingBox" if (!_getfilebbox($self));
+  }
 
   if (($$self{bbx2} - $$self{bbx1} == 0) ||
       ($$self{bby2} - $$self{bby1} == 0)) {
@@ -175,6 +228,8 @@ sub init# {{{
   }
 
   $self->reset();
+
+  return 1;
 }# }}}
 
 
@@ -204,6 +259,41 @@ sub get_bbox# {{{
   return ($$self{bbx1}, $$self{bby1}, $$self{bbx2}, $$self{bby2});
 }# }}}
 
+=item C<width>
+
+Returns the EPS width.
+
+Example:
+
+  print "EPS width is " . abs($eps->width()) . "\n";
+
+=cut
+
+sub width# {{{
+{
+  my $self = shift;
+
+  return ($$self{bbx2} - $$self{bbx1});
+}# }}}
+
+=item C<height>
+
+Returns the EPS height.
+
+Example:
+
+To scale $eps to 72 points high, do:
+
+  $eps->scale(1, 72/$eps->height());
+
+=cut
+
+sub height# {{{
+{
+  my $self = shift;
+
+  return ($$self{bby2} - $$self{bby1});
+}# }}}
 
 =item C<scale(x, y)>
 
@@ -342,7 +432,8 @@ command to insert it each time it is used. C<object> is a PostScript::Simple
 object. If the EPS file is included more than once in the PostScript file then
 this will probably shrink the filesize quite a lot.
 
-Can not be used at the same time as C<load>.
+Can not be used at the same time as C<load>, or when using EPS objects defined
+from PostScript source.
 
 Example:
 
@@ -422,7 +513,8 @@ $$self{bbx1} $$self{bby2} lineto closepath clip\n";
   return $data;
 }# }}}
 
-sub _error {# {{{
+sub _error# {{{
+{
 	my $self = shift;
 	my $msg = shift;
 	$self->{pspages} .= "(error: $msg\n) print flush\n";
