@@ -169,7 +169,7 @@ sub _getfilebbox# {{{
   open EPS, "< $$self{file}" || croak "can't open eps file $$self{file}";
   SCAN: while (<EPS>)
   {
-    if (/^\%\%BoundingBox:\s+(-?\d+)\s+(-?\d+)\s+(-?\d+)\s+(-?\d+)$/)
+    if (/^\%\%BoundingBox:\s+(-?\d+)\s+(-?\d+)\s+(-?\d+)\s+(-?\d+)\s*$/)
     {
       $$self{bbx1} = $1; 
       $$self{bby1} = $2; 
