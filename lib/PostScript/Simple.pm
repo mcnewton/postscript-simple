@@ -6,7 +6,7 @@ use Exporter;
 
 @ISA = qw(Exporter);
 @EXPORT = qw();
-$VERSION = '0.04';
+$VERSION = '0.05';
 
 =head1 NAME
 
@@ -31,11 +31,11 @@ PostScript::Simple - Produce PostScript files from Perl
     $p->circle(2,2, 1);
     $p->setlinewidth( 0.01 );
     $p->curve(1,5, 1,7, 3,7, 3,5);
-    $p->curveextend(3,3, 5,3, 5,5);
+    $p->curvextend(3,3, 5,3, 5,5);
     
     # draw a rotated polygon in a different colour
     $p->setcolour(0,100,200);
-    $p->polygon("rotate=45", 1,1, 1,2, 2,2, 2,1, 1,1);
+    $p->polygon({rotate=>45}, 1,1, 1,2, 2,2, 2,1, 1,1);
     
     # add some text in red
     $p->setcolour("red");
@@ -72,7 +72,7 @@ None.
 
 # is there another colour database that can be used instead of defining
 # this one here? what about the X-windows one? (apart from MS-Win-probs?) XXXXX
-my %pscolours = (
+my %pscolours = (# {{{
   black         => "0    0    0",
   brightred     => "1    0    0",
   brightgreen   => "0    1    0",
@@ -93,12 +93,12 @@ my %pscolours = (
   grey80        => "0.8  0.8  0.8",
   grey90        => "0.9  0.9  0.9",
   white         => "1    1    1",
-);
+);# }}}
 
 
 # define page sizes here (a4, letter, etc)
 # should be Properly Cased
-my %pspaper = (
+my %pspaper = (# {{{
   A0                    => '2384 3370',
   A1                    => '1684 2384',
   A2                    => '1191 1684',
@@ -139,23 +139,41 @@ my %pspaper = (
   'Envelope-C5'         => '461 648',
 
   'EuroPostcard'        => '298 420',
-);
+);# }}}
 
 
 # The 13 standard fonts that are available on all PS 1 implementations:
-my @fonts = ('Courier',
-             'Courier-Bold',
-             'Courier-BoldOblique',
-             'Courier-Oblique',
-             'Helvetica',
-             'Helvetica-Bold',
-             'Helvetica-BoldOblique',
-             'Helvetica-Oblique',
-             'Times-Roman',
-             'Times-Bold',
-             'Times-BoldItalic',
-             'Times-Italic',
-             'Symbol');
+my @fonts = (# {{{
+    'Courier',
+    'Courier-Bold',
+    'Courier-BoldOblique',
+    'Courier-Oblique',
+    'Helvetica',
+    'Helvetica-Bold',
+    'Helvetica-BoldOblique',
+    'Helvetica-Oblique',
+    'Times-Roman',
+    'Times-Bold',
+    'Times-BoldItalic',
+    'Times-Italic',
+    'Symbol');# }}}
+
+# define the origins for the page a document can have
+# (default is "LeftBottom")
+my %psorigin = (# {{{
+  'LeftBottom'  => '0 0',
+  'LeftTop'     => '0 -1',
+  'RightBottom' => '-1 0',
+  'RightTop'    => '-1 -1',
+);# }}}
+
+# define the co-ordinate direction (default is 'RightUp')
+my %psdirs = (# {{{
+  'RightUp'  => '1 1',
+  'RightDown'   => '1 -1',
+  'LeftUp'  => '-1 1',
+  'LeftDown'   => '-1 -1',
+);# }}}
 
 
 # measuring units are two-letter acronyms as used in TeX:
@@ -170,7 +188,7 @@ my @fonts = ('Courier',
 
 #  set up the others here (sp) XXXXX
 
-my %psunits = (
+my %psunits = (# {{{
   pt   => "72 72.27",
   pc   => "72 6.0225",
   in   => "72 1",
@@ -179,7 +197,7 @@ my %psunits = (
   mm   => "72 25.4",
   dd   => "72 67.567",
   cc   => "72 810.804",
-);
+);# }}}
 
 
 =head1 CONSTRUCTOR
@@ -242,6 +260,17 @@ Specifies the initial page number of the (multi page) document. The page number
 is set with the Adobe DSC comments, and is used nowhere else. It only makes
 finding your pages easier. See also the C<newpage> method. (Default: 1)
 
+=item coordorigin
+
+Defines the co-ordinate origin for each page produced. Valid arguments are
+C<LeftBottom>, C<LeftTop>, C<RightBottom> and C<RightTop>. The default is
+C<LeftBottom>.
+
+=item direction
+
+The direction the co-ordinates go from the origin. Values can be C<RightUp>,
+C<RightDown>, C<LeftUp> and C<LeftDown>. The default value is C<RightUp>.
+
 =item reencode
 
 Requests that a font re-encode function be added and that the 13 standard
@@ -251,7 +280,8 @@ encoding and fits most of western Europe, including the Scandinavia. Refer to
 Adobes Postscript documentation for other encodings.
 
 The output file is, by default, re-encoded to ISOLatin1Encoding. To stop this
-happening, use 'reencode => undef'.
+happening, use 'reencode => undef'. To use the re-encoded font, '-iso' must be
+appended to the names of the fonts used, e.g. 'Helvetica-iso'.
 
 =back
 
@@ -274,7 +304,7 @@ not an EPS file, and must therefore use the C<newpage> method.
                                   reencode => "ISOLatin1Encoding");
 
 Create a 12 by 12 cm EPS image that is in colour. Note that "C<eps =E<gt> 1>"
-does not have to be specified because this is the default. Re-encode the
+did not have to be specified because this is the default. Re-encode the
 standard fonts into the iso8859-1 encoding, providing all the special characters
 used in Western Europe. The C<newpage> method should not be used.
 
@@ -283,7 +313,7 @@ used in Western Europe. The C<newpage> method should not be used.
 =cut
 
 
-sub new
+sub new# {{{
 {
   my ($class, %data) = @_;
   my $self = {
@@ -314,6 +344,9 @@ sub new
     usedcircle   => 0,
     usedbox      => 0,
     usedrotabout => 0,
+
+    coordorigin  => 'LeftBottom',
+    direction    => 'RightUp',
   };
 
   foreach (keys %data)
@@ -325,16 +358,17 @@ sub new
   $self->init();
 
   return $self;
-}
+}# }}}
 
-sub init
+sub init# {{{
 {
   my $self = shift;
 
   my ($m, $d) = (1, 1);
-  my $u;
+  my ($u, $mm);
+  my ($dx, $dy);
 
-# Units
+# Units# {{{
   if (defined $self->{units})
   {
     $self->{units} = lc $self->{units};
@@ -349,15 +383,43 @@ sub init
     $self->_error( "unit '$self->{units}' undefined" );
   }
 
+  ($dx, $dy) = split(/\s+/, $psdirs{$self->{direction}});
+
+# X direction
+  $mm = $m * $dx;
+  $u = "{";
+  if ($mm != 1) { $u .= "$mm mul " }
+  if ($d != 1) { $u .= "$d div " }
+  $u =~ s/ $//;
+  $u .="}";
+  $self->{psfunctions} .= "/ux $u def\n";
+
+# Y direction
+  $mm = $m * $dy;
+  $u = "{";
+  if ($mm != 1) { $u .= "$mm mul " }
+  if ($d != 1) { $u .= "$d div " }
+  $u =~ s/ $//;
+  $u .="}";
+  $self->{psfunctions} .= "/uy $u def\n";
+
+# General unit scale (circle radius, etc)
   $u = "{";
   if ($m != 1) { $u .= "$m mul " }
   if ($d != 1) { $u .= "$d div " }
   $u =~ s/ $//;
   $u .="}";
-  
   $self->{psfunctions} .= "/u $u def\n";
 
-# Paper size
+  #$u = "{";
+  #if ($m != 1) { $u .= "$m mul " }
+  #if ($d != 1) { $u .= "$d div " }
+  #$u =~ s/ $//;
+  #$u .="}";
+  #
+  #$self->{psfunctions} .= "/u $u def\n";# }}}
+
+# Paper size# {{{
   if (defined $self->{papersize})
   {
     $self->{papersize} = ucfirst lc $self->{papersize};
@@ -383,9 +445,9 @@ sub init
   {
     $self->{bbx2} = int(($self->{xsize} * $m) / $d);
     $self->{bby2} = int(($self->{ysize} * $m) / $d);
-  }
+  }# }}}
 
-# Landscape
+# Landscape# {{{
   if ($self->{landscape})
   {
     my $swap;
@@ -406,9 +468,9 @@ sub init
   else
   {
     $self->{pscomments} .= "\%\%Orientation: Portrait\n";
-  }
+  }# }}}
   
-# Clipping
+# Clipping# {{{
   if ($self->{clip})
   {
     $self->{psfunctions} .= "/pageclip {newpath $self->{bbx1} $self->{bby1} moveto
@@ -419,9 +481,9 @@ $self->{bbx1} $self->{bby1} lineto
 closepath clip} bind def
 ";
     if ($self->{eps}) { $self->{pssetup} .= "pageclip\n" }
-  }
+  }# }}}
 
-# Font reencoding
+# Font reencoding# {{{
   if ($self->{reencode})
   {
     my $encoding; # The name of the encoding
@@ -536,8 +598,8 @@ EOP
     {
       $self->{psfunctions} .= "/${font}$ext $encoding /$font REENCODEFONT\n";
     }
-  }
-}
+  }# }}}
+}# }}}
 
 
 =head1 OBJECT METHODS
@@ -568,10 +630,11 @@ will generate five pages, numbered: 1, 2, "hello", -6, -7.
 =cut
 
 
-sub newpage
+sub newpage# {{{
 {
   my $self = shift;
   my $nextpage = shift;
+  my ($x, $y);
   
   if (defined($nextpage)) { $self->{page} = $nextpage; }
 
@@ -602,10 +665,14 @@ sub newpage
   $self->{pspages} .= "/pagelevel save def\n";
   if ($self->{landscape}) { $self->{pspages} .= "landscape\n" }
   if ($self->{clip}) { $self->{pspages} .= "pageclip\n" }
+  ($x, $y) = split(/\s+/, $psorigin{$self->{coordorigin}});
+  $x = $self->{xsize} if ($x < 0);
+  $y = $self->{ysize} if ($y < 0);
+  $self->{pspages} .= "$x $y translate\n" if (($x != 0) || ($y != 0));
   $self->{pspages} .= "\%\%EndPageSetup\n";
 
   return 1;
-}
+}# }}}
 
 
 =item C<output(filename)>
@@ -619,7 +686,7 @@ document in memory is not cleared, and can still be extended.
 =cut
 
 
-sub output
+sub output# {{{
 {
   my $self = shift;
   my $file = shift || die("Must supply a filename for output");
@@ -649,7 +716,6 @@ sub output
 #  print "\%\%DocumentFonts: \n";
   if ($eps)
   {
-    print "\%\%Pages: 1\n";
     print "\%\%BoundingBox: $self->{bbx1} $self->{bby1} $self->{bbx2} $self->{bby2}\n";
   }
   else
@@ -694,7 +760,7 @@ sub output
   close OUT;
   
   return 1;
-}
+}# }}}
 
 
 =item C<setcolour((red, green, blue)|(name))>
@@ -714,7 +780,7 @@ Example:
 
 =cut
 
-sub setcolour
+sub setcolour# {{{
 {
   my $self = shift;
   my ($r, $g, $b) = @_;
@@ -755,7 +821,7 @@ sub setcolour
   }
   
   return 1;
-}
+}# }}}
 
 
 =item C<setlinewidth(width)>
@@ -772,13 +838,14 @@ Example:
 =cut
 
 
-sub setlinewidth
+sub setlinewidth# {{{
 {
   my $self = shift;
   my $width = shift || do {
     $self->_error( "setlinewidth not given a width" ); return 0;
   };
 
+# MCN should allow for option units=>"cm" on each setlinewidth / line / polygon etc
   ##PKENT - good idea, should we have names for line weights, like we do for colours?
   if ($width eq "thin") { $width = "0.4" }
   else { $width .= " u" }
@@ -786,7 +853,7 @@ sub setlinewidth
   $self->{pspages} .= "$width setlinewidth\n";
   
   return 1;
-}
+}# }}}
 
 
 =item C<line(x1,y1, x2,y2 [,red, green, blue])>
@@ -811,12 +878,13 @@ Example:
 =cut
 
 
-sub line
+sub line# {{{
 {
   my $self = shift;
   my ($x1, $y1, $x2, $y2, $r, $g, $b) = @_;
 # dashed lines? XXXXX
 
+# MCN should allow for option units=>"cm" on each setlinewidth / line / polygon etc
   if ((!$self->{pspagecount}) and (!$self->{eps}))
   {
 # Cannot draw on to non-page when not an eps file XXXXX
@@ -835,16 +903,17 @@ sub line
   
   $self->newpath;
   $self->moveto($x1, $y1);
-  $self->{pspages} .= "$x2 u $y2 u lineto stroke\n";
+  $self->{pspages} .= "$x2 ux $y2 uy lineto stroke\n";
   
   return 1;
-}
+}# }}}
 
 
 =item C<linextend(x,y)>
 
-Assuming the previous command was C<line>, C<linextend>, C<curve> or C<curvextend>, extend that line to include
-another segment to the co-ordinates (x,y). Behaviour after any other method is unspecified.
+Assuming the previous command was C<line>, C<linextend>, C<curve> or
+C<curvextend>, extend that line to include another segment to the co-ordinates
+(x,y). Behaviour after any other method is unspecified.
 
 Example:
 
@@ -860,7 +929,7 @@ The C<polygon> method may be more appropriate.
 =cut
 
 
-sub linextend
+sub linextend# {{{
 {
   my $self = shift;
   my ($x, $y) = @_;
@@ -871,45 +940,43 @@ sub linextend
   	return 0;
   }
   
-  $self->{pspages} =~ s/eto stroke\n$/eto\n$x u $y u lineto stroke\n/;
+  $self->{pspages} =~ s/eto stroke\n$/eto\n$x ux $y uy lineto stroke\n/;
   
   ##PKENT comments: lineto can follow a curveto or a lineto, hence the change in regexp
   ##also I thought that it'd be better to change the '.*$' in the regexp with '\n$' - perhaps
   ##we need something like $self->{_lastcommand} to know if operations are valid?
     
-#  $self->{pspages} .= "$x u $y u lineto stroke\n";
-# XXXXX
+#  $self->{pspages} .= "$x ux $y uy lineto stroke\n";
+# XXXXX fixme
 
   return 1;
-}
+}# }}}
 
 
-=item C<polygon(["options",] x1,y1, x2,y2, ..., xn,yn [,filled])>
+=item C<polygon([options,] x1,y1, x2,y2, ..., xn,yn)>
 
 The C<polygon> method is multi-function, allowing many shapes to be created and
 manipulated. Polygon draws lines from (x1,y1) to (x2,y2) and then from (x2,y2) to
 (x3,y3) up to (xn-1,yn-1) to (xn,yn).
 
-If the value of C<filled> is 1 then the PostScript output is set to fill the object
-rather than just draw the lines.
-
-The options may be set as follows. Note that no whitespace may appear in each
-option, which must be specified as name=value1,value2. Each option must be
-separated by whitespace.
+Any options are passed in a hash reference as the first parameter. The available
+options are as follows:
 
 =over 4
 
-=item rotate=angle[,x,y]
+=item rotate => angle
+=item rotate => [angle,x,y]
 
 Rotate the polygon by C<angle> degrees anti-clockwise. If x and y are specified
-then use the co-ordinate (x,y) as the centre of rotation, otherwise use the co-ordinate
-(x1,y1) from the main polygon.
+then use the co-ordinate (x,y) as the centre of rotation, otherwise use the
+co-ordinate (x1,y1) from the main polygon.
 
-=item filled=1
+=item filled => 1
 
-Synonymous with the option C<filled> above.
+If C<filled> is 1 then the PostScript output is set to fill the object rather
+than just draw the lines.
 
-=item offset=x,y
+=item offset => [x,y]
 
 Displace the object by the vector (x,y).
 
@@ -921,29 +988,31 @@ Example:
     $p->polygon(10,10, 10,20, 20,20, 20,10, 10,10);
 
     # draw a filled square with lower left point at (20,20)
-    $p->polygon("offset=10,10", 10,10, 10,20, 20,20, 20,10, 10,10, 1);
+    $p->polygon( {offset => [10,10], filled => 1},
+                10,10, 10,20, 20,20, 20,10, 10,10);
 
     # draw a filled square with lower left point at (10,10)
-    # rotated 45 degrees
-    $p->polygon("rotate=45 filled=1", 10,10, 10,20,
-                20,20, 20,10, 10,10);
+    # rotated 45 degrees (about the point (10,10))
+    $p->polygon( {rotate => 45, filled => 1},
+                10,10, 10,20, 20,20, 20,10, 10,10);
 
 =cut
 
 
-sub polygon
+sub polygon# {{{
 {
   my $self = shift;
+
+  my %opt = ();
   my ($xoffset, $yoffset) = (0,0);
-  my @options = ();
   my ($rotate, $rotatex, $rotatey) = (0,0,0);
-  my $filled = 0;
 
 # PKENT comments - the first arg could be an optional hashref of options. See if
 # it's there with ref($_[0]) If it is, then shift it off and use those options.
 # Could take the form: polygon( { offset => [ 10, 10 ], filled => 0, rotate =>
 # 45, rotate => [45, 10, 10] }, $x1, ...  it seems neater to use perl native
 # structures instead of manipulating strings
+# ... done MCN 2002-10-22
 
   if ($#_ < 3)
   {
@@ -952,42 +1021,47 @@ sub polygon
     return 0;
   }
 
+  if (ref($_[0]))
+  {
+    %opt = %{; shift};
+  }
+
   my $x = shift;
   my $y = shift;
 
-  if ($x =~ /=/) {
-    @options = split(/ /, $x);
-    $x = $y;
-    $y = shift;
-  }
-
-  foreach my $i (@options)
+  if (defined $opt{'rotate'})
   {
-    if ($i =~ /^offset=([-\.\d]*),([-\.\d]*)$/) {
-      $xoffset = $1;
-      $yoffset = $2;
+    if (ref($opt{'rotate'}))
+    {
+      ($rotate, $rotatex, $rotatey) = @{$opt{'rotate'}};
     }
-    elsif ($i =~ /^rotate=([-\.\d]*)(,([-\.\d]*),([-\.\d]*))?$/) {
-      $rotate = $1;
-      if (defined($2))
-      {
-        $rotatex = $3;
-        $rotatey = $4;
-      }
-      else
-      {
-        $rotatex = $x;
-        $rotatey = $y;
-      }
-    }
-    elsif ($i eq 'filled=1') {
-      $filled = 1;
+    else
+    {
+      ($rotate, $rotatex, $rotatey) = ($opt{'rotate'}, $x, $y);
     }
   }
 
+  if (defined $opt{'offset'})
+  {
+    if (ref($opt{'offset'}))
+    {
+      ($xoffset, $yoffset) = @{$opt{'offset'}};
+    }
+    else
+    {
+      $self->_error("polygon: bad offset option" );
+      return 0;
+    }
+  }
+
+  if (!defined $opt{'filled'})
+  {
+    $opt{'filled'} = 0;
+  }
+  
   unless (defined($x) && defined($y))
   {
-    $self->_error( "bad polygon - no start point" );
+    $self->_error("polygon: no start point");
     return 0;
   }
 
@@ -1000,7 +1074,8 @@ sub polygon
 
   if ($xoffset || $yoffset)
   {
-    $self->{pspages} .= "$xoffset u $yoffset u translate\n";
+    $self->{pspages} .= "$xoffset ux $yoffset uy translate\n";
+    #$self->{pspages} .= "$xoffset u $yoffset u translate\n";   ?
   }
 
   if ($rotate)
@@ -1012,9 +1087,9 @@ sub exch 0 exch sub translate} def\n";
       $self->{usedrotabout} = 1;
     }
 
-    $self->{pspages} .= "$rotatex u $rotatey u $rotate rotabout\n";
-#    $self->{pspages} .= "gsave $rotatex u $rotatey u translate ";
-#    $self->{pspages} .= "$rotate rotate -$rotatex u -$rotatey u translate\n";
+    $self->{pspages} .= "$rotatex ux $rotatey uy $rotate rotabout\n";
+#    $self->{pspages} .= "gsave $rotatex ux $rotatey uy translate ";
+#    $self->{pspages} .= "$rotate rotate -$rotatex ux -$rotatey uy translate\n";
   }
   
   $self->newpath;
@@ -1025,12 +1100,10 @@ sub exch 0 exch sub translate} def\n";
     my $x = shift;
     my $y = shift;
     
-    $self->{pspages} .= "$x u $y u lineto ";
+    $self->{pspages} .= "$x ux $y uy lineto ";
   }
 
-  $x = shift;
-
-  if ($filled || (defined($x) && $x == 1))
+  if ($opt{'filled'})
   {
     $self->{pspages} .= "fill\n";
   }
@@ -1045,56 +1118,83 @@ sub exch 0 exch sub translate} def\n";
   }
   
   return 1;
-}
+}# }}}
 
 
-=item C<circle(x,y, r [,filled])>
+=item C<circle([options,] x,y, r)>
 
 Plot a circle with centre at (x,y) and radius of r.
 
-If C<filled> is 1 then fill the circle.
+There is only one option.
+
+=over 4
+
+=item filled => 1
+
+If C<filled> is 1 then the PostScript output is set to fill the object rather
+than just draw the lines.
+
+=back
 
 Example:
 
     $p->circle(40,40, 20);
+    $p->circle( {filled => 1}, 62,31, 15);
 
 =cut
 
 
-sub circle
+sub circle# {{{
 {
   my $self = shift;
+  my %opt = ();
 
-  my ($x, $y, $r, $filled) = @_;
-
-  if ( @_ < 3)
+  if (ref($_[0]))
   {
-    $self->_error( "not enough args for circle" );
+    %opt = %{; shift};
+  }
+
+  my ($x, $y, $r) = @_;
+
+  unless (@_ == 3)
+  {
+    $self->_error("circle: wrong number of arguments");
     return 0;
   }
-  
+
   if (!$self->{usedcircle})
   {
     $self->{psfunctions} .= "/circle {newpath 0 360 arc closepath} bind def\n";
     $self->{usedcircle} = 1;
   }
 
-  $self->{pspages} .= "$x u $y u $r u circle ";
-  if ($filled) { $self->{pspages} .= "fill\n" }
+  $self->{pspages} .= "$x ux $y uy $r u circle ";
+  if ($opt{'filled'}) { $self->{pspages} .= "fill\n" }
   else {$self->{pspages} .= "stroke\n" }
   
   return 1;
-}
+}# }}}
 
 
-=item C<box(x1,y1, x2,y2 [,filled])>
+=item C<box(x1,y1, x2,y2 [, options])>
 
 Draw a rectangle from lower left co-ordinates (x1,y1) to upper right
-co-ordinates (y1,y2). If C<filled> is 1 then fill the rectangle.
+co-ordinates (y1,y2).
+
+Options are:
+
+=over 4
+
+=item filled => 1
+
+If C<filled> is 1 then fill the rectangle.
+
+=back
 
 Example:
 
     $p->box(10,10, 20,30);
+    $p->box( {filled => 1}, 10,10, 20,30);
 
 Notes
 
@@ -1103,15 +1203,27 @@ The C<polygon> method is far more flexible, but this method is quicker!
 =cut
 
 
-sub box
+sub box# {{{
 {
   my $self = shift;
 
-  my ($x1, $y1, $x2, $y2, $filled) = @_;
+  my %opt = ();
 
-  unless (@_ > 3) {
-  	$self->_error( "insufficient arguments for box" );
+  if (ref($_[0]))
+  {
+    %opt = %{; shift};
+  }
+
+  my ($x1, $y1, $x2, $y2) = @_;
+
+  unless (@_ == 4) {
+  	$self->_error("box: wrong number of arguments");
   	return 0;
+  }
+
+  if (!defined($opt{'filled'}))
+  {
+    $opt{'filled'} = 0;
   }
   
   unless ($self->{usedbox})
@@ -1126,12 +1238,12 @@ sub box
     $self->{usedbox} = 1;
   }
 
-  $self->{pspages} .= "$x1 u $y1 u $x2 u $y2 u box ";
-  if ($filled) { $self->{pspages} .= "fill\n" }
+  $self->{pspages} .= "$x1 ux $y1 uy $x2 ux $y2 uy box ";
+  if ($opt{'filled'}) { $self->{pspages} .= "fill\n" }
   else {$self->{pspages} .= "stroke\n" }
 
   return 1;
-}
+}# }}}
 
 
 =item C<setfont(font, size)>
@@ -1146,12 +1258,12 @@ This method must be called on every page before the C<text> method is used.
 =cut
 
 
-sub setfont
+sub setfont# {{{
 {
   my $self = shift;
   my ($name, $size, $ysize) = @_;
 
-  unless (@_ > 1) {
+  unless (@_ == 2) {
   	$self->_error( "wrong number of arguments for setfont" );
   	return 0;
   }
@@ -1160,46 +1272,69 @@ sub setfont
   $self->{pspages} .= "/$name findfont $size scalefont setfont\n";
 
   return 1;
-}
+}# }}}
 
 
-=item C<text(x,y, string[, alignment])>
+=item C<text([options,] x,y, string)>
 
 Plot text on the current page with the lower left co-ordinates at (x,y) and 
 using the current font. The text is specified in C<string>.
 
-Alignment can be 'left', 'centre' and 'right', if not defined it will default
-to 'left'.
+Options are:
+
+=over 4
+
+=item align => "alignment"
+
+alignment can be 'left', 'centre' or 'right'. The default is 'left'.
+
+=item rotate => angle
+
+"rotate" degrees of rotation, defaults to 0 (i.e. no rotation).
+The angle to rotate the text, in degrees. Centres about (x,y) and rotates
+clockwise. (?). Default 0 degrees.
+
+=back
 
 Example:
 
     $p->setfont("Times-Roman", 12);
     $p->text(40,40, "The frog sat on the leaf in the pond.");
-    $p->text(140,40, "This is centered.",'centre');
+    $p->text( {align => 'centre'}, 140,40, "This is centered.");
+    $p->text( {rotate => 90}, 140,40, "This is rotated.");
+    $p->text( {rotate => 90, align => 'centre'}, 140,40, "This is both.");
 
 =cut
 
 
-sub text
+sub text# {{{
 {
   my $self = shift;
-  my ($x, $y, $text, $alignment) = @_;
 
-  unless (@_ == 3 or @_ == 4)
+  my $rot = "";
+  my $rot_m = "";
+  my $align = "";
+  my %opt = ();
+
+  if (ref($_[0]))
   {
-  	$self->_error("wrong number of arguments for text");
+    %opt = %{; shift};
+  }
+  
+  unless ( @_ == 3 )
+  { # check required params first
+  	$self->_error("text: wrong number of arguments");
   	return 0;
   }
+  
+  my ($x, $y, $text) = @_;
 
-  if (!$alignment) {
-      $alignment = 'left';
-  }
-
-  if (not defined $text)
+  unless (defined($x) && defined($y) && defined($text))
   {
-    $text = '';
+  	$self->_error("text: wrong number of arguments");
+  	return 0;
   }
-
+  
   # Escape text to allow parentheses
   $text =~ s|([\\\(\)])|\\$1|g;
   $text =~ s/([\x00-\x1f\x7f-\xff])/sprintf('\\%03o',ord($1))/ge;
@@ -1207,27 +1342,34 @@ sub text
   $self->newpath;
   $self->moveto($x, $y);
 
-  # Alignment stuff done by dion@swamp.dk
-  if ($alignment eq 'left')
+  # rotation
+
+  if (defined $opt{'rotate'})
   {
-    $self->{pspages} .= "($text) show stroke\n";
-  }
-  elsif (($alignment eq 'centre') || ($alignment eq 'center'))
-  {
-    $self->{pspages} .= "($text) dup stringwidth pop 2 div neg 0 rmoveto show\n";
-  }
-  elsif ($alignment eq 'right')
-  {
-    $self->{pspages} .= "($text) dup stringwidth pop neg 0 rmoveto show\n";
-  }
-  else
-  {
-    $self->_error("Invalid alignment parameter passed to text: $alignment, legal " .
-                  "values are left, centre and right");
+    my $rot_a = $opt{ 'rotate' };
+    if( $rot_a != 0 )
+    {
+      $rot   = " $rot_a rotate ";
+      $rot_a = -$rot_a;
+      $rot_m = " $rot_a rotate ";
+    };
   }
 
+  # alignment
+  $align = " show stroke"; 
+      # align left
+  if (defined $opt{'align'})
+  {
+    $align = " dup stringwidth pop neg 0 rmoveto show" 
+        if $opt{ 'align' } eq 'right';
+    $align = " dup stringwidth pop 2 div neg 0 rmoveto show"
+        if $opt{ 'align' } eq 'center' or $opt{ 'align' } eq 'centre';
+  }
+  
+  $self->{pspages} .= "($text) $rot $align $rot_m\n";
+
   return 1;
-}
+}# }}}
 
 
 =item curve( x1, y1, x2, y2, x3, y3, x4, y4 )
@@ -1238,7 +1380,7 @@ control points for the start- and end-points respectively.
 =cut
 
 
-sub curve
+sub curve# {{{
 {
   my $self = shift;
   my ($x1, $y1, $x2, $y2, $x3, $y3, $x4, $y4) = @_;
@@ -1258,10 +1400,10 @@ sub curve
 
   $self->newpath;
   $self->moveto($x1, $y1);
-  $self->{pspages} .= "$x2 u $y2 u $x3 u $y3 u $x4 u $y4 u curveto stroke\n";
+  $self->{pspages} .= "$x2 ux $y2 uy $x3 ux $y3 uy $x4 ux $y4 uy curveto stroke\n";
 
   return 1;
-}
+}# }}}
 
 
 =item curvextend( x1, y1, x2, y2, x3, y3 )
@@ -1274,21 +1416,21 @@ other method is unspecified.
 =cut
 
 
-sub curvextend
+sub curvextend# {{{
 {
   my $self = shift;
   my ($x1, $y1, $x2, $y2, $x3, $y3) = @_;
   unless ( @_ == 6 ) 
   {
-    $self->_error( "bad curveextend definition, wrong number of args" );
+    $self->_error( "bad curvextend definition, wrong number of args" );
     return 0;
   }
   
   # curveto may follow a lineto etc...
-  $self->{pspages} =~ s/eto stroke\n$/eto\n$x1 u $y1 u $x2 u $y2 u $x3 u $y3 u curveto stroke\n/;
+  $self->{pspages} =~ s/eto stroke\n$/eto\n$x1 ux $y1 uy $x2 ux $y2 uy $x3 ux $y3 uy curveto stroke\n/;
   
   return 1;
-}
+}# }}}
 
 
 =item newpath
@@ -1298,12 +1440,12 @@ This method is used internally to begin a new drawing path - you should generall
 =cut
 
 
-sub newpath
+sub newpath# {{{
 {
 	my $self = shift;
 	$self->{pspages} .= "newpath\n";
 	return 1;
-}
+}# }}}
 
 
 =item moveto( x, y )
@@ -1314,22 +1456,22 @@ generally NEVER use this method.
 =cut
 
 
-sub moveto
+sub moveto# {{{
 {
 	my $self = shift;
 	my ($x, $y) = @_;
-	$self->{pspages} .= "$x u $y u moveto\n";
+	$self->{pspages} .= "$x ux $y uy moveto\n";
 	return 1;
-}
+}# }}}
 
 
 ### PRIVATE
 
-sub _error {
+sub _error {# {{{
 	my $self = shift;
 	my $msg = shift;
 	$self->{pspages} .= "(error: $msg\n) print flush\n";
-}
+}# }}}
 
 
 # Display method for debugging internal variables
@@ -1350,6 +1492,9 @@ sub _error {
 
 Some current functionality may not be as expected, and/or may not work correctly.
 
+The way of giving options to methods has changed since version 0.04, this may break
+your code; sorry.
+
 More functions need to be added. See the README file.
 
 =head1 AUTHOR
@@ -1359,7 +1504,7 @@ ideas and suggestions from Mark Withall.
 
 Contributions to the work (either code or suggestions / improvements) have been
 gratefully received from: Andreas Marcel, P Kent, Flemming Frandsen, Michael
-Tomuschat
+Tomuschat, Vladi Belperchinov-Shabanski
 
 =head1 SEE ALSO
 
@@ -1369,3 +1514,4 @@ L<GD>
 
 1;
 
+# vim:foldmethod=marker:

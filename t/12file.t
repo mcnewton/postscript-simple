@@ -10,6 +10,7 @@ my $f = "xtest-c.ps";
 my $p = new PostScript::Simple(papersize => "a4",
             colour => 1,
             units => "in",
+            eps => 0,
             reencode => undef);
 
 ok( $p );
@@ -25,12 +26,13 @@ $p->circle(2,2, 1);
     
 # draw a rotated polygon in a different colour
 $p->setcolour(0,100,200);
-$p->polygon("rotate=45", 1,1, 1,2, 2,2, 2,1, 1,1);
+$p->polygon({rotate=>45}, 1,1, 1,2, 2,2, 2,1, 1,1);
     
 # add some text in red
-$p->setcolour("red");
+$p->setcolour("red", "blue");
+$p->setcolour(255,0,0);
 $p->setfont("Times-Roman", 20);
-$p->text(1,1, "Hello");
+$p->text({rotate=>-37.5}, 1,1, "Hello");
     
 # write the output to a file
 $p->output( $f );
@@ -50,7 +52,9 @@ ok( $lines eq CANNED() );
 ###
 
 sub CANNED {
-return q[%!PS-Adobe-3.0 EPSF-1.2
+return q[%!PS-Adobe-3.0
+/ux {72 mul} def
+/uy {72 mul} def
 /u {72 mul} def
 /box {
   newpath 3 copy pop exch 4 copy pop pop
@@ -61,25 +65,28 @@ return q[%!PS-Adobe-3.0 EPSF-1.2
 /circle {newpath 0 360 arc closepath} bind def
 /rotabout {3 copy pop translate rotate exch 0 exch
 sub exch 0 exch sub translate} def
-(error: Do not use newpage for eps files!
-) print flush
+/pagelevel save def
 newpath
-1 u 1 u moveto
-1 u 4 u lineto
-2 u 4 u lineto stroke
-1.5 u 1 u 2 u 3.5 u box stroke
-2 u 2 u 1 u circle stroke
+1 ux 1 uy moveto
+1 ux 4 uy lineto
+2 ux 4 uy lineto stroke
+1.5 ux 1 uy 2 ux 3.5 uy box stroke
+2 ux 2 uy 1 u circle stroke
 0 0.392156862745098 0.784313725490196 setrgbcolor
-gsave 1 u 1 u 45 rotabout
+gsave 1 ux 1 uy 45 rotabout
 newpath
-1 u 1 u moveto
-1 u 2 u lineto 2 u 2 u lineto 2 u 1 u lineto 1 u 1 u lineto stroke
+1 ux 1 uy moveto
+1 ux 2 uy lineto 2 ux 2 uy lineto 2 ux 1 uy lineto 1 ux 1 uy lineto stroke
 grestore
-0.8 0 0 setrgbcolor
+(error: setcolour given invalid arguments: red, blue, undef
+) print flush
+1 0 0 setrgbcolor
 /Times-Roman findfont 20 scalefont setfont
 newpath
-1 u 1 u moveto
-(Hello) show stroke
+1 ux 1 uy moveto
+(Hello)  -37.5 rotate   show stroke  37.5 rotate 
+pagelevel restore
+showpage
 ];
 }
 

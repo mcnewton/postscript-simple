@@ -1,4 +1,4 @@
-PostScript/Simple version 0.04
+PostScript/Simple version 0.05
 ==============================
 
 PostScript::Simple allows you to have a simple method of writing PostScript
@@ -22,6 +22,20 @@ be written, so that programs may be easily be converted to produce PostScript.
 Don't hold your breath.
 
 The file examples/example.pl provides some bad examples of what this module does.
+
+Changes from 0.04: Watch Out! Several functions now have options passed by hash
+reference, rather than the method used before. Your programs might break!
+This way is a lot tidier... sorry if this caused any problems.
+
+For example, before:
+  $p->box(10,10,20,20, 1);
+  $p->text(15, 15, "Hello", 'right');
+  $p->polygon("rotate=45", 1,1, 1,2, 2,2, 2,1, 1,1);
+
+now:
+  $p->box({filled=>1}, 10,10, 20,20);
+  $p->text({align=>"right"}, 15,15, "Hello");
+  $p->polygon({rotate=>45}, 1,1, 1,2, 2,2, 2,1, 1,1);
 
 
 INSTALLATION
@@ -57,6 +71,14 @@ Thanks go to the following:
   P Kent for many updates and fixes
   Flemming Frandsen for updates for font encoding, text alignment and more
   Michael Tomuschat for several updates (not yet merged)
+  Vladi Belperchinov-Shabanski for text rotate / align update stuff
+  Martin McCarthy for lots of useful discussion
+
+  ...and probably more, apologies if you are missing from this list and have
+  contributed something.
+
+  If you have sent me a patch for this module, and had no reply, please re-send
+  it. I'm particularly bad at missing e-mails...
 
 
 TO-DO / DONE LISTS:
@@ -81,24 +103,28 @@ Done:
   better error reporting (postscript comments still?)
   font encoding for european etc.
   add dd cc and sp to units
+  text rotate / align
 
 To-Do:
 
+  PostScript "compression", i.e. /n {newpath} bind def
+  any postscript optimisation that can be done?
+  import eps files into the postscript
+  hope that units are now correct... check
+  postscript font support?
   define shape functions
   translate / scale / rotate functions?
   gd wrapper module
-  hope that units are now correct...
   generate PostScript using a stack, rather than writing
     to the end of a text variable? could lead to some rather
     neat stuff (loops etc)
   triangle function(s)
+    probably not... polygon does this
   different line styles (dashes)?
   code compression using single letter dictionary defs (optional?)
   my-printer-can-play-jingle-bells-now function?
     nope, we're not trying to write BeetHoven files...
-  postscript font support?
   ttf font support (get lost!)
-  any postscript optimisation that can be done?
   (compare gd module for functions that we could do with)
   pie slices / arcs
   how about "write this out as a PDF file" option?

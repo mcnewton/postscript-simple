@@ -1,8 +1,8 @@
 #!/usr/bin/perl
 use strict;
 use lib qw(./lib ../lib t/lib);
-use Test::Simple tests => 43;
-use Data::Dumper;
+use Test::Simple tests => 44;
+#use Data::Dumper;
 use PostScript::Simple;
 
 # huge workout of all methods, OK and error conditions
@@ -37,21 +37,21 @@ ok( ! $s->linextend(100) );
 
 
 ok( $s->polygon(10,10, 10,20, 110,10, 110,20) );
-ok( $s->polygon(10,10, 10,20, 110,10, 110,20, 1) );
-ok( $s->polygon("rotate=45 filled=1", 10,10, 10,20, 110,10, 110,20) );
-ok( $s->polygon("rotate=45,20,20", 10,10, 10,20, 110,10, 110,20) );
-ok( $s->polygon("offset=10,10", 10,10, 10,20, 110,10, 110,20) );
+#ok( $s->polygon(10,10, 10,20, 110,10, 110,20, 1) );
+ok( $s->polygon({rotate=>45,filled=>1}, 10,10, 10,20, 110,10, 110,20) );
+ok( $s->polygon({rotate=>[45,20,20]}, 10,10, 10,20, 110,10, 110,20) );
+ok( $s->polygon({offset=>[10,10]}, 10,10, 10,20, 110,10, 110,20) );
 ok( ! $s->polygon(10,10, 10) );
 
 
 ok( $s->circle( 120, 120, 30 ) );
-ok( $s->circle( 120, 120, 30, 1 ) );
+ok( $s->circle( {filled=>1}, 120, 120, 30 ) );
 ok( ! $s->circle( 120 ) );
 ok( ! $s->circle );
 
 
 ok( $s->box(210,210, 220,230) );
-ok( $s->box(215,215, 225,235, 1) );
+ok( $s->box( {filled=>1}, 215,215, 225,235) );
 ok( ! $s->box(210,210, 220) );
 
 
@@ -60,6 +60,8 @@ ok( ! $s->setfont('Helvetica') );
 
 
 ok( $s->text( 10, 10, 'Hello World' ) );
+ok( $s->text( {align=>"left"}, 10, 10, 'Hello World' ) );
+ok( $s->text( {rotate=>56}, 10, 10, 'Hello World' ) );
 ok( ! $s->text( 10, 10, 'Hello World', 'foo', 'wobble' ) );
 ok( ! $s->text( 10, 10 ) );
 
@@ -86,7 +88,9 @@ unlink 'x03.eps';
 ###
 
 sub FUNCS {
-return '/u {} def
+return '/ux {} def
+/uy {} def
+/u {} def
 /STARTDIFFENC { mark } bind def
 /ENDDIFFENC { 
 
@@ -215,69 +219,72 @@ return '(error: Do not use newpage for eps files!
 (error: setlinewidth not given a width
 ) print flush
 newpath
-10 u 10 u moveto
-10 u 20 u lineto stroke
+10 ux 10 uy moveto
+10 ux 20 uy lineto stroke
 (error: wrong number of args for line
 ) print flush
 (error: wrong number of args for line
 ) print flush
 0.196078431372549 0.196078431372549 0.196078431372549 setrgbcolor
 newpath
-10 u 10 u moveto
-10 u 20 u lineto
-100 u 100 u lineto stroke
+10 ux 10 uy moveto
+10 ux 20 uy lineto
+100 ux 100 uy lineto stroke
 (error: wrong number of args for linextend
 ) print flush
 newpath
-10 u 10 u moveto
-10 u 20 u lineto 110 u 10 u lineto 110 u 20 u lineto stroke
+10 ux 10 uy moveto
+10 ux 20 uy lineto 110 ux 10 uy lineto 110 ux 20 uy lineto stroke
+gsave 10 ux 10 uy 45 rotabout
 newpath
-10 u 10 u moveto
-10 u 20 u lineto 110 u 10 u lineto 110 u 20 u lineto fill
-gsave 10 u 10 u 45 rotabout
-newpath
-10 u 10 u moveto
-10 u 20 u lineto 110 u 10 u lineto 110 u 20 u lineto fill
+10 ux 10 uy moveto
+10 ux 20 uy lineto 110 ux 10 uy lineto 110 ux 20 uy lineto fill
 grestore
-gsave 20 u 20 u 45 rotabout
+gsave 20 ux 20 uy 45 rotabout
 newpath
-10 u 10 u moveto
-10 u 20 u lineto 110 u 10 u lineto 110 u 20 u lineto stroke
+10 ux 10 uy moveto
+10 ux 20 uy lineto 110 ux 10 uy lineto 110 ux 20 uy lineto stroke
 grestore
-gsave 10 u 10 u translate
+gsave 10 ux 10 uy translate
 newpath
-10 u 10 u moveto
-10 u 20 u lineto 110 u 10 u lineto 110 u 20 u lineto stroke
+10 ux 10 uy moveto
+10 ux 20 uy lineto 110 ux 10 uy lineto 110 ux 20 uy lineto stroke
 grestore
 (error: bad polygon - not enough points
 ) print flush
-120 u 120 u 30 u circle stroke
-120 u 120 u 30 u circle fill
-(error: not enough args for circle
+120 ux 120 uy 30 u circle stroke
+120 ux 120 uy 30 u circle fill
+(error: circle: wrong number of arguments
 ) print flush
-(error: not enough args for circle
+(error: circle: wrong number of arguments
 ) print flush
-210 u 210 u 220 u 230 u box stroke
-215 u 215 u 225 u 235 u box fill
-(error: insufficient arguments for box
+210 ux 210 uy 220 ux 230 uy box stroke
+215 ux 215 uy 225 ux 235 uy box fill
+(error: box: wrong number of arguments
 ) print flush
 /Helvetica findfont 12 scalefont setfont
 (error: wrong number of arguments for setfont
 ) print flush
 newpath
-10 u 10 u moveto
-(Hello World) show stroke
-(error: wrong number of arguments for text
+10 ux 10 uy moveto
+(Hello World)   show stroke 
+newpath
+10 ux 10 uy moveto
+(Hello World)   show stroke 
+newpath
+10 ux 10 uy moveto
+(Hello World)  56 rotate   show stroke  -56 rotate 
+(error: text: wrong number of arguments
 ) print flush
-(error: wrong number of arguments for text
+(error: text: wrong number of arguments
 ) print flush
 (error: bad curve definition, wrong number of args
 ) print flush
 newpath
-10 u 310 u moveto
-10 u 320 u 110 u 310 u 110 u 320 u curveto
-110 u 330 u 210 u 330 u 210 u 320 u curveto stroke
-(error: bad curveextend definition, wrong number of args
+10 ux 310 uy moveto
+10 ux 320 uy 110 ux 310 uy 110 ux 320 uy curveto
+110 ux 330 uy 210 ux 330 uy 210 ux 320 uy curveto stroke
+(error: bad curvextend definition, wrong number of args
 ) print flush
 ';
 }

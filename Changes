@@ -1,6 +1,22 @@
 Revision history for Perl extension PostScript::Simple.
 
-0.04
+0.05 - 
+  Matthew Newton:
+    - fold all functions in the code to make it easier to read
+    - tidy up options to many functions (and probably break lots of stuff---sorry)
+  Mark Withall
+    - fix error with number of pages in eps files
+  Vladi Belperchinov-Shabanski
+   - add text rotation
+   - modify interface to text alignment
+  Martin McCarthy
+   - curvextend typos
+   - lots of other stuff that will hopefully make it into a different module
+  Michael Tomuschat
+   - page origin
+   - co-ordinate direction
+
+0.04 - 19 February 2002
   Matthew Newton:
     - correct the definitions for dd and cc (I hope - still untested)
     - tidy up the code a bit
@@ -11,7 +27,7 @@ Revision history for Perl extension PostScript::Simple.
     - text alignment
     - getlogin bugfix
 
-0.03
+0.03 - 17 January 2002
   Matthew Newton:
     - Moved example.pl to a subdirectory so it doesn't get installed
     - PostScript header now includes version of PostScript::Simple
@@ -27,13 +43,13 @@ Revision history for Perl extension PostScript::Simple.
     - many paper sizes added
     - other small tweaks
 
-0.02  2001-01-12
+0.02 - 12 January 2002
   Matthew Newton:
     - Fixed module to now use MakeMaker, i.e. perl Makefile.PL;
       make; make install now works.
     - Updated some documentation errors
 
-0.01  2001-01-11
+0.01 - 11 January 2002
 	- original version; created by h2xs 1.21 with options
 		-X -n PostScript::Simple
 

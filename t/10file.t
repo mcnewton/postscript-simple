@@ -9,16 +9,15 @@ use PostScript::Simple;
 my $f = 'xtest-a.ps';
 my $s = new PostScript::Simple(xsize => 50, ysize => 200);
 
-$s->newpage;
 $s->box(10, 10, 40, 190);
 $s->output( $f );
 
-#print Dumper $s;
+#print STDERR Dumper $s;
 
 # check object
 ok( $s->{usedbox} == 1 );
 ok( $s->{psfunctions} =~ m|/u | );
-ok( index( $s->{pspages}, q[10 u 10 u 40 u 190 u box stroke]) > -1 );
+ok( index( $s->{pspages}, q[10 ux 10 uy 40 ux 190 uy box stroke]) > -1 );
 
 # check output
 ok( -e $f );
@@ -29,4 +28,4 @@ close CHK;
 
 ok( index( $file, '%!PS-Adobe-3.0 EPSF-1.2' ) == 0 );
 ok( index( $file, '%%EOF' ) == (length( $file ) - 6) );
-ok( index( $file, '10 u 10 u 40 u 190 u box stroke' ) > 0 );
+ok( index( $file, '10 ux 10 uy 40 ux 190 uy box stroke' ) > 0 );
