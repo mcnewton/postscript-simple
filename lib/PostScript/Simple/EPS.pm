@@ -1,79 +1,11 @@
 #! /usr/bin/perl
 
-# Is this naughty, or the correct way of doing things?
-package main;
-use PostScript::Simple;
-
-# Add some new methods to PostScript::Simple. Again, naughty or correct?
-package PostScript::Simple;
-
-sub add_eps# {{{
-{
-  my $self = shift;
-  my $thing;
-  my $xpos;
-  my $ypos;
-  my $options;
-
-  if (ref($_[0]) eq "HASH")
-  {
-    $options = shift;
-    if (ref($_[0]) eq "PostScript::Simple::EPS")
-    {
-      croak "cannot use {} options with EPS object";
-    }
-  }
-  else
-  {
-    $options = {};
-  }
-
-  if ((!$self->{pspagecount}) and (!$self->{eps}))
-  {
-    # Cannot draw on to non-page when not an eps file
-    return 0;
-  }
-
-  if ( @_ != 3 )
-  {
-  	croak "wrong number of arguments for add_eps";
-  	return 0;
-  }
-
-  ($thing, $xpos, $ypos) = @_;
-
-  if (ref($thing) eq "PostScript::Simple::EPS")
-  {
-    $self->_add_eps_obj($thing, $xpos, $ypos);
-  }
-  else
-  {
-    $self->_add_eps_file($options, $thing, $xpos, $ypos);
-  }
-  
-  return 1;
-}# }}}
-
-sub _add_eps_obj
-{
-  my $self = shift;
-  my ($obj, $xpos, $ypos) = @_;
-
-  $self->{pspages} .= $obj->_get_include_data($xpos, $ypos);
-}
-
-sub _add_eps_file
-{
-  my $self = shift;
-  my ($opt, $file, $xpos, $ypos) = @_;
-
-  print "adding eps file $file at $xpos, $ypos\n";
-}
-
 package PostScript::Simple::EPS;
+
 use strict;
 use Exporter;
 use Carp;
+use PostScript::Simple;
 
 use vars qw($VERSION @ISA @EXPORT);
 
@@ -83,12 +15,11 @@ $VERSION = "0.01";
 
 =head1 NAME
 
-PostScript::Simple::EPS - Add EPS support to PostScript::Simple
+PostScript::Simple::EPS - EPS support for PostScript::Simple
 
 =head1 SYNOPSIS
 
     use PostScript::Simple;
-    use PostScript::Simple::EPS;
     
     # create a new PostScript object
     $p = new PostScript::Simple(papersize => "A4",
@@ -440,37 +371,30 @@ sub _get_include_data# {{{
 
   croak "argh... internal error (incorrect arguments)" if (scalar @_ != 2);
 
-  $data .= "save\n";
+#  $data .= "save\n";
+#  $data .= "$x ux $y uy translate\n";
 
-  $data .= "$x ux $y uy translate\n";
-
-  foreach my $line (@{$$self{"epsprefix"}})
-  {
+  foreach my $line (@{$$self{"epsprefix"}}) {
     $data .= "$line\n";
   }
 
-  if (defined $$self{"epsfile"})
-  {
+  if (defined $$self{"epsfile"}) {
     $data .= $$self{"epsfile"};
-  }
-  else
-  {
+  } else {
     $data .= "\%\%BeginDocument: $$self{file}\n";
     open EPS, "< $$self{file}" || croak "can't open eps file $$self{file}";
-    while (<EPS>)
-    {
+    while (<EPS>) {
       $data .= $_;
     }
     close EPS;
     $data .= "\%\%EndDocument\n";
   }
 
-  foreach my $line (@{$$self{"epspostfix"}})
-  {
+  foreach my $line (@{$$self{"epspostfix"}}) {
     $data .= "$line\n";
   }
 
-  $data .= "restore\n";
+#  $data .= "restore\n";
 
   return $data;
 }# }}}

@@ -5,6 +5,7 @@ package PostScript::Simple;
 use strict;
 use vars qw($VERSION @ISA @EXPORT);
 use Exporter;
+use PostScript::Simple::EPS;
 
 @ISA = qw(Exporter);
 @EXPORT = qw();
@@ -1439,178 +1440,6 @@ sub box# {{{
 }# }}}
 
 
-=item C<importeps([options,] filename, x1,y1, x2,y2)>
-
-Imports an EPS file and scales/translates its bounding box to fill
-the area defined by lower left co-ordinates (x1,y1) and upper right
-co-ordinates (x2,y2). By default, if the co-ordinates have a different
-aspect ratio from the bounding box, the scaling is constrained on the
-greater dimension to keep the EPS fully inside the area.
-
-Options are:
-
-=over 4
-
-=item overlap => 1
-
-If C<overlap> is 1 then the scaling is calculated on the lesser dimension
-and the EPS can overlap the area.
-
-=item stretch => 1
-
-If C<stretch> is 1 then fill the entire area, ignoring the aspect ratio.
-This option overrides C<overlap> if both are given.
-
-=back
-
-Example:
-
-    # Assume smiley.eps is a round smiley face in a square bounding box
-
-    # Scale it to a (10,10)(20,20) box
-    $p->importeps("smiley.eps", 10,10, 20,20);
-
-    # Keeps aspect ratio, constrained to smallest fit
-    $p->importeps("smiley.eps", 10,10, 30,20);
-
-    # Keeps aspect ratio, allowed to overlap for largest fit
-    $p->importeps( {overlap => 1}, "smiley.eps", 10,10, 30,20);
-
-    # Aspect ratio is changed to give exact fit
-    $p->importeps( {stretch => 1}, "smiley.eps", 10,10, 30,20);
-
-=cut
-
-
-sub importeps# {{{
-{
-  my $self = shift;
-
-  my $bbllx;
-  my $bblly;
-  my $bburx;
-  my $bbury;
-  my $bbw;
-  my $bbh;
-  my $w;
-  my $h;
-  my $scalex;
-  my $scaley;
-  my $line;
-  my $done = 0;
-
-  my %opt = ();
-
-  if (ref($_[0])) {
-    %opt = %{; shift};
-  }
-
-  my ($file, $x1, $y1, $x2, $y2) = @_;
-
-  unless (@_ == 5) {
-    $self->_error("importeps: wrong number of arguments");
-    return 0;
-  }
-
-  $opt{'overlap'} = 0 if (!defined($opt{'overlap'}));
-  $opt{'stretch'} = 0 if (!defined($opt{'stretch'}));
-  
-  unless ($self->{usedimporteps}) {
-    $self->{psfunctions} .= <<'EOEPS';
-/BeginEPSF { %def
-    /b4_Inc_state save def
-    /dict_count countdictstack def
-    /op_count count 1 sub def
-    userdict begin
-    /showpage { } def
-    0 setgray 0 setlinecap
-    1 setlinewidth 0 setlinejoin
-    10 setmiterlimit [ ] 0 setdash newpath
-    /languagelevel where {
-        pop
-        languagelevel 1 ne {
-            false setstrokeadjust false setoverprint
-        } if
-    } if
-} bind def
-
-/EndEPSF { %def
-    count op_count sub {pop} repeat
-    countdictstack dict_count sub {end} repeat
-    b4_Inc_state restore
-} bind def
-EOEPS
-    $self->{usedimporteps} = 1;
-  }
-
-  local *IN;
-  open(IN, '<'.$file) or die("Cannot read from file $file: $!");
-  $line = <IN>;
-  while (!eof(IN) && !$done) {
-    if ($line =~ m/^%%BoundingBox:\s(-?\d+(\.\d*)?)\s(-?\d+(\.\d*)?)\s(-?\d+(\.\d*)?)\s(-?\d+(\.\d*)?)/ig) {
-      $bbllx = $1;
-      $bblly = $3;
-      $bburx = $5;
-      $bbury = $7;
-      $done = 1;
-    }
-    $line = <IN>;
-  }
-  seek(IN, 0, 0);
-
-  if ($done != 1) {
-    $self->_error("importeps: cannot find Bounding Box in EPS file ");
-    return 0;
-  }
-
-  $w = $x2 - $x1;
-  $h = $y2 - $y1;
-
-  $bbw = $bburx - $bbllx;
-  $bbh = $bbury - $bblly;
-
-  if (($bbw == 0) || ($bbh == 0)) {
-    $self->_error("importeps: Bounding Box has zero dimension");
-    return 0;
-  }
-
-  $scalex = $w / $bbw;
-  $scaley = $h / $bbh;
-
-  if ($opt{'stretch'} == 0) {
-    if ($opt{'overlap'} == 0) {
-      if ($scalex > $scaley) {
-        $scalex = $scaley;
-      } else {
-        $scaley = $scalex;
-      }
-    } else {
-      if ($scalex > $scaley) {
-        $scaley = $scalex;
-      } else {
-        $scalex = $scaley;
-      }
-    }
-  }
-
-  $self->{pspages} .= "BeginEPSF\n";
-
-  $self->{pspages} .= "$x1 ux $y1 uy translate\n";
-#  $self->{pspages} .= "$scalex ux $scaley uy scale\n";
-  $self->{pspages} .= "$scalex $scaley scale\n";
-  $self->{pspages} .= "-$bbllx ux -$bblly uy translate\n";
-
-  $self->{pspages} .= "\%\%BeginDocument: $file\n";
-  while (<IN>) {
-    $self->{pspages} .= $_;
-  }
-  $self->{pspages} .= "\n\%\%EndDocument\n";
-  $self->{pspages} .= "EndEPSF\n";
-
-  return 1;
-}# }}}
-
-
 =item C<setfont(font, size)>
 
 Set the current font to the PostScript font C<font>. Set the size in PostScript
@@ -1829,6 +1658,269 @@ sub moveto# {{{
 	my ($x, $y) = @_;
 	$self->{pspages} .= "$x ux $y uy moveto\n";
 	return 1;
+}# }}}
+
+
+=item C<importeps([options,] filename, x1,y1, x2,y2)>
+
+Imports an EPS file and scales/translates its bounding box to fill
+the area defined by lower left co-ordinates (x1,y1) and upper right
+co-ordinates (x2,y2). By default, if the co-ordinates have a different
+aspect ratio from the bounding box, the scaling is constrained on the
+greater dimension to keep the EPS fully inside the area.
+
+Options are:
+
+=over 4
+
+=item overlap => 1
+
+If C<overlap> is 1 then the scaling is calculated on the lesser dimension
+and the EPS can overlap the area.
+
+=item stretch => 1
+
+If C<stretch> is 1 then fill the entire area, ignoring the aspect ratio.
+This option overrides C<overlap> if both are given.
+
+=back
+
+Example:
+
+    # Assume smiley.eps is a round smiley face in a square bounding box
+
+    # Scale it to a (10,10)(20,20) box
+    $p->importeps("smiley.eps", 10,10, 20,20);
+
+    # Keeps aspect ratio, constrained to smallest fit
+    $p->importeps("smiley.eps", 10,10, 30,20);
+
+    # Keeps aspect ratio, allowed to overlap for largest fit
+    $p->importeps( {overlap => 1}, "smiley.eps", 10,10, 30,20);
+
+    # Aspect ratio is changed to give exact fit
+    $p->importeps( {stretch => 1}, "smiley.eps", 10,10, 30,20);
+
+=cut
+
+
+sub importeps# {{{
+{
+  my $self = shift;
+
+  my $bbllx;
+  my $bblly;
+  my $bburx;
+  my $bbury;
+  my $bbw;
+  my $bbh;
+  my $w;
+  my $h;
+  my $scalex;
+  my $scaley;
+  my $line;
+  my $done = 0;
+
+  my %opt = ();
+
+  if (ref($_[0])) {
+    %opt = %{; shift};
+  }
+
+  my ($file, $x1, $y1, $x2, $y2) = @_;
+
+  unless (@_ == 5) {
+    $self->_error("importeps: wrong number of arguments");
+    return 0;
+  }
+
+  $opt{'overlap'} = 0 if (!defined($opt{'overlap'}));
+  $opt{'stretch'} = 0 if (!defined($opt{'stretch'}));
+  
+  unless ($self->{usedimporteps}) {
+    $self->{psfunctions} .= <<'EOEPS';
+/BeginEPSF { /b4_Inc_state save def /dict_count countdictstack def
+/op_count count 1 sub def userdict begin /showpage { } def 0 setgray
+0 setlinecap 1 setlinewidth 0 setlinejoin 10 setmiterlimit [ ]
+0 setdash newpath /languagelevel where { pop languagelevel 1 ne {
+false setstrokeadjust false setoverprint } if } if } bind def
+/EndEPSF { count op_count sub {pop} repeat countdictstack dict_count
+sub {end} repeat b4_Inc_state restore } bind def
+EOEPS
+    $self->{usedimporteps} = 1;
+  }
+
+  local *IN;
+  open(IN, '<'.$file) or die("Cannot read from file $file: $!");
+  $line = <IN>;
+  while (!eof(IN) && !$done) {
+    if ($line =~ m/^%%BoundingBox:\s(-?\d+(\.\d*)?)\s(-?\d+(\.\d*)?)\s(-?\d+(\.\d*)?)\s(-?\d+(\.\d*)?)/ig) {
+      $bbllx = $1;
+      $bblly = $3;
+      $bburx = $5;
+      $bbury = $7;
+      $done = 1;
+    }
+    $line = <IN>;
+  }
+  seek(IN, 0, 0);
+
+  if ($done != 1) {
+    $self->_error("importeps: cannot find Bounding Box in EPS file ");
+    return 0;
+  }
+
+  $w = $x2 - $x1;
+  $h = $y2 - $y1;
+
+  $bbw = $bburx - $bbllx;
+  $bbh = $bbury - $bblly;
+
+  if (($bbw == 0) || ($bbh == 0)) {
+    $self->_error("importeps: Bounding Box has zero dimension");
+    return 0;
+  }
+
+  $scalex = $w / $bbw;
+  $scaley = $h / $bbh;
+
+  if ($opt{'stretch'} == 0) {
+    if ($opt{'overlap'} == 0) {
+      if ($scalex > $scaley) {
+        $scalex = $scaley;
+      } else {
+        $scaley = $scalex;
+      }
+    } else {
+      if ($scalex > $scaley) {
+        $scaley = $scalex;
+      } else {
+        $scalex = $scaley;
+      }
+    }
+  }
+
+  $self->{pspages} .= "BeginEPSF\n";
+
+  $self->{pspages} .= "$x1 ux $y1 uy translate\n";
+#  $self->{pspages} .= "$scalex ux $scaley uy scale\n";
+  $self->{pspages} .= "$scalex $scaley scale\n";
+  $self->{pspages} .= "-$bbllx ux -$bblly uy translate\n";
+
+  $self->{pspages} .= "\%\%BeginDocument: $file\n";
+  while (<IN>) {
+    $self->{pspages} .= $_;
+  }
+  $self->{pspages} .= "\n\%\%EndDocument\n";
+  $self->{pspages} .= "EndEPSF\n";
+
+  return 1;
+}# }}}
+
+sub importeps# {{{
+{
+  my $self = shift;
+
+  my %opt = ();
+
+  if (ref($_[0])) {
+    %opt = %{; shift};
+  }
+
+  my ($file, $x1, $y1, $x2, $y2) = @_;
+
+  unless (@_ == 5) {
+    $self->_error("importeps: wrong number of arguments");
+    return 0;
+  }
+
+  $opt{'overlap'} = 0 if (!defined($opt{'overlap'}));
+  $opt{'stretch'} = 0 if (!defined($opt{'stretch'}));
+  
+#
+
+  $w = $x2 - $x1;
+  $h = $y2 - $y1;
+
+  $bbw = $bburx - $bbllx;
+  $bbh = $bbury - $bblly;
+
+  if (($bbw == 0) || ($bbh == 0)) {
+    $self->_error("importeps: Bounding Box has zero dimension");
+    return 0;
+  }
+
+  $scalex = $w / $bbw;
+  $scaley = $h / $bbh;
+
+  if ($opt{'stretch'} == 0) {
+    if ($opt{'overlap'} == 0) {
+      if ($scalex > $scaley) {
+        $scalex = $scaley;
+      } else {
+        $scaley = $scalex;
+      }
+    } else {
+      if ($scalex > $scaley) {
+        $scaley = $scalex;
+      } else {
+        $scalex = $scaley;
+      }
+    }
+  }
+
+#  $self->{pspages} .= "$scalex ux $scaley uy scale\n";
+  $self->{pspages} .= "$scalex $scaley scale\n";
+  $self->{pspages} .= "-$bbllx ux -$bblly uy translate\n";
+
+  _add_eps($eps, $x1, $y1);
+
+  return 1;
+}# }}}
+
+sub _add_eps# {{{
+{
+  my $self = shift;
+  my $epsobj;
+  my $xpos;
+  my $ypos;
+
+  if (ref($_[0]) ne "PostScript::Simple::EPS") {
+    croak "internal error: _add_eps[0] must be eps object";
+  }
+
+  if ((!$self->{pspagecount}) and (!$self->{eps})) {
+    # Cannot draw on to non-page when not an eps file
+    $self->_error("importeps: no current page");
+    return 0;
+  }
+
+  if ( @_ != 3 ) {
+  	croak "internal error: wrong number of arguments for _add_eps";
+  	return 0;
+  }
+
+  unless ($self->{usedimporteps}) {
+    $self->{psfunctions} .= <<'EOEPS';
+/BeginEPSF { /b4_Inc_state save def /dict_count countdictstack def
+/op_count count 1 sub def userdict begin /showpage { } def 0 setgray
+0 setlinecap 1 setlinewidth 0 setlinejoin 10 setmiterlimit [ ]
+0 setdash newpath /languagelevel where { pop languagelevel 1 ne {
+false setstrokeadjust false setoverprint } if } if } bind def
+/EndEPSF { count op_count sub {pop} repeat countdictstack dict_count
+sub {end} repeat b4_Inc_state restore } bind def
+EOEPS
+    $self->{usedimporteps} = 1;
+  }
+
+  ($epsobj, $xpos, $ypos) = @_;
+
+  $self->{pspages} .= "BeginEPSF\n";
+  $self->{pspages} .= "$xpos ux $ypos uy translate\n";
+  $self->{pspages} .= $obj->_get_include_data($xpos, $ypos);
+  $self->{pspages} .= "EndEPSF\n";
+  
+  return 1;
 }# }}}
 
 
