@@ -1,5 +1,10 @@
-PostScript/Simple version 0.05
-==============================
+PostScript/Simple version 0.06p1
+================================
+
+********************************************************************************
+This is a pre-release of version 0.06. Expect things to Not Work, and please
+let me know if they do (or don't!). Thanks!
+********************************************************************************
 
 PostScript::Simple allows you to have a simple method of writing PostScript
 files from Perl. It has several graphics primitives that allow lines, circles,
@@ -21,11 +26,12 @@ A module that provides compatibility with the GD module calls might also one day
 be written, so that programs may be easily be converted to produce PostScript.
 Don't hold your breath.
 
-The file examples/example.pl provides some bad examples of what this module does.
+The file examples/example.pl provides some bad examples of what this module
+does.
 
 Changes from 0.04: Watch Out! Several functions now have options passed by hash
-reference, rather than the method used before. Your programs might break!
-This way is a lot tidier... sorry if this caused any problems.
+reference, rather than the method used before. Your programs might break!  This
+way is a lot tidier... sorry if this caused any problems.
 
 For example, before:
   $p->box(10,10,20,20, 1);
@@ -108,7 +114,7 @@ Done:
   font encoding for european etc.
   add dd cc and sp to units
   text rotate / align
-  import eps files into the postscript
+  import eps files into the postscript (in progress, core finished)
   pie slices / arcs (well, arcs anyway)
 
 To-Do:
