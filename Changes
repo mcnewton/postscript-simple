@@ -3,21 +3,32 @@ Revision history for Perl extension PostScript::Simple.
 0.06 -
   Eric Wilhelm:
     - arc function
+
   Matthew Newton:
     - update/add some pod documentation
+    - added PostScript::Simple::EPS module
+    - tidy Changes file
 
-0.05 - 
+  Glen Harris:
+    - circletext function
+    - useful code for eps addition
+
+0.05 - 22 January 2003
   Matthew Newton:
     - fold all functions in the code to make it easier to read
     - tidy up options to many functions (and probably break lots of stuff---sorry)
+    
   Mark Withall
     - fix error with number of pages in eps files
+
   Vladi Belperchinov-Shabanski
    - add text rotation
    - modify interface to text alignment
+
   Martin McCarthy
    - curvextend typos
    - lots of other stuff that will hopefully make it into a different module
+
   Michael Tomuschat
    - page origin
    - co-ordinate direction

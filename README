@@ -76,7 +76,7 @@ Thanks go to the following:
   Eric Voisard for useful chats about page sizes and landscape
   Eric Wilhelm for the arc function
   Peter Kuehn for inserting ps and eps code (not yet merged)
-  Glen Harris for circletext and inserteps functions
+  Glen Harris for circletext function and inserteps code
 
   ...and probably more, apologies if you are missing from this list and have
   contributed something.
@@ -123,6 +123,6 @@ To-Do:
   generate PostScript using a stack, rather than writing
     to the end of a text variable? could lead to some rather
     neat stuff (loops etc)
-  different line styles (dashes)?
+  different line styles (dashes)? (easy)
   ttf font support (get lost!)
 
