@@ -5,17 +5,13 @@ use lib qw(../lib);
 use PostScript::Simple;
 
 $t = new PostScript::Simple(landscape => 0,
-#            xsize => 100,
-#            ysize => 100,
             eps => 0,
             papersize => "a4",
             copies => "5",
             colour => 1,
             clip => 0,
             units => "mm");
-
 $t->newpage(-1);
-
 for ($i=50; $i>10; $i-=5) {
   $t->arc(100,150,$i,(3*$i),180+(3*$i));
 }
@@ -46,28 +42,20 @@ $t->circletext(120,50,30,-90,"Circular");
 for ($i=0; $i<340; $i+=45) {
   $t->circletext({align=>"outside"},120,50,20,$i,"Round");
 }
-
 $t->newpage;
 $t->line((10, 20), (30, 40));
 $t->linextend(60, 50);
-
 $t->line(10,12, 20,12);
 $t->polygon(10,10, 20,10);
-
 $t->setcolour("grey90");
 $t->polygon({offset=>[5,5], filled=>0}, 10,10, 15,20, 25,20, 30,10, 15,15, 10,10);
 $t->setcolour("black");
 $t->polygon({offset=>[10,10], rotate=>[45,20,20], filled=>1}, 10,10, 15,20, 25,20, 30,10, 15,15, 10,10);
-
 $t->line((0, 100), (100, 0), (255, 0, 0));
-
 $t->newpage(30);
-
 $s = new PostScript::Simple(xsize => 50,
             ysize => 200);
-
 $s->box(10, 10, 40, 190);
-
 $o = 10;
 for ($i=12; $i<80; $i+=2)
 {
@@ -75,22 +63,23 @@ for ($i=12; $i<80; $i+=2)
   $t->box({filled=>1}, $o, 10, $i, 40);
   $o = $i;
 }
-
 $t->line((40, 30), (30, 10));
 $t->linextend(60, 0);
-
 $t->line((0, 100), (100, 0),(0, 255, 0));
-
-#$t->display();
 $s->output("test-b.eps");
-
-#$t->importeps({stretched=>1}, "test-b.eps", 10, 100, 200, 200);
+#$t->importeps({stretch=>1}, "test-b.eps", 10, 100, 200, 200);
 my $ep = new PostScript::Simple::EPS(file => "test-b.eps");
 $ep->rotate(30);
 $t->importeps($ep, 10, 100);
-$t->importepsfile({stretched=>1}, "test-b.eps", 10, 100, 200, 200);
-$t->importepsfile({overlap=>1}, "test-b.eps", 10, 100, 200, 200);
-
+$t->setcolour("red");
+$t->box(10,150, 50,190);
+$t->importepsfile({stretch=>1}, "test-b.eps", 10, 150, 50, 190);
+$t->setcolour("blue");
+$t->box(60,150, 100,190);
+$t->importepsfile({overlap=>1}, "test-b.eps", 60, 150, 100, 190);
+$t->setcolour("green");
+$t->box(110,150, 150,190);
+$t->importepsfile("test-b.eps", 110, 150, 150, 190);
 $t->output("test-a.ps");
 
 
