@@ -23,6 +23,7 @@ PostScript::Simple - Produce PostScript files from Perl
     # create a new PostScript object
     $p = new PostScript::Simple(papersize => "A4",
                                 colour => 1,
+                                eps => 0,
                                 units => "in");
     
     # create a new page
