@@ -10,7 +10,7 @@ use PostScript::Simple::EPS;
 
 @ISA = qw(Exporter);
 @EXPORT = qw();
-$VERSION = '0.06';
+$VERSION = '0.07';
 
 =head1 NAME
 
@@ -1109,6 +1109,7 @@ sub arc# {{{
     return 0;
   }
 
+  $self->newpath;
   $self->{pspages} .= "$x ux $y uy $r u $sa $ea arc ";
   if ($opt{'filled'}) {
     $self->{pspages} .= "fill\n"

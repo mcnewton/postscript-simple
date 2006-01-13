@@ -1,5 +1,9 @@
 Revision history for Perl extension PostScript::Simple.
 
+0.07 - 13 January 2006
+  Matthew Newton:
+    - fix lack of newpath in arc
+
 0.06 - 24 June 2004
   Matthew Newton:
     - minor documentation changes
