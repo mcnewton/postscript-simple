@@ -12,6 +12,9 @@ use PostScript::Simple::EPS;
 @EXPORT = qw();
 $VERSION = '0.07';
 
+
+#-------------------------------------------------------------------------------
+
 =head1 NAME
 
 PostScript::Simple - Produce PostScript files from Perl
@@ -75,9 +78,11 @@ None.
 =cut
 
 
+#-------------------------------------------------------------------------------
+
 # is there another colour database that can be used instead of defining
 # this one here? what about the X-windows one? (apart from MS-Win-probs?) XXXXX
-my %pscolours = (# {{{
+my %pscolours = (
   black         => "0    0    0",
   brightred     => "1    0    0",
   brightgreen   => "0    1    0",
@@ -98,12 +103,12 @@ my %pscolours = (# {{{
   grey80        => "0.8  0.8  0.8",
   grey90        => "0.9  0.9  0.9",
   white         => "1    1    1",
-);# }}}
+);
 
 
 # define page sizes here (a4, letter, etc)
 # should be Properly Cased
-my %pspaper = (# {{{
+my %pspaper = (
   A0                    => '2384 3370',
   A1                    => '1684 2384',
   A2                    => '1191 1684',
@@ -144,11 +149,11 @@ my %pspaper = (# {{{
   'Envelope-C5'         => '461 648',
 
   'EuroPostcard'        => '298 420',
-);# }}}
+);
 
 
 # The 13 standard fonts that are available on all PS 1 implementations:
-my @fonts = (# {{{
+my @fonts = (
     'Courier',
     'Courier-Bold',
     'Courier-BoldOblique',
@@ -161,24 +166,24 @@ my @fonts = (# {{{
     'Times-Bold',
     'Times-BoldItalic',
     'Times-Italic',
-    'Symbol');# }}}
+    'Symbol');
 
 # define the origins for the page a document can have
 # (default is "LeftBottom")
-my %psorigin = (# {{{
+my %psorigin = (
   'LeftBottom'  => '0 0',
   'LeftTop'     => '0 -1',
   'RightBottom' => '-1 0',
   'RightTop'    => '-1 -1',
-);# }}}
+);
 
 # define the co-ordinate direction (default is 'RightUp')
-my %psdirs = (# {{{
+my %psdirs = (
   'RightUp'  => '1 1',
   'RightDown'   => '1 -1',
   'LeftUp'  => '-1 1',
   'LeftDown'   => '-1 -1',
-);# }}}
+);
 
 
 # measuring units are two-letter acronyms as used in TeX:
@@ -193,7 +198,7 @@ my %psdirs = (# {{{
 
 #  set up the others here (sp) XXXXX
 
-my %psunits = (# {{{
+my %psunits = (
   pt   => "72 72.27",
   pc   => "72 6.0225",
   in   => "72 1",
@@ -202,8 +207,10 @@ my %psunits = (# {{{
   mm   => "72 25.4",
   dd   => "72 67.567",
   cc   => "72 810.804",
-);# }}}
+);
 
+
+#-------------------------------------------------------------------------------
 
 =head1 CONSTRUCTOR
 
@@ -322,8 +329,7 @@ used in Western Europe. The C<newpage> method should not be used.
 
 =cut
 
-
-sub new# {{{
+sub new
 {
   my ($class, %data) = @_;
   my $self = {
@@ -373,9 +379,12 @@ sub new# {{{
   $self->init();
 
   return $self;
-}# }}}
+}
 
-sub init# {{{
+
+#-------------------------------------------------------------------------------
+
+sub init
 {
   my $self = shift;
 
@@ -383,7 +392,7 @@ sub init# {{{
   my ($u, $mm);
   my ($dx, $dy);
 
-# Units# {{{
+# Units
   if (defined $self->{units})
   {
     $self->{units} = lc $self->{units};
@@ -432,9 +441,9 @@ sub init# {{{
   #$u =~ s/ $//;
   #$u .="}";
   #
-  #$self->{psfunctions} .= "/u $u def\n";# }}}
+  #$self->{psfunctions} .= "/u $u def\n";
 
-# Paper size# {{{
+# Paper size
   if (defined $self->{papersize})
   {
     $self->{papersize} = ucfirst lc $self->{papersize};
@@ -460,7 +469,7 @@ sub init# {{{
   {
     $self->{bbx2} = int(($self->{xsize} * $m) / $d);
     $self->{bby2} = int(($self->{ysize} * $m) / $d);
-  }# }}}
+  }
 
   if (!$self->{eps}) {
     $self->{pssetup} .= "ll 2 ge { << /PageSize [ $self->{xsize} " .
@@ -468,7 +477,7 @@ sub init# {{{
                         " setpagedevice } if\n";
   }
 
-# Landscape# {{{
+# Landscape
   if ($self->{landscape})
   {
     my $swap;
@@ -492,9 +501,9 @@ sub init# {{{
   else
   {
     $self->{pscomments} .= "\%\%Orientation: Portrait\n";
-  }# }}}
+  }
   
-# Clipping# {{{
+# Clipping
   if ($self->{clip})
   {
     $self->{psfunctions} .= "/pageclip {newpath $self->{bbx1} $self->{bby1} moveto
@@ -505,9 +514,9 @@ $self->{bbx1} $self->{bby1} lineto
 closepath clip} bind def
 ";
     if ($self->{eps}) { $self->{pssetup} .= "pageclip\n" }
-  }# }}}
+  }
 
-# Font reencoding# {{{
+# Font reencoding
   if ($self->{reencode})
   {
     my $encoding; # The name of the encoding
@@ -533,7 +542,7 @@ closepath clip} bind def
 % /NewEnc BaseEnc STARTDIFFENC number or glyphname ... ENDDIFFENC -
 	counttomark 2 add -1 roll 256 array copy
 	/TempEncode exch def
-	
+
 	% pointer for sequential encodings
 	/EncodePointer 0 def
 	{
@@ -555,7 +564,7 @@ closepath clip} bind def
 			/EncodePointer exch def
 			} ifelse
 		} ifelse
-	} loop	
+	} loop
 
 	TempEncode def
 } bind def
@@ -622,14 +631,16 @@ EOP
     {
       $self->{psfunctions} .= "/${font}$ext $encoding /$font REENCODEFONT\n";
     }
-  }# }}}
-}# }}}
+  }
+}
 
+
+#-------------------------------------------------------------------------------
 
 =head1 OBJECT METHODS
 
-All object methods return 1 for success or 0 in some error condition (e.g. insufficient arguments).
-Error message text is also drawn on the page.
+All object methods return 1 for success or 0 in some error condition (e.g.
+insufficient arguments). Error message text is also drawn on the page.
 
 =over 4
 
@@ -653,8 +664,7 @@ will generate five pages, numbered: 1, 2, "hello", -6, -7.
 
 =cut
 
-
-sub newpage# {{{
+sub newpage
 {
   my $self = shift;
   my $nextpage = shift;
@@ -696,8 +706,10 @@ sub newpage# {{{
   $self->{pspages} .= "\%\%EndPageSetup\n";
 
   return 1;
-}# }}}
+}
 
+
+#-------------------------------------------------------------------------------
 
 =item C<output(filename)>
 
@@ -709,8 +721,7 @@ document in memory is not cleared, and can still be extended.
 
 =cut
 
-
-sub _builddocument# {{{
+sub _builddocument
 {
   my $self = shift;
   my $title = shift;
@@ -788,9 +799,12 @@ sub _builddocument# {{{
   push @$page, "\%\%EOF\n";
   
   return $page;
-}# }}}
+}
 
-sub output# {{{
+
+#- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+sub output
 {
   my $self = shift;
   my $file = shift || die("Must supply a filename for output");
@@ -813,8 +827,10 @@ sub output# {{{
   close OUT;
   
   return 1;
-}# }}}
+}
 
+
+#-------------------------------------------------------------------------------
 
 =item C<get>
 
@@ -825,7 +841,7 @@ document in memory is not cleared, and can still be extended.
 
 =cut
 
-sub get# {{{
+sub get
 {
   my $self = shift;
   my $page;
@@ -842,8 +858,10 @@ sub get# {{{
     }
   }
   return $doc;
-}# }}}
+}
 
+
+#-------------------------------------------------------------------------------
 
 =item C<geteps>
 
@@ -857,7 +875,7 @@ change these, call it yourself as below, rather than using this method.
 
 =cut
 
-sub geteps# {{{
+sub geteps
 {
   my $self = shift;
   my $page;
@@ -869,8 +887,10 @@ sub geteps# {{{
 
   $eps = new PostScript::Simple::EPS(source => $self->get);
   return $eps;
-}# }}}
+}
 
+
+#-------------------------------------------------------------------------------
 
 =item C<setcolour((red, green, blue)|(name))>
 
@@ -889,7 +909,7 @@ Example:
 
 =cut
 
-sub setcolour# {{{
+sub setcolour
 {
   my $self = shift;
   my ($r, $g, $b) = @_;
@@ -925,13 +945,16 @@ sub setcolour# {{{
   {
     $self->{pspages} .= "$r $g $b setrgbcolor\n";
   } else {
-    $r = 0.3*$r + 0.59*$g + 0.11*$b;	##PKENT - better colour->grey conversion
+    ##PKENT - better colour->grey conversion:
+    $r = 0.3*$r + 0.59*$g + 0.11*$b;
     $self->{pspages} .= "$r setgray\n";
   }
   
   return 1;
-}# }}}
+}
 
+
+#-------------------------------------------------------------------------------
 
 =item C<setlinewidth(width)>
 
@@ -946,8 +969,7 @@ Example:
 
 =cut
 
-
-sub setlinewidth# {{{
+sub setlinewidth
 {
   my $self = shift;
   my $width = shift || do {
@@ -962,8 +984,10 @@ sub setlinewidth# {{{
   $self->{pspages} .= "$width setlinewidth\n";
   
   return 1;
-}# }}}
+}
 
+
+#-------------------------------------------------------------------------------
 
 =item C<line(x1,y1, x2,y2 [,red, green, blue])>
 
@@ -986,8 +1010,7 @@ Example:
 
 =cut
 
-
-sub line# {{{
+sub line
 {
   my $self = shift;
   my ($x1, $y1, $x2, $y2, $r, $g, $b) = @_;
@@ -1006,8 +1029,8 @@ sub line# {{{
   }
   elsif ( @_ != 4 )
   {
-  	$self->_error( "wrong number of args for line" );
-  	return 0;
+    $self->_error( "wrong number of args for line" );
+    return 0;
   }
   
   $self->newpath;
@@ -1015,8 +1038,10 @@ sub line# {{{
   $self->{pspages} .= "$x2 ux $y2 uy lineto stroke\n";
   
   return 1;
-}# }}}
+}
 
+
+#-------------------------------------------------------------------------------
 
 =item C<linextend(x,y)>
 
@@ -1037,8 +1062,7 @@ The C<polygon> method may be more appropriate.
 
 =cut
 
-
-sub linextend# {{{
+sub linextend
 {
   my $self = shift;
   my ($x, $y) = @_;
@@ -1046,7 +1070,7 @@ sub linextend# {{{
   unless ( @_ == 2 )
   {
     $self->_error( "wrong number of args for linextend" );
-  	return 0;
+    return 0;
   }
   
   $self->{pspages} =~ s/eto stroke\n$/eto\n$x ux $y uy lineto stroke\n/;
@@ -1059,7 +1083,10 @@ sub linextend# {{{
 # XXXXX fixme
 
   return 1;
-}# }}}
+}
+
+
+#-------------------------------------------------------------------------------
 
 =item C<arc([options,] x,y, radius, start_angle, end_angle)>
 
@@ -1088,7 +1115,7 @@ Example:
 
 =cut
 
-sub arc# {{{
+sub arc
 {
   my $self = shift;
   my %opt = ();
@@ -1118,7 +1145,10 @@ sub arc# {{{
   }
   
   return 1;
-}# }}}
+}
+
+
+#-------------------------------------------------------------------------------
 
 =item C<polygon([options,] x1,y1, x2,y2, ..., xn,yn)>
 
@@ -1165,8 +1195,7 @@ Example:
 
 =cut
 
-
-sub polygon# {{{
+sub polygon
 {
   my $self = shift;
 
@@ -1285,8 +1314,10 @@ sub exch 0 exch sub translate} def\n";
   }
   
   return 1;
-}# }}}
+}
 
+
+#-------------------------------------------------------------------------------
 
 =item C<circle([options,] x,y, r)>
 
@@ -1310,8 +1341,7 @@ Example:
 
 =cut
 
-
-sub circle# {{{
+sub circle
 {
   my $self = shift;
   my %opt = ();
@@ -1340,7 +1370,10 @@ sub circle# {{{
   else {$self->{pspages} .= "stroke\n" }
   
   return 1;
-}# }}}
+}
+
+
+#-------------------------------------------------------------------------------
 
 =item C<circletext([options,] x, y, r, a, text)>
 
@@ -1366,8 +1399,7 @@ Example:
 
 =cut
 
-
-sub circletext# {{{
+sub circletext
 {
   my $self = shift;
   my %opt = ();
@@ -1458,7 +1490,10 @@ EOCT
   $self->{pspages} .= "grestore\n";
   
   return 1;
-}# }}}
+}
+
+
+#-------------------------------------------------------------------------------
 
 =item C<box(x1,y1, x2,y2 [, options])>
 
@@ -1486,8 +1521,7 @@ The C<polygon> method is far more flexible, but this method is quicker!
 
 =cut
 
-
-sub box# {{{
+sub box
 {
   my $self = shift;
 
@@ -1501,8 +1535,8 @@ sub box# {{{
   my ($x1, $y1, $x2, $y2) = @_;
 
   unless (@_ == 4) {
-  	$self->_error("box: wrong number of arguments");
-  	return 0;
+    $self->_error("box: wrong number of arguments");
+    return 0;
   }
 
   if (!defined($opt{'filled'}))
@@ -1527,8 +1561,10 @@ sub box# {{{
   else {$self->{pspages} .= "stroke\n" }
 
   return 1;
-}# }}}
+}
 
+
+#-------------------------------------------------------------------------------
 
 =item C<setfont(font, size)>
 
@@ -1541,15 +1577,14 @@ This method must be called on every page before the C<text> method is used.
 
 =cut
 
-
-sub setfont# {{{
+sub setfont
 {
   my $self = shift;
   my ($name, $size, $ysize) = @_;
 
   unless (@_ == 2) {
-  	$self->_error( "wrong number of arguments for setfont" );
-  	return 0;
+    $self->_error( "wrong number of arguments for setfont" );
+    return 0;
   }
 
 # set font y size XXXXX
@@ -1558,8 +1593,10 @@ sub setfont# {{{
   $self->{lastfontsize} = $size;
 
   return 1;
-}# }}}
+}
 
+
+#-------------------------------------------------------------------------------
 
 =item C<text([options,] x,y, string)>
 
@@ -1592,8 +1629,7 @@ Example:
 
 =cut
 
-
-sub text# {{{
+sub text
 {
   my $self = shift;
 
@@ -1609,16 +1645,16 @@ sub text# {{{
   
   unless ( @_ == 3 )
   { # check required params first
-  	$self->_error("text: wrong number of arguments");
-  	return 0;
+    $self->_error("text: wrong number of arguments");
+    return 0;
   }
   
   my ($x, $y, $text) = @_;
 
   unless (defined($x) && defined($y) && defined($text))
   {
-  	$self->_error("text: wrong number of arguments");
-  	return 0;
+    $self->_error("text: wrong number of arguments");
+    return 0;
   }
   
   # Escape text to allow parentheses
@@ -1655,8 +1691,10 @@ sub text# {{{
   $self->{pspages} .= "($text) $rot $align $rot_m\n";
 
   return 1;
-}# }}}
+}
 
+
+#-------------------------------------------------------------------------------
 
 =item curve( x1, y1, x2, y2, x3, y3, x4, y4 )
 
@@ -1665,8 +1703,7 @@ control points for the start- and end-points respectively.
 
 =cut
 
-
-sub curve# {{{
+sub curve
 {
   my $self = shift;
   my ($x1, $y1, $x2, $y2, $x3, $y3, $x4, $y4) = @_;
@@ -1689,8 +1726,10 @@ sub curve# {{{
   $self->{pspages} .= "$x2 ux $y2 uy $x3 ux $y3 uy $x4 ux $y4 uy curveto stroke\n";
 
   return 1;
-}# }}}
+}
 
+
+#-------------------------------------------------------------------------------
 
 =item curvextend( x1, y1, x2, y2, x3, y3 )
 
@@ -1701,8 +1740,7 @@ other method is unspecified.
 
 =cut
 
-
-sub curvextend# {{{
+sub curvextend
 {
   my $self = shift;
   my ($x1, $y1, $x2, $y2, $x3, $y3) = @_;
@@ -1716,40 +1754,49 @@ sub curvextend# {{{
   $self->{pspages} =~ s/eto stroke\n$/eto\n$x1 ux $y1 uy $x2 ux $y2 uy $x3 ux $y3 uy curveto stroke\n/;
   
   return 1;
-}# }}}
+}
 
+
+#-------------------------------------------------------------------------------
 
 =item newpath
 
-This method is used internally to begin a new drawing path - you should generally NEVER use it.
+This method is used internally to begin a new drawing path - you should
+generally NEVER use it.
 
 =cut
 
-
-sub newpath# {{{
+sub newpath
 {
-	my $self = shift;
-	$self->{pspages} .= "newpath\n";
-	return 1;
-}# }}}
+  my $self = shift;
 
+  $self->{pspages} .= "newpath\n";
+
+  return 1;
+}
+
+
+#-------------------------------------------------------------------------------
 
 =item moveto( x, y )
 
-This method is used internally to move the cursor to a new point at (x, y) - you will 
-generally NEVER use this method.
+This method is used internally to move the cursor to a new point at (x, y) -
+you will generally NEVER use this method.
 
 =cut
 
-
-sub moveto# {{{
+sub moveto
 {
-	my $self = shift;
-	my ($x, $y) = @_;
-	$self->{pspages} .= "$x ux $y uy moveto\n";
-	return 1;
-}# }}}
+  my $self = shift;
+  my ($x, $y) = @_;
 
+  $self->{pspages} .= "$x ux $y uy moveto\n";
+
+  return 1;
+}
+
+
+#-------------------------------------------------------------------------------
 
 =item C<importepsfile([options,] filename, x1,y1, x2,y2)>
 
@@ -1793,8 +1840,7 @@ Example:
 
 =cut
 
-
-sub importepsfile# {{{
+sub importepsfile
 {
   my $self = shift;
 
@@ -1865,8 +1911,10 @@ sub importepsfile# {{{
   $self->_add_eps($eps, $x1, $y1);
 
   return 1;
-}# }}}
+}
 
+
+#-------------------------------------------------------------------------------
 
 =item C<importeps(filename, x,y)>
 
@@ -1895,8 +1943,7 @@ Example:
 
 =cut
 
-
-sub importeps# {{{
+sub importeps
 {
   my $self = shift;
   my ($epsobj, $xpos, $ypos) = @_;
@@ -1909,9 +1956,13 @@ sub importeps# {{{
   $self->_add_eps($epsobj, $xpos, $ypos);
 
   return 1;
-}# }}}
+}
 
-sub _add_eps# {{{
+
+################################################################################
+# PRIVATE methods
+
+sub _add_eps
 {
   my $self = shift;
   my $epsobj;
@@ -1929,8 +1980,8 @@ sub _add_eps# {{{
   }
 
   if ( @_ != 3 ) {
-  	croak "internal error: wrong number of arguments for _add_eps";
-  	return 0;
+    croak "internal error: wrong number of arguments for _add_eps";
+    return 0;
   }
 
   unless ($self->{usedimporteps}) {
@@ -1955,17 +2006,20 @@ EOEPS
   $self->{pspages} .= "EndEPSF\n";
   
   return 1;
-}# }}}
+}
 
 
-### PRIVATE
+#-------------------------------------------------------------------------------
 
-sub _error {# {{{
-	my $self = shift;
-	my $msg = shift;
-	$self->{pspages} .= "(error: $msg\n) print flush\n";
-}# }}}
+sub _error {
+  my $self = shift;
+  my $msg = shift;
 
+  $self->{pspages} .= "(error: $msg\n) print flush\n";
+}
+
+
+#-------------------------------------------------------------------------------
 
 # Display method for debugging internal variables
 #
@@ -1995,7 +2049,7 @@ Thanks!
 Please see the README file in the distribution for more information about
 contributors.
 
-Copyright (C) 2002-2003 Matthew C. Newton / Newton Computing
+Copyright (C) 2002-2014 Matthew C. Newton
 
 This program is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free Software

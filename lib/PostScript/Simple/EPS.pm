@@ -13,6 +13,9 @@ use vars qw($VERSION @ISA @EXPORT);
 @EXPORT = qw();
 $VERSION = "0.01";
 
+
+#-------------------------------------------------------------------------------
+
 =head1 NAME
 
 PostScript::Simple::EPS - EPS support for PostScript::Simple
@@ -121,8 +124,7 @@ of C<PostScript::Simple>.
 
 =cut
 
-
-sub new# {{{
+sub new
 {
   my ($class, %data) = @_;
   my $self = {
@@ -158,52 +160,12 @@ sub new# {{{
   $self->init();
 
   return $self;
-}# }}}
+}
 
-sub _getfilebbox# {{{
-{
-  my $self = shift;
-  my $foundbbx = 0;
 
-  return 0 if (!defined $$self{file});
-  open EPS, "< $$self{file}" || croak "can't open eps file $$self{file}";
-  SCAN: while (<EPS>)
-  {
-    s/[\r\n]*$//; #ultimate chomp
-    if (/^\%\%BoundingBox:\s+(-?\d+)\s+(-?\d+)\s+(-?\d+)\s+(-?\d+)\s*$/)
-    {
-      $$self{bbx1} = $1; 
-      $$self{bby1} = $2; 
-      $$self{bbx2} = $3; 
-      $$self{bby2} = $4; 
-      $foundbbx = 1;
-      last SCAN;
-    }
-  }
-  close EPS;
+#-------------------------------------------------------------------------------
 
-  return $foundbbx;
-}# }}}
-
-sub _getsourcebbox# {{{
-{
-  my $self = shift;
-
-  return 0 if (!defined $$self{epsfile});
-  if ($$self{epsfile} =~
-      /^\%\%BoundingBox:\s+(-?\d+)\s+(-?\d+)\s+(-?\d+)\s+(-?\d+)$/m)
-  {
-    $$self{bbx1} = $1; 
-    $$self{bby1} = $2; 
-    $$self{bbx2} = $3; 
-    $$self{bby2} = $4; 
-    return 1;
-  }
-
-  return 0;
-}# }}}
-
-sub init# {{{
+sub init
 {
   my $self = shift;
   my $foundbbx = 0;
@@ -231,13 +193,15 @@ sub init# {{{
   $self->reset();
 
   return 1;
-}# }}}
+}
 
+
+#-------------------------------------------------------------------------------
 
 =head1 OBJECT METHODS
 
 All object methods return 1 for success or 0 in some error condition
-(e.g. insufficient arguments).  Error message text is also drawn on
+(e.g. insufficient arguments). Error message text is also drawn on
 the page.
 
 =over 4
@@ -253,16 +217,19 @@ Example:
 
 =cut
 
-sub get_bbox# {{{
+sub get_bbox
 {
   my $self = shift;
 
   return ($$self{bbx1}, $$self{bby1}, $$self{bbx2}, $$self{bby2});
-}# }}}
+}
+
+
+#-------------------------------------------------------------------------------
 
 =item C<width>
 
-Returns the EPS width.
+Returns the EPS width, in PostScript points.
 
 Example:
 
@@ -270,16 +237,19 @@ Example:
 
 =cut
 
-sub width# {{{
+sub width
 {
   my $self = shift;
 
   return ($$self{bbx2} - $$self{bbx1});
-}# }}}
+}
+
+
+#-------------------------------------------------------------------------------
 
 =item C<height>
 
-Returns the EPS height.
+Returns the EPS height, in PostScript points.
 
 Example:
 
@@ -289,12 +259,15 @@ To scale $eps to 72 points high, do:
 
 =cut
 
-sub height# {{{
+sub height
 {
   my $self = shift;
 
   return ($$self{bby2} - $$self{bby1});
-}# }}}
+}
+
+
+#-------------------------------------------------------------------------------
 
 =item C<scale(x, y)>
 
@@ -309,7 +282,7 @@ Example:
 
 =cut
 
-sub scale# {{{
+sub scale
 {
   my $self = shift;
   my ($x, $y) = @_;
@@ -320,8 +293,10 @@ sub scale# {{{
   push @{$$self{epsprefix}}, "$x $y scale";
 
   return 1;
-}# }}}
+}
 
+
+#-------------------------------------------------------------------------------
 
 =item C<rotate(deg)>
 
@@ -342,7 +317,7 @@ To rotate 30 degrees about point (50,50):
     
 =cut
 
-sub rotate# {{{
+sub rotate
 {
   my $self = shift;
   my ($d) = @_;
@@ -352,8 +327,10 @@ sub rotate# {{{
   push @{$$self{epsprefix}}, "$d rotate";
 
   return 1;
-}# }}}
+}
 
+
+#-------------------------------------------------------------------------------
 
 =item C<translate(x, y)>
 
@@ -365,7 +342,7 @@ Example:
 
 =cut
 
-sub translate# {{{
+sub translate
 {
   my $self = shift;
   my ($x, $y) = @_;
@@ -375,8 +352,10 @@ sub translate# {{{
   push @{$$self{epsprefix}}, "$x $y translate";
 
   return 1;
-}# }}}
+}
 
+
+#-------------------------------------------------------------------------------
 
 =item C<reset>
 
@@ -388,15 +367,17 @@ Example:
 
 =cut
 
-sub reset# {{{
+sub reset
 {
   my $self = shift;
 
   @{$$self{"epsprefix"}} = ();
 
   return 1;
-}# }}}
+}
 
+
+#-------------------------------------------------------------------------------
 
 =item C<load>
 
@@ -405,7 +386,7 @@ inserted many times into a document. Can not be used with C<preload>.
 
 =cut
 
-sub load# {{{
+sub load
 {
   my $self = shift;
   local *EPS;
@@ -422,9 +403,10 @@ sub load# {{{
   $$self{"epsfile"} .= "\%\%EndDocument\n";
 
   return 1;
-}# }}}
+}
 
 
+#-------------------------------------------------------------------------------
 
 =item C<preload(object)>
 
@@ -444,7 +426,7 @@ Example:
 
 =cut
 
-sub preload# {{{
+sub preload
 {
   my $self = shift;
   my $ps = shift;
@@ -473,12 +455,62 @@ sub preload# {{{
   $$ps{"psprolog"} .= "} def\n";
 
   return 1;
-}# }}}
+}
 
 
-### PRIVATE
+################################################################################
+# PRIVATE methods
 
-sub _get_include_data# {{{
+sub _getfilebbox
+{
+  my $self = shift;
+  my $foundbbx = 0;
+
+  return 0 if (!defined $$self{file});
+  open EPS, "< $$self{file}" || croak "can't open eps file $$self{file}";
+  SCAN: while (<EPS>)
+  {
+    s/[\r\n]*$//; #ultimate chomp
+    if (/^\%\%BoundingBox:\s+(-?\d+)\s+(-?\d+)\s+(-?\d+)\s+(-?\d+)\s*$/)
+    {
+      $$self{bbx1} = $1; 
+      $$self{bby1} = $2; 
+      $$self{bbx2} = $3; 
+      $$self{bby2} = $4; 
+      $foundbbx = 1;
+      last SCAN;
+    }
+  }
+  close EPS;
+
+  return $foundbbx;
+}
+
+
+#-------------------------------------------------------------------------------
+
+sub _getsourcebbox
+{
+  my $self = shift;
+
+  return 0 if (!defined $$self{epsfile});
+  if ($$self{epsfile} =~
+      /^\%\%BoundingBox:\s+(-?\d+)\s+(-?\d+)\s+(-?\d+)\s+(-?\d+)$/m)
+  {
+    $$self{bbx1} = $1; 
+    $$self{bby1} = $2; 
+    $$self{bbx2} = $3; 
+    $$self{bby2} = $4; 
+    return 1;
+  }
+
+  return 0;
+}
+
+
+#-------------------------------------------------------------------------------
+
+sub _get_include_data
 {
   my $self = shift;
   my ($x, $y) = @_;
@@ -512,14 +544,14 @@ $$self{bbx1} $$self{bby2} lineto closepath clip newpath\n";
   }
 
   return $data;
-}# }}}
+}
 
-sub _error# {{{
+sub _error
 {
-	my $self = shift;
-	my $msg = shift;
-	$self->{pspages} .= "(error: $msg\n) print flush\n";
-}# }}}
+  my $self = shift;
+  my $msg = shift;
+  $self->{pspages} .= "(error: $msg\n) print flush\n";
+}
 
 
 =back
@@ -536,7 +568,7 @@ for such a feature from several people around the world. A useful importeps
 function that provides scaling and aspect ratio operations was gratefully
 received from Glen Harris, and merged into this module.
 
-Copyright (C) 2002-2003 Matthew C. Newton / Newton Computing
+Copyright (C) 2002-2014 Matthew C. Newton
 
 This program is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free Software
