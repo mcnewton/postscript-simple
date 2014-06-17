@@ -97,7 +97,7 @@ return '/ux {} def
 % /NewEnc BaseEnc STARTDIFFENC number or glyphname ... ENDDIFFENC -
 	counttomark 2 add -1 roll 256 array copy
 	/TempEncode exch def
-	
+
 	% pointer for sequential encodings
 	/EncodePointer 0 def
 	{
@@ -119,7 +119,7 @@ return '/ux {} def
 			/EncodePointer exch def
 			} ifelse
 		} ifelse
-	} loop	
+	} loop
 
 	TempEncode def
 } bind def
