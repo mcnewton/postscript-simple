@@ -1,5 +1,9 @@
 Revision history for Perl extension PostScript::Simple.
 
+0.08p1 - 17 June 2014
+  Satoshi Azuma:
+    - remove Test::More module and make it a build dependency
+
 0.07 - 13 January 2006
   Matthew Newton:
     - fix lack of newpath in arc

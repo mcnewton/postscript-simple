@@ -1,10 +1,17 @@
-PostScript/Simple version 0.07
-==============================
+PostScript::Simple
+==================
+
+INTRODUCTION
 
 PostScript::Simple allows you to have a simple method of writing PostScript
 files from Perl. It has several graphics primitives that allow lines, circles,
 polygons and boxes to be drawn. Text can be added to the page using standard
 PostScript fonts.
+
+It is named PostScript::Simple because it is intended to be simple
+to use to generate PostScript pages from Perl, not because it is a
+simplified interface for some other module, or can't do advanced
+things.
 
 Features include:
 
@@ -20,19 +27,12 @@ Features include:
 The file examples/example.pl provides some bad examples of what this module
 does.
 
-An experimental Subversion repository of PostScript::Simple is now available at
-http://svn.newtoncomputing.co.uk/pss. Username is "anonymous" with a blank
-password. The latest version can be checked out with the following command:
 
-  svn co http://svn.newtoncomputing.co.uk/pss/trunk simple
+SOURCE
 
-This will put the files in a directory named "simple". To take a look at the
-next generation version of PostScript::Simple, currently in very slow
-development, try:
+The module source is now hosted on GitHub; see:
 
-  svn co http://svn.newtoncomputing.co.uk/pss/branches/nextgen
-
-Which will create the directory "nextgen" for the files to go in.
+  https://github.com/mcnewton/postscript-simple
 
 
 INSTALLATION
@@ -47,7 +47,7 @@ To install this module type the following:
 
 COPYRIGHT AND LICENCE
 
-Copyright (C) 2002-2003 Matthew C. Newton / Newton Computing
+Copyright (C) 2002-2014 Matthew C. Newton
 
 This program is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free Software
@@ -66,7 +66,8 @@ to everyone involved! People who have helped include (in no particular order):
 
   Mark Withall, Andreas Riechert, P Kent, Flemming Frandsen, Michael
   Tomuschat, Vladi Belperchinov-Shabanski, Eric Voisard, Martin
-  McCarthy, Eric Wilhelm, Glen Harris, Peter Kuehn, Tomas Karlsson
+  McCarthy, Eric Wilhelm, Glen Harris, Peter Kuehn, Tomas Karlsson,
+  Satoshi Azuma
 
 I apologise if you should be here and I have missed you, please let me know.
 
