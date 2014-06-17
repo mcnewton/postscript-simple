@@ -928,9 +928,11 @@ sub setcolour
   }
   elsif ( @_ == 3 )
   {
-    $r /= 255;
-    $g /= 255;
-    $b /= 255;
+    # make sure floats aren't too long, and means the tests pass when
+    # using a system with long doubles enabled by default
+    $r = 0 + sprintf("%0.5f", $r / 255);
+    $g = 0 + sprintf("%0.5f", $g / 255);
+    $b = 0 + sprintf("%0.5f", $b / 255);
   }
   else
   {
@@ -947,6 +949,7 @@ sub setcolour
   } else {
     ##PKENT - better colour->grey conversion:
     $r = 0.3*$r + 0.59*$g + 0.11*$b;
+    $r = 0 + sprintf("%0.5f", $r / 255);
     $self->{pspages} .= "$r setgray\n";
   }
   

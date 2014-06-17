@@ -214,7 +214,7 @@ return '(error: Do not use newpage for eps files!
 ) print flush
 (error: setcolour given invalid arguments: 120, 240, undef
 ) print flush
-0.470588235294118 0.941176470588235 0 setrgbcolor
+0.47059 0.94118 0 setrgbcolor
 1 u setlinewidth
 (error: setlinewidth not given a width
 ) print flush
@@ -225,7 +225,7 @@ newpath
 ) print flush
 (error: wrong number of args for line
 ) print flush
-0.196078431372549 0.196078431372549 0.196078431372549 setrgbcolor
+0.19608 0.19608 0.19608 setrgbcolor
 newpath
 10 ux 10 uy moveto
 10 ux 20 uy lineto

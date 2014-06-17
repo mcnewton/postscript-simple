@@ -369,73 +369,73 @@ showpage
 %%BeginPageSetup
 /pagelevel save def
 %%EndPageSetup
-0.141176470588235 0 0 setrgbcolor
+0.14118 0 0 setrgbcolor
 10 ux 10 uy 12 ux 40 uy box fill
-0.164705882352941 0 0 setrgbcolor
+0.16471 0 0 setrgbcolor
 12 ux 10 uy 14 ux 40 uy box fill
-0.188235294117647 0 0 setrgbcolor
+0.18824 0 0 setrgbcolor
 14 ux 10 uy 16 ux 40 uy box fill
-0.211764705882353 0 0 setrgbcolor
+0.21176 0 0 setrgbcolor
 16 ux 10 uy 18 ux 40 uy box fill
-0.235294117647059 0 0 setrgbcolor
+0.23529 0 0 setrgbcolor
 18 ux 10 uy 20 ux 40 uy box fill
-0.258823529411765 0 0 setrgbcolor
+0.25882 0 0 setrgbcolor
 20 ux 10 uy 22 ux 40 uy box fill
-0.282352941176471 0 0 setrgbcolor
+0.28235 0 0 setrgbcolor
 22 ux 10 uy 24 ux 40 uy box fill
-0.305882352941176 0 0 setrgbcolor
+0.30588 0 0 setrgbcolor
 24 ux 10 uy 26 ux 40 uy box fill
-0.329411764705882 0 0 setrgbcolor
+0.32941 0 0 setrgbcolor
 26 ux 10 uy 28 ux 40 uy box fill
-0.352941176470588 0 0 setrgbcolor
+0.35294 0 0 setrgbcolor
 28 ux 10 uy 30 ux 40 uy box fill
-0.376470588235294 0 0 setrgbcolor
+0.37647 0 0 setrgbcolor
 30 ux 10 uy 32 ux 40 uy box fill
 0.4 0 0 setrgbcolor
 32 ux 10 uy 34 ux 40 uy box fill
-0.423529411764706 0 0 setrgbcolor
+0.42353 0 0 setrgbcolor
 34 ux 10 uy 36 ux 40 uy box fill
-0.447058823529412 0 0 setrgbcolor
+0.44706 0 0 setrgbcolor
 36 ux 10 uy 38 ux 40 uy box fill
-0.470588235294118 0 0 setrgbcolor
+0.47059 0 0 setrgbcolor
 38 ux 10 uy 40 ux 40 uy box fill
-0.494117647058824 0 0 setrgbcolor
+0.49412 0 0 setrgbcolor
 40 ux 10 uy 42 ux 40 uy box fill
-0.517647058823529 0 0 setrgbcolor
+0.51765 0 0 setrgbcolor
 42 ux 10 uy 44 ux 40 uy box fill
-0.541176470588235 0 0 setrgbcolor
+0.54118 0 0 setrgbcolor
 44 ux 10 uy 46 ux 40 uy box fill
-0.564705882352941 0 0 setrgbcolor
+0.56471 0 0 setrgbcolor
 46 ux 10 uy 48 ux 40 uy box fill
-0.588235294117647 0 0 setrgbcolor
+0.58824 0 0 setrgbcolor
 48 ux 10 uy 50 ux 40 uy box fill
-0.611764705882353 0 0 setrgbcolor
+0.61176 0 0 setrgbcolor
 50 ux 10 uy 52 ux 40 uy box fill
-0.635294117647059 0 0 setrgbcolor
+0.63529 0 0 setrgbcolor
 52 ux 10 uy 54 ux 40 uy box fill
-0.658823529411765 0 0 setrgbcolor
+0.65882 0 0 setrgbcolor
 54 ux 10 uy 56 ux 40 uy box fill
-0.682352941176471 0 0 setrgbcolor
+0.68235 0 0 setrgbcolor
 56 ux 10 uy 58 ux 40 uy box fill
-0.705882352941177 0 0 setrgbcolor
+0.70588 0 0 setrgbcolor
 58 ux 10 uy 60 ux 40 uy box fill
-0.729411764705882 0 0 setrgbcolor
+0.72941 0 0 setrgbcolor
 60 ux 10 uy 62 ux 40 uy box fill
-0.752941176470588 0 0 setrgbcolor
+0.75294 0 0 setrgbcolor
 62 ux 10 uy 64 ux 40 uy box fill
-0.776470588235294 0 0 setrgbcolor
+0.77647 0 0 setrgbcolor
 64 ux 10 uy 66 ux 40 uy box fill
 0.8 0 0 setrgbcolor
 66 ux 10 uy 68 ux 40 uy box fill
-0.823529411764706 0 0 setrgbcolor
+0.82353 0 0 setrgbcolor
 68 ux 10 uy 70 ux 40 uy box fill
-0.847058823529412 0 0 setrgbcolor
+0.84706 0 0 setrgbcolor
 70 ux 10 uy 72 ux 40 uy box fill
-0.870588235294118 0 0 setrgbcolor
+0.87059 0 0 setrgbcolor
 72 ux 10 uy 74 ux 40 uy box fill
-0.894117647058824 0 0 setrgbcolor
+0.89412 0 0 setrgbcolor
 74 ux 10 uy 76 ux 40 uy box fill
-0.917647058823529 0 0 setrgbcolor
+0.91765 0 0 setrgbcolor
 76 ux 10 uy 78 ux 40 uy box fill
 newpath
 40 ux 30 uy moveto

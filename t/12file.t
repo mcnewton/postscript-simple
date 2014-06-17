@@ -75,7 +75,7 @@ newpath
 2 ux 4 uy lineto stroke
 1.5 ux 1 uy 2 ux 3.5 uy box stroke
 2 ux 2 uy 1 u circle stroke
-0 0.392156862745098 0.784313725490196 setrgbcolor
+0 0.39216 0.78431 setrgbcolor
 gsave 1 ux 1 uy 45 rotabout
 newpath
 1 ux 1 uy moveto
