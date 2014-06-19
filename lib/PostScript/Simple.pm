@@ -371,8 +371,7 @@ sub new
     direction      => 'RightUp',
   };
 
-  foreach (keys %data)
-  {
+  foreach (keys %data) {
     $self->{$_} = $data{$_};
   }
 
@@ -469,29 +468,22 @@ sub init
 
 
 # Paper size
-  if (defined $self->{papersize})
-  {
+  if (defined $self->{papersize}) {
     $self->{papersize} = ucfirst lc $self->{papersize};
   }
 
-  if (!defined $self->{xsize} || !defined $self->{ysize})
-  {
-    if (defined $self->{papersize} && defined $pspaper{$self->{papersize}})
-    {
+  if (!defined $self->{xsize} || !defined $self->{ysize}) {
+    if (defined $self->{papersize} && defined $pspaper{$self->{papersize}}) {
       ($self->{xsize}, $self->{ysize}) = split(/\s+/, $pspaper{$self->{papersize}});
       $self->{bbx2} = int($self->{xsize});
       $self->{bby2} = int($self->{ysize});
       $self->{pscomments} .= "\%\%DocumentMedia: $self->{papersize} $self->{xsize} ";
       $self->{pscomments} .= "$self->{ysize} 0 ( ) ( )\n";
-     }
-    else
-    {
+    } else {
       ($self->{xsize}, $self->{ysize}) = (100,100);
       $self->_error( "page size undefined" );
     }
-  }
-  else
-  {
+  } else {
     $self->{bbx2} = int(($self->{xsize} * $m) / $d);
     $self->{bby2} = int(($self->{ysize} * $m) / $d);
   }
@@ -503,8 +495,7 @@ sub init
   }
 
 # Landscape
-  if ($self->{landscape})
-  {
+  if ($self->{landscape}) {
     my $swap;
 
     $self->{psfunctions} .= "/landscape {
@@ -522,15 +513,12 @@ sub init
 
     # for EPS files, change to landscape here, as there are no pages
     if ($self->{eps}) { $self->{pssetup} .= "landscape\n" }
-  }
-  else
-  {
+  } else {
     $self->{pscomments} .= "\%\%Orientation: Portrait\n";
   }
   
 # Clipping
-  if ($self->{clip})
-  {
+  if ($self->{clip}) {
     $self->{psfunctions} .= "/pageclip {newpath $self->{bbx1} $self->{bby1} moveto
 $self->{bbx1} $self->{bby2} lineto
 $self->{bbx2} $self->{bby2} lineto
@@ -542,20 +530,16 @@ closepath clip} bind def
   }
 
 # Font reencoding
-  if ($self->{reencode})
-  {
+  if ($self->{reencode}) {
     my $encoding; # The name of the encoding
     my $ext;      # The extention to tack onto the std fontnames
 
-    if (ref $self->{reencode} eq 'ARRAY')
-    {
+    if (ref $self->{reencode} eq 'ARRAY') {
       die "Custom reencoding of fonts not really implemented yet, sorry...";
       $encoding = shift @{$self->{reencode}};
       $ext = shift @{$self->{reencode}};
       # TODO: Do something to add the actual encoding to the postscript code.
-    }
-    else
-    {
+    } else {
       $encoding = $self->{reencode};
       $ext = '-iso';
     }
@@ -652,8 +636,7 @@ closepath clip} bind def
 % Reencode the std fonts: 
 EOP
     
-    for my $font (@fonts)
-    {
+    for my $font (@fonts) {
       $self->{psfunctions} .= "/${font}$ext $encoding /$font REENCODEFONT\n";
     }
   }
@@ -697,26 +680,21 @@ sub newpage
   
   if (defined($nextpage)) { $self->{page} = $nextpage; }
 
-  if ($self->{eps})
-  {
+  if ($self->{eps}) {
     # Cannot have multiple pages in an EPS file
     $self->_error("Do not use newpage for eps files!");
     return 0;
   }
 
-  if ($self->{pspagecount} != 0)
-  {
+  if ($self->{pspagecount} != 0) {
     $self->{pspages} .= "\%\%PageTrailer\npagelevel restore\nshowpage\n";
   }
 
   $self->{pspagecount} ++;
   $self->{pspages} .= "\%\%Page: $self->{page} $self->{pspagecount}\n";
-  if ($self->{page} >= 0)
-  {    
+  if ($self->{page} >= 0) {    
     $self->{page} ++;
-  }
-  else
-  {
+  } else {
     $self->{page} --;
   }
 
@@ -774,12 +752,9 @@ sub _builddocument
   push @$page, "\%\%For: $user\n";
   push @$page, \$self->{pscomments};
 #  push @$page, "\%\%DocumentFonts: \n";
-  if ($self->{eps})
-  {
+  if ($self->{eps}) {
     push @$page, "\%\%BoundingBox: $self->{bbx1} $self->{bby1} $self->{bbx2} $self->{bby2}\n";
-  }
-  else
-  {
+  } else {
     push @$page, "\%\%Pages: $self->{pspagecount}\n";
   }
   push @$page, "\%\%EndComments\n";
@@ -798,11 +773,9 @@ sub _builddocument
   push @$page, "\%\%EndProlog\n";
 
 # Setup Section
-  if (length($self->{pssetup}) || ($self->{copies} > 1))
-  {
+  if (length($self->{pssetup}) || ($self->{copies} > 1)) {
     push @$page, "\%\%BeginSetup\n";
-    if ($self->{copies} > 1)
-    {
+    if ($self->{copies} > 1) {
       push @$page, "/#copies " . $self->{copies} . " def\n";
     }
     push @$page, \$self->{pssetup};
@@ -811,16 +784,14 @@ sub _builddocument
 
 # Pages
   push @$page, \$self->{pspages};
-  if ((!$self->{eps}) && ($self->{pspagecount} > 0))
-  {
+  if ((!$self->{eps}) && ($self->{pspagecount} > 0)) {
     push @$page, "\%\%PageTrailer\n";
     push @$page, "pagelevel restore\n";
     push @$page, "showpage\n";
   }
 
 # Trailer Section
-  if (length($self->{pstrailer}))
-  {
+  if (length($self->{pstrailer})) {
     push @$page, "\%\%Trailer\n";
     push @$page, \$self->{pstrailer};
   }
@@ -942,28 +913,22 @@ sub setcolour
   my $self = shift;
   my ($r, $g, $b) = @_;
 
-  if ( @_ == 1 )
-  {
+  if ( @_ == 1 ) {
     $r = lc $r;
 
-    if (defined $pscolours{$r})
-    {
+    if (defined $pscolours{$r}) {
       ($r, $g, $b) = split(/\s+/, $pscolours{$r});
     } else {
       $self->_error( "bad colour name '$r'" );
       return 0;
     }
-  }
-  elsif ( @_ == 3 )
-  {
+  } elsif ( @_ == 3 ) {
     # make sure floats aren't too long, and means the tests pass when
     # using a system with long doubles enabled by default
     $r = 0 + sprintf("%0.5f", $r / 255);
     $g = 0 + sprintf("%0.5f", $g / 255);
     $b = 0 + sprintf("%0.5f", $b / 255);
-  }
-  else
-  {
+  } else {
     if (not defined $r) { $r = 'undef' }
     if (not defined $g) { $g = 'undef' }
     if (not defined $b) { $b = 'undef' }
@@ -971,8 +936,7 @@ sub setcolour
     return 0;
   }
 
-  if ($self->{colour})
-  {
+  if ($self->{colour}) {
     $self->{pspages} .= "$r $g $b setrgbcolor\n";
   } else {
     # better colour->grey conversion than just 0.33 of each:
@@ -1043,18 +1007,14 @@ sub line
   my $self = shift;
   my ($x1, $y1, $x2, $y2, $r, $g, $b) = @_;
 
-  if ((!$self->{pspagecount}) and (!$self->{eps}))
-  {
+  if ((!$self->{pspagecount}) and (!$self->{eps})) {
     # Cannot draw on to non-page when not an eps file
     return 0;
   }
 
-  if ( @_ == 7 )
-  {
+  if ( @_ == 7 ) {
     $self->setcolour($r, $g, $b);
-  }
-  elsif ( @_ != 4 )
-  {
+  } elsif ( @_ != 4 ) {
     $self->_error( "wrong number of args for line" );
     return 0;
   }
@@ -1093,8 +1053,7 @@ sub linextend
   my $self = shift;
   my ($x, $y) = @_;
   
-  unless ( @_ == 2 )
-  {
+  unless ( @_ == 2 ) {
     $self->_error( "wrong number of args for linextend" );
     return 0;
   }
@@ -1226,75 +1185,59 @@ sub polygon
   my ($xoffset, $yoffset) = (0,0);
   my ($rotate, $rotatex, $rotatey) = (0,0,0);
 
-  if ($#_ < 3)
-  {
+  if ($#_ < 3) {
     # cannot have polygon with just one point...
     $self->_error( "bad polygon - not enough points" );
     return 0;
   }
 
-  if (ref($_[0]))
-  {
+  if (ref($_[0])) {
     %opt = %{; shift};
   }
 
   my $x = shift;
   my $y = shift;
 
-  if (defined $opt{'rotate'})
-  {
-    if (ref($opt{'rotate'}))
-    {
+  if (defined $opt{'rotate'}) {
+    if (ref($opt{'rotate'})) {
       ($rotate, $rotatex, $rotatey) = @{$opt{'rotate'}};
-    }
-    else
-    {
+    } else {
       ($rotate, $rotatex, $rotatey) = ($opt{'rotate'}, $x, $y);
     }
   }
 
-  if (defined $opt{'offset'})
-  {
-    if (ref($opt{'offset'}))
-    {
+  if (defined $opt{'offset'}) {
+    if (ref($opt{'offset'})) {
       ($xoffset, $yoffset) = @{$opt{'offset'}};
-    }
-    else
-    {
+    } else {
       $self->_error("polygon: bad offset option" );
       return 0;
     }
   }
 
-  if (!defined $opt{'filled'})
-  {
+  if (!defined $opt{'filled'}) {
     $opt{'filled'} = 0;
   }
   
-  unless (defined($x) && defined($y))
-  {
+  unless (defined($x) && defined($y)) {
     $self->_error("polygon: no start point");
     return 0;
   }
 
   my $savestate = ($xoffset || $yoffset || $rotate) ? 1 : 0 ;
   
-  if ( $savestate )
-  {
+  if ( $savestate ) {
     $self->{pspages} .= "gsave ";
   }
 
-  if ($xoffset || $yoffset)
-  {
+  if ($xoffset || $yoffset) {
     $self->{pspages} .= $self->_uxy($xoffset, $yoffset) . "translate\n";
   }
 
-  if ($rotate)
-  {
-    if (!$self->{usedrotabout})
-    {
-      $self->{psfunctions} .= "/rotabout {3 copy pop translate rotate exch 0 exch
-sub exch 0 exch sub translate} def\n";
+  if ($rotate) {
+    if (!$self->{usedrotabout}) {
+      $self->{psfunctions} .= "/rotabout {3 copy pop translate rotate exch ";
+      $self->{psfunctions} .= "0 exch sub exch 0 exch sub translate} def\n";
       $self->{usedrotabout} = 1;
     }
 
@@ -1304,25 +1247,20 @@ sub exch 0 exch sub translate} def\n";
   $self->newpath;
   $self->moveto($x, $y);
   
-  while ($#_ > 0)
-  {
+  while ($#_ > 0) {
     my $x = shift;
     my $y = shift;
     
     $self->{pspages} .= $self->_uxy($x, $y) . "lineto ";
   }
 
-  if ($opt{'filled'})
-  {
+  if ($opt{'filled'}) {
     $self->{pspages} .= "fill\n";
-  }
-  else
-  {
+  } else {
     $self->{pspages} .= "stroke\n";
   }
 
-  if ( $savestate )
-  {
+  if ( $savestate ) {
     $self->{pspages} .= "grestore\n";
   }
   
@@ -1359,21 +1297,18 @@ sub circle
   my $self = shift;
   my %opt = ();
 
-  if (ref($_[0]))
-  {
+  if (ref($_[0])) {
     %opt = %{; shift};
   }
 
   my ($x, $y, $r) = @_;
 
-  unless (@_ == 3)
-  {
+  unless (@_ == 3) {
     $self->_error("circle: wrong number of arguments");
     return 0;
   }
 
-  if (!$self->{usedcircle})
-  {
+  if (!$self->{usedcircle}) {
     $self->{psfunctions} .= "/circle {newpath 0 360 arc closepath} bind def\n";
     $self->{usedcircle} = 1;
   }
@@ -1417,8 +1352,7 @@ sub circletext
   my $self = shift;
   my %opt = ();
 
-  if (ref($_[0]))
-  {
+  if (ref($_[0])) {
     %opt = %{; shift};
   }
 
@@ -1540,8 +1474,7 @@ sub box
 
   my %opt = ();
 
-  if (ref($_[0]))
-  {
+  if (ref($_[0])) {
     %opt = %{; shift};
   }
 
@@ -1552,13 +1485,11 @@ sub box
     return 0;
   }
 
-  if (!defined($opt{'filled'}))
-  {
+  if (!defined($opt{'filled'})) {
     $opt{'filled'} = 0;
   }
   
-  unless ($self->{usedbox})
-  {
+  unless ($self->{usedbox}) {
     $self->{psfunctions} .= "/box {
   newpath 3 copy pop exch 4 copy pop pop
   8 copy pop pop pop pop exch pop exch
@@ -1652,8 +1583,7 @@ sub text
   my $align = "";
   my %opt = ();
 
-  if (ref($_[0]))
-  {
+  if (ref($_[0])) {
     %opt = %{; shift};
   }
   
@@ -1665,8 +1595,7 @@ sub text
   
   my ($x, $y, $text) = @_;
 
-  unless (defined($x) && defined($y) && defined($text))
-  {
+  unless (defined($x) && defined($y) && defined($text)) {
     $self->_error("text: wrong number of arguments");
     return 0;
   }
@@ -1680,11 +1609,9 @@ sub text
 
   # rotation
 
-  if (defined $opt{'rotate'})
-  {
+  if (defined $opt{'rotate'}) {
     my $rot_a = $opt{ 'rotate' };
-    if( $rot_a != 0 )
-    {
+    if( $rot_a != 0 ) {
       $rot   = " $rot_a rotate ";
       $rot_a = -$rot_a;
       $rot_m = " $rot_a rotate ";
@@ -1694,9 +1621,7 @@ sub text
   # alignment
 
   $align = " show stroke"; 
-      # align left
-  if (defined $opt{'align'})
-  {
+  if (defined $opt{'align'}) {
     $align = " dup stringwidth pop neg 0 rmoveto show" 
         if $opt{ 'align' } eq 'right';
     $align = " dup stringwidth pop 2 div neg 0 rmoveto show"
@@ -1723,14 +1648,12 @@ sub curve
   my $self = shift;
   my ($x1, $y1, $x2, $y2, $x3, $y3, $x4, $y4) = @_;
 
-  unless ( @_ == 8 ) 
-  {
+  unless ( @_ == 8 ) {
     $self->_error( "bad curve definition, wrong number of args" );
     return 0;
   }
   
-  if ((!$self->{pspagecount}) and (!$self->{eps}))
-  {
+  if ((!$self->{pspagecount}) and (!$self->{eps})) {
     # Cannot draw on to non-page when not an eps file
     return 0;
   }
@@ -1760,8 +1683,8 @@ sub curvextend
 {
   my $self = shift;
   my ($x1, $y1, $x2, $y2, $x3, $y3) = @_;
-  unless ( @_ == 6 ) 
-  {
+
+  unless ( @_ == 6 ) {
     $self->_error( "bad curvextend definition, wrong number of args" );
     return 0;
   }

@@ -196,8 +196,7 @@ sub PROLOG {
 /Times-Italic-iso ISOLatin1Encoding /Times-Italic REENCODEFONT
 /Symbol-iso ISOLatin1Encoding /Symbol REENCODEFONT
 /circle {newpath 0 360 arc closepath} bind def
-/rotabout {3 copy pop translate rotate exch 0 exch
-sub exch 0 exch sub translate} def
+/rotabout {3 copy pop translate rotate exch 0 exch sub exch 0 exch sub translate} def
 /box {
   newpath 3 copy pop exch 4 copy pop pop
   8 copy pop pop pop pop exch pop exch

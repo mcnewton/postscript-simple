@@ -190,8 +190,7 @@ return '/STARTDIFFENC { mark } bind def
 /Times-BoldItalic-iso ISOLatin1Encoding /Times-BoldItalic REENCODEFONT
 /Times-Italic-iso ISOLatin1Encoding /Times-Italic REENCODEFONT
 /Symbol-iso ISOLatin1Encoding /Symbol REENCODEFONT
-/rotabout {3 copy pop translate rotate exch 0 exch
-sub exch 0 exch sub translate} def
+/rotabout {3 copy pop translate rotate exch 0 exch sub exch 0 exch sub translate} def
 /circle {newpath 0 360 arc closepath} bind def
 /box {
   newpath 3 copy pop exch 4 copy pop pop
