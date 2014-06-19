@@ -199,14 +199,14 @@ my %psdirs = (
 #  set up the others here (sp) XXXXX
 
 my %psunits = (
-  pt   => "72 72.27",
-  pc   => "72 6.0225",
-  in   => "72 1",
-  bp   => "1 1",
-  cm   => "72 2.54",
-  mm   => "72 25.4",
-  dd   => "72 67.567",
-  cc   => "72 810.804",
+  pt   => [72, 72.27],
+  pc   => [72, 6.0225],
+  in   => [72, 1],
+  bp   => [1, 1],
+  cm   => [72, 2.54],
+  mm   => [72, 25.4],
+  dd   => [72, 67.567],
+  cc   => [72, 810.804],
 );
 
 
@@ -414,7 +414,7 @@ sub _u
   croak "Invalid unit '$unit'" unless defined $psunits{$unit};
 
   unless (defined $self->{usedunits}{$unit}) {
-    my ($m, $d) = split(/\s+/, $psunits{$unit});
+    my ($m, $d) = @{$psunits{$unit}};
 
     my $c = "{";
     $c .= "$m mul " unless $m == 1;
@@ -456,12 +456,9 @@ sub init
 # Units
   $self->{units} = lc $self->{units};
 
-  if (defined($psunits{$self->{units}}))
-  {
-    ($m, $d) = split(/\s+/, $psunits{$self->{units}});
-  }
-  else
-  {
+  if (defined($psunits{$self->{units}})) {
+    ($m, $d) = @{$psunits{$self->{units}}};
+  } else {
     $self->_error( "unit '$self->{units}' undefined" );
   }
 
