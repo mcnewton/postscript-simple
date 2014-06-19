@@ -30,39 +30,39 @@ ok( $s->{'pspages'} eq CANNED() );
 
 sub CANNED {
 return 'newpath
-10 ux 10 uy moveto
+10 ubp 10 ubp moveto
 (Hello World)   show stroke 
 newpath
-10 ux 10 uy moveto
+10 ubp 10 ubp moveto
 (Hello World)   dup stringwidth pop neg 0 rmoveto show 
 newpath
-10 ux 20 uy moveto
+10 ubp 20 ubp moveto
 ()   show stroke 
 newpath
-10 ux 30 uy moveto
+10 ubp 30 ubp moveto
 (\000)   show stroke 
 (error: text: wrong number of arguments
 ) print flush
 newpath
-10 ux 50 uy moveto
+10 ubp 50 ubp moveto
 (ONE  TWO  THREE~~~~)   show stroke 
 newpath
-40 ux 80 uy moveto
+40 ubp 80 ubp moveto
 (ONE  TWO  THREE~~~~)  49 rotate   dup stringwidth pop 2 div neg 0 rmoveto show  -49 rotate 
 newpath
-10 ux 60 uy moveto
+10 ubp 60 ubp moveto
 (\000\001\002\003\004\005\006\007\010\011\012\013\014\015\016\017\020\021\022\023)   show stroke 
 newpath
-10 ux 70 uy moveto
+10 ubp 70 ubp moveto
 (\024\025\026\027\030\031\032\033\034\035\036\037 !"#$%&\')   show stroke 
 newpath
-10 ux 80 uy moveto
+10 ubp 80 ubp moveto
 (xyz{|}~\177\200\201\202\203\204\205\206\207\210\211\212\213)   show stroke 
 newpath
-10 ux 90 uy moveto
+10 ubp 90 ubp moveto
 (\214\215\216\217\220\221\222\223\224\225\226\227\230\231\232\233\234\235\236\237)   show stroke 
 newpath
-10 ux 100 uy moveto
+10 ubp 100 ubp moveto
 (\(\(\(\)\)\)\(\)\(\)\(\)}{}{}][[]]}\)\(\)}\)\(])   show stroke 
 ';
 }

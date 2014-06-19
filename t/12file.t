@@ -55,9 +55,6 @@ sub CANNED {
 return q[%!PS-Adobe-3.0
 /ll 1 def systemdict /languagelevel known {
 /ll languagelevel def } if
-/ux {72 mul} def
-/uy {72 mul} def
-/u {72 mul} def
 /box {
   newpath 3 copy pop exch 4 copy pop pop
   8 copy pop pop pop pop exch pop exch
@@ -67,26 +64,27 @@ return q[%!PS-Adobe-3.0
 /circle {newpath 0 360 arc closepath} bind def
 /rotabout {3 copy pop translate rotate exch 0 exch
 sub exch 0 exch sub translate} def
+/uin {72 mul} def
 ll 2 ge { << /PageSize [ 595.27559 841.88976 ] /ImagingBBox null >> setpagedevice } if
 /pagelevel save def
 newpath
-1 ux 1 uy moveto
-1 ux 4 uy lineto
-2 ux 4 uy lineto stroke
-1.5 ux 1 uy 2 ux 3.5 uy box stroke
-2 ux 2 uy 1 u circle stroke
+1 uin 1 uin moveto
+1 uin 4 uin lineto
+2 uin 4 uin lineto stroke
+1.5 uin 1 uin 2 uin 3.5 uin box stroke
+2 uin 2 uin 1 uin circle stroke
 0 0.39216 0.78431 setrgbcolor
-gsave 1 ux 1 uy 45 rotabout
+gsave 1 uin 1 uin 45 rotabout
 newpath
-1 ux 1 uy moveto
-1 ux 2 uy lineto 2 ux 2 uy lineto 2 ux 1 uy lineto 1 ux 1 uy lineto stroke
+1 uin 1 uin moveto
+1 uin 2 uin lineto 2 uin 2 uin lineto 2 uin 1 uin lineto 1 uin 1 uin lineto stroke
 grestore
 (error: setcolour given invalid arguments: red, blue, undef
 ) print flush
 1 0 0 setrgbcolor
 /Times-Roman findfont 20 scalefont setfont
 newpath
-1 ux 1 uy moveto
+1 uin 1 uin moveto
 (Hello)  -37.5 rotate   show stroke  37.5 rotate 
 pagelevel restore
 showpage

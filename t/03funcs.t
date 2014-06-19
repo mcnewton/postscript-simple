@@ -88,10 +88,7 @@ unlink 'x03.eps';
 ###
 
 sub FUNCS {
-return '/ux {} def
-/uy {} def
-/u {} def
-/STARTDIFFENC { mark } bind def
+return '/STARTDIFFENC { mark } bind def
 /ENDDIFFENC { 
 
 % /NewEnc BaseEnc STARTDIFFENC number or glyphname ... ENDDIFFENC -
@@ -215,64 +212,64 @@ return '(error: Do not use newpage for eps files!
 (error: setcolour given invalid arguments: 120, 240, undef
 ) print flush
 0.47059 0.94118 0 setrgbcolor
-1 u setlinewidth
+1 ubp setlinewidth
 (error: setlinewidth not given a width
 ) print flush
 newpath
-10 ux 10 uy moveto
-10 ux 20 uy lineto stroke
+10 ubp 10 ubp moveto
+10 ubp 20 ubp lineto stroke
 (error: wrong number of args for line
 ) print flush
 (error: wrong number of args for line
 ) print flush
 0.19608 0.19608 0.19608 setrgbcolor
 newpath
-10 ux 10 uy moveto
-10 ux 20 uy lineto
-100 ux 100 uy lineto stroke
+10 ubp 10 ubp moveto
+10 ubp 20 ubp lineto
+100 ubp 100 ubp lineto stroke
 (error: wrong number of args for linextend
 ) print flush
 newpath
-10 ux 10 uy moveto
-10 ux 20 uy lineto 110 ux 10 uy lineto 110 ux 20 uy lineto stroke
-gsave 10 ux 10 uy 45 rotabout
+10 ubp 10 ubp moveto
+10 ubp 20 ubp lineto 110 ubp 10 ubp lineto 110 ubp 20 ubp lineto stroke
+gsave 10 ubp 10 ubp 45 rotabout
 newpath
-10 ux 10 uy moveto
-10 ux 20 uy lineto 110 ux 10 uy lineto 110 ux 20 uy lineto fill
+10 ubp 10 ubp moveto
+10 ubp 20 ubp lineto 110 ubp 10 ubp lineto 110 ubp 20 ubp lineto fill
 grestore
-gsave 20 ux 20 uy 45 rotabout
+gsave 20 ubp 20 ubp 45 rotabout
 newpath
-10 ux 10 uy moveto
-10 ux 20 uy lineto 110 ux 10 uy lineto 110 ux 20 uy lineto stroke
+10 ubp 10 ubp moveto
+10 ubp 20 ubp lineto 110 ubp 10 ubp lineto 110 ubp 20 ubp lineto stroke
 grestore
-gsave 10 ux 10 uy translate
+gsave 10 ubp 10 ubp translate
 newpath
-10 ux 10 uy moveto
-10 ux 20 uy lineto 110 ux 10 uy lineto 110 ux 20 uy lineto stroke
+10 ubp 10 ubp moveto
+10 ubp 20 ubp lineto 110 ubp 10 ubp lineto 110 ubp 20 ubp lineto stroke
 grestore
 (error: bad polygon - not enough points
 ) print flush
-120 ux 120 uy 30 u circle stroke
-120 ux 120 uy 30 u circle fill
+120 ubp 120 ubp 30 ubp circle stroke
+120 ubp 120 ubp 30 ubp circle fill
 (error: circle: wrong number of arguments
 ) print flush
 (error: circle: wrong number of arguments
 ) print flush
-210 ux 210 uy 220 ux 230 uy box stroke
-215 ux 215 uy 225 ux 235 uy box fill
+210 ubp 210 ubp 220 ubp 230 ubp box stroke
+215 ubp 215 ubp 225 ubp 235 ubp box fill
 (error: box: wrong number of arguments
 ) print flush
 /Helvetica findfont 12 scalefont setfont
 (error: wrong number of arguments for setfont
 ) print flush
 newpath
-10 ux 10 uy moveto
+10 ubp 10 ubp moveto
 (Hello World)   show stroke 
 newpath
-10 ux 10 uy moveto
+10 ubp 10 ubp moveto
 (Hello World)   show stroke 
 newpath
-10 ux 10 uy moveto
+10 ubp 10 ubp moveto
 (Hello World)  56 rotate   show stroke  -56 rotate 
 (error: text: wrong number of arguments
 ) print flush
@@ -281,9 +278,9 @@ newpath
 (error: bad curve definition, wrong number of args
 ) print flush
 newpath
-10 ux 310 uy moveto
-10 ux 320 uy 110 ux 310 uy 110 ux 320 uy curveto
-110 ux 330 uy 210 ux 330 uy 210 ux 320 uy curveto stroke
+10 ubp 310 ubp moveto
+10 ubp 320 ubp 110 ubp 310 ubp 110 ubp 320 ubp curveto
+110 ubp 330 ubp 210 ubp 330 ubp 210 ubp 320 ubp curveto stroke
 (error: bad curvextend definition, wrong number of args
 ) print flush
 ';

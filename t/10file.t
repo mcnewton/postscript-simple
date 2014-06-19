@@ -16,8 +16,8 @@ $s->output( $f );
 
 # check object
 ok( $s->{usedbox} == 1 );
-ok( $s->{psfunctions} =~ m|/u | );
-ok( index( $s->{pspages}, q[10 ux 10 uy 40 ux 190 uy box stroke]) > -1 );
+ok( $s->{psfunctions} =~ m|/START| );
+ok( index( $s->{pspages}, q[10 ubp 10 ubp 40 ubp 190 ubp box stroke]) > -1 );
 
 # check output
 ok( -e $f );
@@ -28,4 +28,4 @@ close CHK;
 
 ok( index( $file, '%!PS-Adobe-3.0 EPSF-1.2' ) == 0 );
 ok( index( $file, '%%EOF' ) == (length( $file ) - 6) );
-ok( index( $file, '10 ux 10 uy 40 ux 190 uy box stroke' ) > 0 );
+ok( index( $file, '10 ubp 10 ubp 40 ubp 190 ubp box stroke' ) > 0 );
