@@ -821,6 +821,9 @@ sub _builddocument
   push @$page, \$self->{psprolog};
   push @$page, "\%\%BeginResource: PostScript::Simple\n";
   push @$page, \$self->{psfunctions};
+  foreach my $un (sort keys %{$self->{usedunits}}) {
+    push @$page, $self->{usedunits}{$un} . "\n";
+  }
   push @$page, "\%\%EndResource\n";
   push @$page, "\%\%EndProlog\n";
 
