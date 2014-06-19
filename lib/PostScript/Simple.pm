@@ -457,7 +457,6 @@ sub init
 
   my ($m, $d) = (1, 1);
   my ($u, $mm);
-  my ($dx, $dy);
 
 # Units
   $self->{units} = lc $self->{units};
@@ -468,41 +467,6 @@ sub init
     $self->_error( "unit '$self->{units}' undefined" );
   }
 
-  ($dx, $dy) = @{$psdirs{$self->{direction}}};
-
-# X direction
-  $mm = $m * $dx;
-  $u = "{";
-  if ($mm != 1) { $u .= "$mm mul " }
-  if ($d != 1) { $u .= "$d div " }
-  $u =~ s/ $//;
-  $u .="}";
-  $self->{psfunctions} .= "/ux $u def\n";
-
-# Y direction
-  $mm = $m * $dy;
-  $u = "{";
-  if ($mm != 1) { $u .= "$mm mul " }
-  if ($d != 1) { $u .= "$d div " }
-  $u =~ s/ $//;
-  $u .="}";
-  $self->{psfunctions} .= "/uy $u def\n";
-
-# General unit scale (circle radius, etc)
-  $u = "{";
-  if ($m != 1) { $u .= "$m mul " }
-  if ($d != 1) { $u .= "$d div " }
-  $u =~ s/ $//;
-  $u .="}";
-  $self->{psfunctions} .= "/u $u def\n";
-
-  #$u = "{";
-  #if ($m != 1) { $u .= "$m mul " }
-  #if ($d != 1) { $u .= "$d div " }
-  #$u =~ s/ $//;
-  #$u .="}";
-  #
-  #$self->{psfunctions} .= "/u $u def\n";
 
 # Paper size
   if (defined $self->{papersize})
