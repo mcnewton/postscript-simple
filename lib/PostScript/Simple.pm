@@ -699,7 +699,7 @@ sub newpage
 
   if ($self->{eps})
   {
-# Cannot have multiple pages in an EPS file XXXXX
+    # Cannot have multiple pages in an EPS file
     $self->_error("Do not use newpage for eps files!");
     return 0;
   }
@@ -975,7 +975,7 @@ sub setcolour
   {
     $self->{pspages} .= "$r $g $b setrgbcolor\n";
   } else {
-    ##PKENT - better colour->grey conversion:
+    # better colour->grey conversion than just 0.33 of each:
     $r = 0.3*$r + 0.59*$g + 0.11*$b;
     $r = 0 + sprintf("%0.5f", $r / 255);
     $self->{pspages} .= "$r setgray\n";
@@ -1042,11 +1042,10 @@ sub line
 {
   my $self = shift;
   my ($x1, $y1, $x2, $y2, $r, $g, $b) = @_;
-# dashed lines? XXXXX
 
   if ((!$self->{pspagecount}) and (!$self->{eps}))
   {
-# Cannot draw on to non-page when not an eps file XXXXX
+    # Cannot draw on to non-page when not an eps file
     return 0;
   }
 
@@ -1103,13 +1102,9 @@ sub linextend
   my $out = $self->_uxy($x, $y) . "lineto stroke\n";
   $self->{pspages} =~ s/eto stroke\n$/eto\n$out/;
   
-  ##PKENT comments: lineto can follow a curveto or a lineto, hence the change in regexp
-  ##also I thought that it'd be better to change the '.*$' in the regexp with '\n$' - perhaps
-  ##we need something like $self->{_lastcommand} to know if operations are valid?
+  # perhaps we need something like $self->{_lastcommand} to know if operations
+  # are valid, rather than using a regexp?
     
-#  $self->{pspages} .= "$x ux $y uy lineto stroke\n";
-# XXXXX fixme
-
   return 1;
 }
 
@@ -1153,7 +1148,7 @@ sub arc
   }
 
   if ((!$self->{pspagecount}) and (!$self->{eps})) {
-# Cannot draw on to non-page when not an eps file XXXXX
+    # Cannot draw on to non-page when not an eps file
     return 0;
   }
 
@@ -1231,16 +1226,9 @@ sub polygon
   my ($xoffset, $yoffset) = (0,0);
   my ($rotate, $rotatex, $rotatey) = (0,0,0);
 
-# PKENT comments - the first arg could be an optional hashref of options. See if
-# it's there with ref($_[0]) If it is, then shift it off and use those options.
-# Could take the form: polygon( { offset => [ 10, 10 ], filled => 0, rotate =>
-# 45, rotate => [45, 10, 10] }, $x1, ...  it seems neater to use perl native
-# structures instead of manipulating strings
-# ... done MCN 2002-10-22
-
   if ($#_ < 3)
   {
-# cannot have polygon with just one point...
+    # cannot have polygon with just one point...
     $self->_error( "bad polygon - not enough points" );
     return 0;
   }
@@ -1704,6 +1692,7 @@ sub text
   }
 
   # alignment
+
   $align = " show stroke"; 
       # align left
   if (defined $opt{'align'})
@@ -1733,7 +1722,6 @@ sub curve
 {
   my $self = shift;
   my ($x1, $y1, $x2, $y2, $x3, $y3, $x4, $y4) = @_;
-# dashed lines? XXXXX
 
   unless ( @_ == 8 ) 
   {
@@ -1743,7 +1731,7 @@ sub curve
   
   if ((!$self->{pspagecount}) and (!$self->{eps}))
   {
-# Cannot draw on to non-page when not an eps file XXXXX
+    # Cannot draw on to non-page when not an eps file
     return 0;
   }
 
