@@ -426,8 +426,7 @@ sub _u
 
   $val = $rev * $val if defined $rev;
 
-  print "$val u$unit\n\n";
-  return "$val u$unit";
+  return "$val u$unit ";
 }
 
 sub _ux
@@ -442,6 +441,13 @@ sub _uy
   my ($self, $d) = @_;
 
   return $self->_u($d, $psdirs{$self->{direction}}[1]);
+}
+
+sub _uxy
+{
+  my ($self, $x, $y) = @_;
+
+  return $self->_ux($x) . $self->_uy($y);
 }
 
 
@@ -1037,12 +1043,9 @@ sub setlinewidth
     $self->_error( "setlinewidth not given a width" ); return 0;
   };
 
-# MCN should allow for option units=>"cm" on each setlinewidth / line / polygon etc
-  ##PKENT - good idea, should we have names for line weights, like we do for colours?
-  if ($width eq "thin") { $width = "0.4" }
-  else { $width .= " u" }
+  $width = "0.4 bp" if $width eq "thin";
 
-  $self->{pspages} .= "$width setlinewidth\n";
+  $self->{pspages} .= $self->_u($width) . "setlinewidth\n";
   
   return 1;
 }
@@ -1077,7 +1080,6 @@ sub line
   my ($x1, $y1, $x2, $y2, $r, $g, $b) = @_;
 # dashed lines? XXXXX
 
-# MCN should allow for option units=>"cm" on each setlinewidth / line / polygon etc
   if ((!$self->{pspagecount}) and (!$self->{eps}))
   {
 # Cannot draw on to non-page when not an eps file XXXXX
@@ -1096,7 +1098,7 @@ sub line
   
   $self->newpath;
   $self->moveto($x1, $y1);
-  $self->{pspages} .= "$x2 ux $y2 uy lineto stroke\n";
+  $self->{pspages} .= $self->_uxy($x2, $y2) . "lineto stroke\n";
   
   return 1;
 }
@@ -1134,7 +1136,8 @@ sub linextend
     return 0;
   }
   
-  $self->{pspages} =~ s/eto stroke\n$/eto\n$x ux $y uy lineto stroke\n/;
+  my $out = $self->_uxy($x, $y) . "lineto stroke\n";
+  $self->{pspages} =~ s/eto stroke\n$/eto\n$out/;
   
   ##PKENT comments: lineto can follow a curveto or a lineto, hence the change in regexp
   ##also I thought that it'd be better to change the '.*$' in the regexp with '\n$' - perhaps
@@ -1198,7 +1201,7 @@ sub arc
   }
 
   $self->newpath;
-  $self->{pspages} .= "$x ux $y uy $r u $sa $ea arc ";
+  $self->{pspages} .= $self->_uxy($x, $y) . $self->_u($r) . "$sa $ea arc ";
   if ($opt{'filled'}) {
     $self->{pspages} .= "fill\n"
   } else {
@@ -1331,8 +1334,7 @@ sub polygon
 
   if ($xoffset || $yoffset)
   {
-    $self->{pspages} .= "$xoffset ux $yoffset uy translate\n";
-    #$self->{pspages} .= "$xoffset u $yoffset u translate\n";   ?
+    $self->{pspages} .= $self->_uxy($xoffset, $yoffset) . "translate\n";
   }
 
   if ($rotate)
@@ -1344,9 +1346,7 @@ sub exch 0 exch sub translate} def\n";
       $self->{usedrotabout} = 1;
     }
 
-    $self->{pspages} .= "$rotatex ux $rotatey uy $rotate rotabout\n";
-#    $self->{pspages} .= "gsave $rotatex ux $rotatey uy translate ";
-#    $self->{pspages} .= "$rotate rotate -$rotatex ux -$rotatey uy translate\n";
+    $self->{pspages} .= $self->_uxy($rotatex, $rotatey) . "$rotate rotabout\n";
   }
   
   $self->newpath;
@@ -1357,7 +1357,7 @@ sub exch 0 exch sub translate} def\n";
     my $x = shift;
     my $y = shift;
     
-    $self->{pspages} .= "$x ux $y uy lineto ";
+    $self->{pspages} .= $self->_uxy($x, $y) . "lineto ";
   }
 
   if ($opt{'filled'})
@@ -1426,7 +1426,7 @@ sub circle
     $self->{usedcircle} = 1;
   }
 
-  $self->{pspages} .= "$x ux $y uy $r u circle ";
+  $self->{pspages} .= $self->_uxy($x, $y) . $self->_u($r) . "circle ";
   if ($opt{'filled'}) { $self->{pspages} .= "fill\n" }
   else {$self->{pspages} .= "stroke\n" }
   
@@ -1541,8 +1541,8 @@ EOCT
   }
 
   $self->{pspages} .= "gsave\n";
-  $self->{pspages} .= "  $x ux $y uy translate\n";
-  $self->{pspages} .= "  ($text) $self->{lastfontsize} $a $r u ";
+  $self->{pspages} .= "  " . $self->_uxy($x, $y) . "translate\n";
+  $self->{pspages} .= "  ($text) $self->{lastfontsize} $a " . $self->_u($r);
   if ($opt{'align'} && ($opt{'align'} eq "outside")) {
     $self->{pspages} .= "outsidecircletext\n";
   } else {
@@ -1617,7 +1617,8 @@ sub box
     $self->{usedbox} = 1;
   }
 
-  $self->{pspages} .= "$x1 ux $y1 uy $x2 ux $y2 uy box ";
+  $self->{pspages} .= $self->_uxy($x1, $y1);
+  $self->{pspages} .= $self->_uxy($x2, $y2) . "box ";
   if ($opt{'filled'}) { $self->{pspages} .= "fill\n" }
   else {$self->{pspages} .= "stroke\n" }
 
@@ -1784,7 +1785,9 @@ sub curve
 
   $self->newpath;
   $self->moveto($x1, $y1);
-  $self->{pspages} .= "$x2 ux $y2 uy $x3 ux $y3 uy $x4 ux $y4 uy curveto stroke\n";
+  $self->{pspages} .= $self->_uxy($x2, $y2);
+  $self->{pspages} .= $self->_uxy($x3, $y3);
+  $self->{pspages} .= $self->_uxy($x4, $y4) . "curveto stroke\n";
 
   return 1;
 }
@@ -1811,8 +1814,12 @@ sub curvextend
     return 0;
   }
   
+  my $out = $self->_uxy($x1, $y1);
+  $out .= $self->_uxy($x2, $y2);
+  $out .= $self->_uxy($x3, $y3) . "curveto stroke\n";
+
   # curveto may follow a lineto etc...
-  $self->{pspages} =~ s/eto stroke\n$/eto\n$x1 ux $y1 uy $x2 ux $y2 uy $x3 ux $y3 uy curveto stroke\n/;
+  $self->{pspages} =~ s/eto stroke\n$/eto\n$out/;
   
   return 1;
 }
@@ -1851,7 +1858,7 @@ sub moveto
   my $self = shift;
   my ($x, $y) = @_;
 
-  $self->{pspages} .= "$x ux $y uy moveto\n";
+  $self->{pspages} .= $self->_uxy($x, $y) . "moveto\n";
 
   return 1;
 }
@@ -2061,8 +2068,8 @@ EOEPS
   ($epsobj, $xpos, $ypos) = @_;
 
   $self->{pspages} .= "BeginEPSF\n";
-  $self->{pspages} .= "$xpos ux $ypos uy translate\n";
-  $self->{pspages} .= "1 ux 1 uy scale\n";
+  $self->{pspages} .= $self->_uxy($xpos, $ypos) . "translate\n";
+  $self->{pspages} .= $self->_uxy(1, 1) . "scale\n";
   $self->{pspages} .= $epsobj->_get_include_data($xpos, $ypos);
   $self->{pspages} .= "EndEPSF\n";
   
