@@ -179,10 +179,10 @@ my %psorigin = (
 
 # define the co-ordinate direction (default is 'RightUp')
 my %psdirs = (
-  'RightUp'  => '1 1',
-  'RightDown'   => '1 -1',
-  'LeftUp'  => '-1 1',
-  'LeftDown'   => '-1 -1',
+  'RightUp'     => [ 1,  1],
+  'RightDown'   => [ 1, -1],
+  'LeftUp'      => [-1,  1],
+  'LeftDown'    => [-1, -1],
 );
 
 
@@ -357,6 +357,7 @@ sub new
     pssetup        => "",
     pspages        => "",
     pstrailer      => "",
+    usedunits      => {},       # units that have been used
 
     lastfontsize   => 0,
     pspagecount    => 0,
@@ -384,6 +385,66 @@ sub new
 
 #-------------------------------------------------------------------------------
 
+sub _u
+{
+  my ($self, $u, $rev) = @_;
+
+  my $val;
+  my $unit;
+
+  # $u may be...
+  #  a simple number, in which case the current units are used
+  #  a listref of [number, "unit"], to force the unit
+  #  a string "number unit", e.g. "4 mm" or "2.4in"
+
+  if (ref($u) eq "ARRAY") {
+    $val = $$u[0];
+    $unit = $$u[1];
+    confess "Invalid array" if @$u != 2;
+  } else {
+    if ($u =~ /^\s*(\d+(?:\.\d+)?)\s*([a-z][a-z])?\s*$/) {
+      $val = $1;
+      $unit = $2 || $self->{units};
+    }
+  }
+
+  confess "Cannot determine length" unless defined $val;
+  confess "Cannot determine unit (invalid array?)" unless defined $unit;
+
+  croak "Invalid unit '$unit'" unless defined $psunits{$unit};
+
+  unless (defined $self->{usedunits}{$unit}) {
+    my ($m, $d) = split(/\s+/, $psunits{$unit});
+
+    my $c = "{";
+    $c .= "$m mul " unless $m == 1;
+    $c .= "$d div " unless $d == 1;
+    $c =~ s/ $//;
+    $c .="}";
+    $self->{usedunits}{$unit} = "/u$unit $c def";
+  }
+
+  $val = $rev * $val if defined $rev;
+
+  print "$val u$unit\n\n";
+  return "$val u$unit";
+}
+
+sub _ux
+{
+  my ($self, $d) = @_;
+
+  return $self->_u($d, $psdirs{$self->{direction}}[0]);
+}
+
+sub _uy
+{
+  my ($self, $d) = @_;
+
+  return $self->_u($d, $psdirs{$self->{direction}}[1]);
+}
+
+
 sub init
 {
   my $self = shift;
@@ -393,10 +454,7 @@ sub init
   my ($dx, $dy);
 
 # Units
-  if (defined $self->{units})
-  {
-    $self->{units} = lc $self->{units};
-  }
+  $self->{units} = lc $self->{units};
 
   if (defined($psunits{$self->{units}}))
   {
@@ -407,7 +465,7 @@ sub init
     $self->_error( "unit '$self->{units}' undefined" );
   }
 
-  ($dx, $dy) = split(/\s+/, $psdirs{$self->{direction}});
+  ($dx, $dy) = @{$psdirs{$self->{direction}}};
 
 # X direction
   $mm = $m * $dx;
