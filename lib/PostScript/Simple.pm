@@ -109,46 +109,46 @@ my %pscolours = (
 # define page sizes here (a4, letter, etc)
 # should be Properly Cased
 my %pspaper = (
-  A0                    => '2384 3370',
-  A1                    => '1684 2384',
-  A2                    => '1191 1684',
-  A3                    => "841.88976 1190.5512",
-  A4                    => "595.27559 841.88976",
-  A5                    => "420.94488 595.27559",
-  A6                    => '297 420',
-  A7                    => '210 297',
-  A8                    => '148 210',
-  A9                    => '105 148',
+  A0                    => [2384, 3370],
+  A1                    => [1684, 2384],
+  A2                    => [1191, 1684],
+  A3                    => [841.88976, 1190.5512],
+  A4                    => [595.27559, 841.88976],
+  A5                    => [420.94488, 595.27559],
+  A6                    => [297, 420],
+  A7                    => [210, 297],
+  A8                    => [148, 210],
+  A9                    => [105, 148],
 
-  B0                    => '2920 4127',
-  B1                    => '2064 2920',
-  B2                    => '1460 2064',
-  B3                    => '1032 1460',
-  B4                    => '729 1032',
-  B5                    => '516 729',
-  B6                    => '363 516',
-  B7                    => '258 363',
-  B8                    => '181 258',
-  B9                    => '127 181 ',
-  B10                   => '91 127',
+  B0                    => [2920, 4127],
+  B1                    => [2064, 2920],
+  B2                    => [1460, 2064],
+  B3                    => [1032, 1460],
+  B4                    => [729, 1032],
+  B5                    => [516, 729],
+  B6                    => [363, 516],
+  B7                    => [258, 363],
+  B8                    => [181, 258],
+  B9                    => [127, 181 ],
+  B10                   => [91, 127],
 
-  Executive             => '522 756',
-  Folio                 => '595 935',
-  'Half-Letter'         => '612 397',
-  Letter                => "612 792",
-  'US-Letter'           => '612 792',
-  Legal                 => '612 1008',
-  'US-Legal'            => '612 1008',
-  Tabloid               => '792 1224',
-  'SuperB'              => '843 1227',
-  Ledger                => '1224 792',
+  Executive             => [522, 756],
+  Folio                 => [595, 935],
+  'Half-Letter'         => [612, 397],
+  Letter                => [612, 792],
+  'US-Letter'           => [612, 792],
+  Legal                 => [612, 1008],
+  'US-Legal'            => [612, 1008],
+  Tabloid               => [792, 1224],
+  'SuperB'              => [843, 1227],
+  Ledger                => [1224, 792],
 
-  'Comm #10 Envelope'   => '297 684',
-  'Envelope-Monarch'    => '280 542',
-  'Envelope-DL'         => '312 624',
-  'Envelope-C5'         => '461 648',
+  'Comm #10 Envelope'   => [297, 684],
+  'Envelope-Monarch'    => [280, 542],
+  'Envelope-DL'         => [312, 624],
+  'Envelope-C5'         => [461, 648],
 
-  'EuroPostcard'        => '298 420',
+  'EuroPostcard'        => [298, 420],
 );
 
 
@@ -171,10 +171,10 @@ my @fonts = (
 # define the origins for the page a document can have
 # (default is "LeftBottom")
 my %psorigin = (
-  'LeftBottom'  => '0 0',
-  'LeftTop'     => '0 -1',
-  'RightBottom' => '-1 0',
-  'RightTop'    => '-1 -1',
+  'LeftBottom'  => [ 0,  0],
+  'LeftTop'     => [ 0, -1],
+  'RightBottom' => [-1,  0],
+  'RightTop'    => [-1, -1],
 );
 
 # define the co-ordinate direction (default is 'RightUp')
@@ -474,7 +474,7 @@ sub init
 
   if (!defined $self->{xsize} || !defined $self->{ysize}) {
     if (defined $self->{papersize} && defined $pspaper{$self->{papersize}}) {
-      ($self->{xsize}, $self->{ysize}) = split(/\s+/, $pspaper{$self->{papersize}});
+      ($self->{xsize}, $self->{ysize}) = @{$pspaper{$self->{papersize}}};
       $self->{bbx2} = int($self->{xsize});
       $self->{bby2} = int($self->{ysize});
       $self->{pscomments} .= "\%\%DocumentMedia: $self->{papersize} $self->{xsize} ";
@@ -702,7 +702,7 @@ sub newpage
   $self->{pspages} .= "/pagelevel save def\n";
   if ($self->{landscape}) { $self->{pspages} .= "landscape\n" }
   if ($self->{clip}) { $self->{pspages} .= "pageclip\n" }
-  ($x, $y) = split(/\s+/, $psorigin{$self->{coordorigin}});
+  ($x, $y) = @{$psorigin{$self->{coordorigin}}};
   $x = $self->{xsize} if ($x < 0);
   $y = $self->{ysize} if ($y < 0);
   $self->{pspages} .= "$x $y translate\n" if (($x != 0) || ($y != 0));
