@@ -226,7 +226,7 @@ newpath
 40 umm 90 umm lineto stroke
 1 0 0 setrgbcolor
 40 umm 90 umm 30 umm circle fill
-0 0.5 0 setrgbcolor
+0 0.49804 0 setrgbcolor
 0.1 umm setlinewidth
 newpath
 40 umm 90 umm moveto
@@ -317,11 +317,11 @@ newpath
 69 umm 92 umm lineto 75 umm 84 umm lineto stroke
 grestore
 0.4 ubp setlinewidth
-0 0.5 0 setrgbcolor
+0 0.49804 0 setrgbcolor
 20 umm 10 umm 80 umm 20 umm box stroke
-0.3 0.3 0.3 setrgbcolor
+0.29804 0.29804 0.29804 setrgbcolor
 20 umm 30 umm 80 umm 40 umm box fill
-0.1 0.1 0.1 setrgbcolor
+0.09804 0.09804 0.09804 setrgbcolor
 /Bookman findfont 12 scalefont setfont
 newpath
 5 umm 5 umm moveto
@@ -343,7 +343,7 @@ newpath
 newpath
 10 umm 10 umm moveto
 20 umm 10 umm lineto stroke
-0.9 0.9 0.9 setrgbcolor
+0.89804 0.89804 0.89804 setrgbcolor
 gsave 5 umm 5 umm translate
 newpath
 10 umm 10 umm moveto
