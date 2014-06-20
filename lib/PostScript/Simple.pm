@@ -83,26 +83,26 @@ None.
 # is there another colour database that can be used instead of defining
 # this one here? what about the X-windows one? (apart from MS-Win-probs?) XXXXX
 my %pscolours = (
-  black         => "0    0    0",
-  brightred     => "1    0    0",
-  brightgreen   => "0    1    0",
-  brightblue    => "0    0    1",
-  red           => "0.8  0    0",
-  green         => "0    0.8  0",
-  blue          => "0    0    0.8",
-  darkred       => "0.5  0    0",
-  darkgreen     => "0    0.5  0",
-  darkblue      => "0    0    0.5",
-  grey10        => "0.1  0.1  0.1",
-  grey20        => "0.2  0.2  0.2",
-  grey30        => "0.3  0.3  0.3",
-  grey40        => "0.4  0.4  0.4",
-  grey50        => "0.5  0.5  0.5",
-  grey60        => "0.6  0.6  0.6",
-  grey70        => "0.7  0.7  0.7",
-  grey80        => "0.8  0.8  0.8",
-  grey90        => "0.9  0.9  0.9",
-  white         => "1    1    1",
+  black         => [0,   0,   0],
+  brightred     => [1,   0,   0],
+  brightgreen   => [0,   1,   0],
+  brightblue    => [0,   0,   1],
+  red           => [0.8, 0,   0],
+  green         => [0,   0.8, 0],
+  blue          => [0,   0,   0.8],
+  darkred       => [0.5, 0,   0],
+  darkgreen     => [0,   0.5, 0],
+  darkblue      => [0,   0,   0.5],
+  grey10        => [0.1, 0.1, 0.1],
+  grey20        => [0.2, 0.2, 0.2],
+  grey30        => [0.3, 0.3, 0.3],
+  grey40        => [0.4, 0.4, 0.4],
+  grey50        => [0.5, 0.5, 0.5],
+  grey60        => [0.6, 0.6, 0.6],
+  grey70        => [0.7, 0.7, 0.7],
+  grey80        => [0.8, 0.8, 0.8],
+  grey90        => [0.9, 0.9, 0.9],
+  white         => [1,   1,   1],
 );
 
 
@@ -917,7 +917,7 @@ sub setcolour
     $r = lc $r;
 
     if (defined $pscolours{$r}) {
-      ($r, $g, $b) = split(/\s+/, $pscolours{$r});
+      ($r, $g, $b) = @{$pscolours{$r}};
     } else {
       $self->_error( "bad colour name '$r'" );
       return 0;
