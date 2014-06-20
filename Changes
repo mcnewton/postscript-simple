@@ -7,6 +7,9 @@ Revision history for Perl extension PostScript::Simple.
   Matthew Newton:
     - fix test result failures on -Duselongdouble
     - allow units to be specified for any distance
+    - add X-Windows colours, supplied by Steve Baldwin
+    - change all space-separated lists to arrays
+    - fix Begin/EndDocument handling in EPS file insertion
 
 0.07 - 13 January 2006
   Matthew Newton:
