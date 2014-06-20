@@ -190,19 +190,10 @@ my %pspaper = (
 
 # The 13 standard fonts that are available on all PS 1 implementations:
 my @fonts = (
-    'Courier',
-    'Courier-Bold',
-    'Courier-BoldOblique',
-    'Courier-Oblique',
-    'Helvetica',
-    'Helvetica-Bold',
-    'Helvetica-BoldOblique',
-    'Helvetica-Oblique',
-    'Times-Roman',
-    'Times-Bold',
-    'Times-BoldItalic',
-    'Times-Italic',
-    'Symbol');
+  'Courier', 'Courier-Bold', 'Courier-BoldOblique', 'Courier-Oblique',
+  'Helvetica', 'Helvetica-Bold', 'Helvetica-BoldOblique', 'Helvetica-Oblique',
+  'Times-Roman', 'Times-Bold', 'Times-BoldItalic', 'Times-Italic',
+  'Symbol');
 
 # define the origins for the page a document can have
 # (default is "LeftBottom")
@@ -849,7 +840,7 @@ sub output
   $page = _builddocument($self, $file);
 
   local *OUT;
-  open(OUT, '>'.$file) or die("Cannot write to file $file: $!");
+  open(OUT, '>', $file) or die("Cannot write to file $file: $!");
 
   foreach $i (@$page) {
     if (ref($i) eq "SCALAR") {
@@ -929,11 +920,12 @@ sub geteps
 
 =item C<setcolour((red, green, blue)|(name))>
 
-Sets the new drawing colour to the values specified in C<red>, C<green> and
+Sets the new drawing colour to the RGB values specified in C<red>, C<green> and
 C<blue>. The values range from 0 to 255.
 
 Alternatively, a colour name may be specified. Those currently defined are
-listed at the top of the PostScript::Simple module in the C<%pscolours> hash.
+listed at the top of the PostScript::Simple module in the C<%pscolours> hash
+and include the standard X-Windows colour names.
 
 Example:
 
