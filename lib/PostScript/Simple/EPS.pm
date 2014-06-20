@@ -171,16 +171,8 @@ sub init
   my $foundbbx = 0;
 
   if (defined($$self{source})) {
-# with dynamic generated file, what do we do with {Begin,End}Document?
-#  $$self{"epsfile"} = "\%\%BeginDocument: $$self{file}\n";
-#  $$self{"epsfile"} .= "\%\%EndDocument\n";
-
-    $$self{"epsfile"} = $$self{"source"};
-    delete $$self{"source"};
     croak "EPS file must contain a BoundingBox" if (!$self->_getsourcebbox());
-  }
-  else
-  {
+  } else {
     croak "EPS file must contain a BoundingBox" if (!_getfilebbox($self));
   }
 
@@ -392,8 +384,9 @@ sub load
   local *EPS;
 
   return 1 if (defined $$self{"epsfile"});
+  return 1 if (defined $$self{"source"});
 
-  $$self{"epsfile"} = "\%\%BeginDocument: $$self{file}\n";
+  $$self{"epsfile"} = "\%\%BeginDocument: ($$self{file})\n";
   open EPS, "< $$self{file}" || croak "can't open eps file $$self{file}";
   while (<EPS>)
   {
@@ -433,6 +426,7 @@ sub preload
   my $randcode = "";
 
   croak "already loaded" if (defined $$self{"epsfile"});
+  croak "can't preload when using source" if (defined $$self{"source"});
 
   croak "no PostScript::Simple module provided" if (!defined $ps);
 
@@ -444,7 +438,7 @@ sub preload
   $$self{"epsfile"} = "eps$randcode\n";
 
   $$ps{"psprolog"} .= "/eps$randcode {\n";
-  $$ps{"psprolog"} .= "\%\%BeginDocument: $$self{file}\n";
+  $$ps{"psprolog"} .= "\%\%BeginDocument: ($$self{file})\n";
   open EPS, "< $$self{file}" || croak "can't open eps file $$self{file}";
   while (<EPS>)
   {
@@ -493,8 +487,14 @@ sub _getsourcebbox
 {
   my $self = shift;
 
-  return 0 if (!defined $$self{epsfile});
-  if ($$self{epsfile} =~
+  my $ref;
+
+  $ref = \$self->{epsfile} if defined $self->{epsfile};
+  $ref = \$self->{source}  if defined $self->{source};
+
+  return 0 unless defined $$ref;
+
+  if ($$ref =~
       /^\%\%BoundingBox:\s+(-?\d+)\s+(-?\d+)\s+(-?\d+)\s+(-?\d+)$/m)
   {
     $$self{bbx1} = $1; 
@@ -527,10 +527,15 @@ sub _get_include_data
 $$self{bbx2} $$self{bby1} lineto $$self{bbx2} $$self{bby2} lineto
 $$self{bbx1} $$self{bby2} lineto closepath clip newpath\n";
   }
+
   if (defined $$self{"epsfile"}) {
     $data .= $$self{"epsfile"};
+  } elsif (defined $$self{"source"}) {
+    $data .= "\%\%BeginDocument: (undef)\n";
+    $data .= $$self{"source"};
+    $data .= "\%\%EndDocument\n";
   } else {
-    $data .= "\%\%BeginDocument: $$self{file}\n";
+    $data .= "\%\%BeginDocument: ($$self{file})\n";
     open EPS, "< $$self{file}" || croak "can't open eps file $$self{file}";
     while (<EPS>) {
       $data .= $_;
