@@ -11,7 +11,7 @@ use vars qw($VERSION @ISA @EXPORT);
 
 @ISA = qw(Exporter);
 @EXPORT = qw();
-$VERSION = "0.01";
+$VERSION = "0.02";
 
 
 #-------------------------------------------------------------------------------

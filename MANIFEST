@@ -11,8 +11,9 @@ lib/PostScript/Simple/EPS.pm
 t/01base.t
 t/02text.t
 t/03funcs.t
+t/04units.t
 t/10file.t
 t/11file.t
 t/12file.t
 t/99cleanup.t
-META.yml                                 Module meta-data (added by MakeMaker)
+META.yml

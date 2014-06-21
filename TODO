@@ -1,12 +1,10 @@
 TO-DO
 
-import eps files into the postscript (in progress, core finished)
 better error reporting (postscript comments still?)
 check landscape: possible problems with rotation
 PostScript "compression", i.e. /n {newpath} bind def
 code compression using single letter dictionary defs (optional?)
 any postscript optimisation that can be done?
-hope that units are now correct... check
 postscript font support?
 define shape functions
 translate / scale / rotate functions?
