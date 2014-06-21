@@ -46,9 +46,16 @@ $ps = new PostScript::Simple(papersize => "a4",
                              eps => 0,
                              reencode => undef);
 
+################################################################################
+# PAGE 1
+################################################################################
+
 # Create page (EPS import from a file, demo-square.eps)
 mynewpage($ps, "EPS import functions (from a file)");
 $ps->setfont("Courier", 10);
+
+#-------------------------------------------------------------------------------
+# Red example (left)
 
 $ps->setcolour("red");
 $ps->box(20, 210, 45, 260);
@@ -56,17 +63,26 @@ $ps->importepsfile("demo-square.eps", 20, 210, 45, 260);
 $ps->setcolour("darkred");
 $ps->text({rotate => -90}, 14, 270, '$ps->importepsfile("demo-square.eps", 20, 210, 45, 260);');
 
+#-------------------------------------------------------------------------------
+# Green example (centre)
+
 $ps->setcolour("green");
 $ps->box(80, 210, 105, 260);
 $ps->importepsfile({stretch => 1}, "demo-square.eps", 80, 210, 105, 260);
 $ps->setcolour("darkgreen");
 $ps->text({rotate => -90}, 74, 270, '$ps->importepsfile({stretch => 1}, "demo-square.eps", 80, 210, 105, 260);');
 
+#-------------------------------------------------------------------------------
+# Blue example (right)
+
 $ps->setcolour("blue");
 $ps->box(140, 210, 165, 260);
 $ps->importepsfile({overlap => 1}, "demo-square.eps", 140, 210, 165, 260);
 $ps->setcolour("darkblue");
 $ps->text({rotate => -90}, 134, 270, '$ps->importepsfile({overlap => 1}, "demo-square.eps", 140, 210, 165, 260);');
+
+#-------------------------------------------------------------------------------
+# Purple example (bottom)
 
 $ps->setcolour(200, 0, 200);
 $ps->box(30, 30, 90, 90);
@@ -86,6 +102,11 @@ $ps->text(100, $y-=5, '$eps->translate(50, 50);');
 $ps->text(100, $y-=5, '$eps->rotate(20);');
 $ps->text(100, $y-=5, '$eps->translate(-50, -50);');
 $ps->text(100, $y-=5, '$ps->importeps($eps, 30, 30);');
+
+
+################################################################################
+# PAGE 2
+################################################################################
 
 # Create page (using generated EPS object)
 mynewpage($ps, "EPS import functions (using internal EPS object)");
@@ -149,6 +170,67 @@ $ps->text(100, $y-=5, '$directeps = $eps->geteps();');
 $ps->text(100, $y-=5, '$directeps->scale(60/100);');
 $ps->text(100, $y-=5, '$ps->importeps($directeps, 30, 30);');
 
+
+################################################################################
+# PAGE 3
+################################################################################
+
+# Create page (using generated EPS object)
+mynewpage($ps, "Using different units");
+$ps->setfont("Courier", 10);
+
+$ps->setcolour("red");
+$ps->text(20, 268, '$ps->line(20,265, 190,265);  # default units is mm');
+$ps->line(20,265, 190,265);
+
+$ps->setcolour("blue");
+$ps->text(20, 258, '$ps->setlinewidth("5 pt");');
+$ps->text(20, 253, '$ps->line(20,255,  190,255);');
+$ps->setlinewidth("5 pt");
+$ps->line(20,250, 190,250);
+
+$ps->setcolour("green");
+$ps->text(20, 243, '$ps->setlinewidth([0.25, "in");');
+$ps->text(20, 238, '$ps->line(20,232,  190,232);');
+$ps->setlinewidth([0.25, "in"]);
+$ps->line(20,232, 190,232);
+
+$ps->setcolour("purple");
+$ps->text(20, 224, '$ps->setlinewidth("thin");  # thin is 0.4 pt');
+$ps->text(20, 219, '$ps->line(20,216,  190,216);');
+$ps->setlinewidth("thin");
+$ps->line(20,216, 190,216);
+
+$y = 210;
+for (my $x = 1; $x < 7; $x++) {
+  $ps->setlinewidth([8, "dd"]);
+  $ps->line([$x, "in"],$y, [$x+1, "in"],$y, 255/$x, 128, 128);
+  $ps->setlinewidth("thin");
+  $ps->line([$x, "in"],212, [$x, "in"],198, 0,0,0);
+  $y -= 2;
+}
+$ps->line([7, "in"],212, [7, "in"],198, 0,0,0);
+
+$y = 198;
+$ps->text(20, $y-=5, '$y = 210;');
+$ps->text(20, $y-=5, 'for (my $x = 1; $x < 7; $x++) {');
+$ps->text(20, $y-=5, '  $ps->setlinewidth([8, "dd"]);');
+$ps->text(20, $y-=5, '  $ps->line([$x, "in"],$y, [$x+1, "in"],$y, 255/$x, 128, 128);  # also set colour');
+$ps->text(20, $y-=5, '  $ps->setlinewidth("thin");');
+$ps->text(20, $y-=5, '  $ps->line([$x, "in"],212, [$x, "in"],198, 0,0,0);  # set black');
+$ps->text(20, $y-=5, '  $y -= 2;');
+$ps->text(20, $y-=5, '}');
+$ps->text(20, $y-=5, '$ps->line([7, "in"],212, [7, "in"],198, 0,0,0);');
+
+
+$ps->setlinewidth("15 pt");
+$ps->circle(50, "4.5in", "1in");
+$ps->setfont("Courier-Bold", 10);
+$ps->setcolour("yellow");
+$ps->circletext({align => "outside"}, 50, "4.5in", "0.96in", 90, '$ps->setlinewidth("10 pt"); $ps->circle(50, "4.5in", "2in");');
+$ps->setcolour("darkred");
+$ps->setfont("Courier", 8);
+$ps->circletext({align => "outside"}, 50, "4.5in", "0.78in", 90, '$ps->circletext({align => "outside"}, 50, "4.5in", "0.96in", 90, "...");');
 
 # Write out the document.
 $ps->output("demo.ps");

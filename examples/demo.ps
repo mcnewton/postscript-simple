@@ -1,20 +1,17 @@
 %!PS-Adobe-3.0
 %%Title: (demo.ps)
 %%LanguageLevel: 1
-%%Creator: PostScript::Simple perl module version 0.06
-%%CreationDate: Thu Jun 24 01:52:29 2004
-%%For: comcn
+%%Creator: PostScript::Simple perl module version 0.07
+%%CreationDate: Sat Jun 21 01:35:17 2014
+%%For: mcn
 %%DocumentMedia: A4 595.27559 841.88976 0 ( ) ( )
 %%Orientation: Portrait
-%%Pages: 2
+%%Pages: 3
 %%EndComments
 %%BeginProlog
 /ll 1 def systemdict /languagelevel known {
 /ll languagelevel def } if
 %%BeginResource: PostScript::Simple
-/ux {72 mul 25.4 div} def
-/uy {72 mul 25.4 div} def
-/u {72 mul 25.4 div} def
 /box {
   newpath 3 copy pop exch 4 copy pop pop
   8 copy pop pop pop pop exch pop exch
@@ -28,6 +25,64 @@
 false setstrokeadjust false setoverprint } if } if } bind def
 /EndEPSF { count op_count sub {pop} repeat countdictstack dict_count
 sub {end} repeat b4_Inc_state restore } bind def
+/circle {newpath 0 360 arc closepath} bind def
+/outsidecircletext
+  { $circtextdict begin
+      /radius exch def
+      /centerangle exch def
+      /ptsize exch def
+      /str exch def
+      /xradius radius ptsize 4 div add def
+      gsave
+        centerangle str findhalfangle add rotate
+        str { /charcode exch def ( ) dup 0 charcode put outsideshowcharandrotate } forall
+      grestore
+    end
+  } def
+       
+/insidecircletext
+  { $circtextdict begin
+      /radius exch def
+      /centerangle exch def
+      /ptsize exch def
+      /str exch def
+      /xradius radius ptsize 3 div sub def
+      gsave
+        centerangle str findhalfangle sub rotate
+        str { /charcode exch def ( ) dup 0 charcode put insideshowcharandrotate } forall
+      grestore
+    end
+  } def
+/$circtextdict 16 dict def
+$circtextdict begin
+  /findhalfangle
+    { stringwidth pop 2 div 2 xradius mul pi mul div 360 mul
+    } def
+  /outsideshowcharandrotate
+    { /char exch def
+      /halfangle char findhalfangle def
+      gsave
+        halfangle neg rotate radius 0 translate -90 rotate
+        char stringwidth pop 2 div neg 0 moveto char show
+      grestore
+      halfangle 2 mul neg rotate
+    } def
+  /insideshowcharandrotate
+    { /char exch def
+      /halfangle char findhalfangle def
+      gsave
+        halfangle rotate radius 0 translate 90 rotate
+        char stringwidth pop 2 div neg 0 moveto char show
+      grestore
+      halfangle 2 mul rotate
+    } def
+  /pi 3.1415926 def
+end
+/ubp {} def
+/udd {72 mul 67.567 div} def
+/uin {72 mul} def
+/umm {72 mul 25.4 div} def
+/upt {72 mul 72.27 div} def
 %%EndResource
 %%EndProlog
 %%BeginSetup
@@ -37,32 +92,32 @@ ll 2 ge { << /PageSize [ 595.27559 841.88976 ] /ImagingBBox null >> setpagedevic
 %%BeginPageSetup
 /pagelevel save def
 %%EndPageSetup
-10 ux 10 uy 200 ux 287 uy box stroke
+10 umm 10 umm 200 umm 287 umm box stroke
 newpath
-10 ux 277 uy moveto
-200 ux 277 uy lineto stroke
+10 umm 277 umm moveto
+200 umm 277 umm lineto stroke
 /Times-Roman findfont 14 scalefont setfont
 newpath
-15 ux 280 uy moveto
+15 umm 280 umm moveto
 (PostScript::Simple example file: EPS import functions \(from a file\))   show stroke 
 /Courier findfont 10 scalefont setfont
 0.8 0 0 setrgbcolor
-20 ux 210 uy 45 ux 260 uy box stroke
+20 umm 210 umm 45 umm 260 umm box stroke
 BeginEPSF
-20 ux 210 uy translate
-1 ux 1 uy scale
+20 umm 210 umm translate
+1 umm 1 umm scale
 0.25 0.25 scale
 0 0 translate
 newpath 0 0 moveto
 100 0 lineto 100 100 lineto
-0 100 lineto closepath clip
-%%BeginDocument: demo-square.eps
+0 100 lineto closepath clip newpath
+%%BeginDocument: (demo-square.eps)
 %!PS-Adobe-3.0 EPSF-1.2
 %%Title: (demo-square.eps)
 %%LanguageLevel: 1
-%%Creator: PostScript::Simple perl module version 0.06
-%%CreationDate: Thu Jun 24 01:52:29 2004
-%%For: comcn
+%%Creator: PostScript::Simple perl module version 0.07
+%%CreationDate: Sat Jun 21 01:35:17 2014
+%%For: mcn
 %%Orientation: Portrait
 %%BoundingBox: 0 0 100 100
 %%EndComments
@@ -70,62 +125,60 @@ newpath 0 0 moveto
 /ll 1 def systemdict /languagelevel known {
 /ll languagelevel def } if
 %%BeginResource: PostScript::Simple
-/ux {} def
-/uy {} def
-/u {} def
 /box {
   newpath 3 copy pop exch 4 copy pop pop
   8 copy pop pop pop pop exch pop exch
   3 copy pop pop exch moveto lineto
   lineto lineto pop pop pop pop closepath
 } bind def
+/ubp {} def
 %%EndResource
 %%EndProlog
-5 u setlinewidth
-10 ux 10 uy 90 ux 90 uy box stroke
-0.4 setlinewidth
+5 ubp setlinewidth
+10 ubp 10 ubp 90 ubp 90 ubp box stroke
+0.4 ubp setlinewidth
 newpath
-0 ux 50 uy moveto
-100 ux 50 uy lineto stroke
+0 ubp 50 ubp moveto
+100 ubp 50 ubp lineto stroke
 newpath
-50 ux 0 uy moveto
-50 ux 100 uy lineto stroke
+50 ubp 0 ubp moveto
+50 ubp 100 ubp lineto stroke
 newpath
-0 ux 40 uy moveto
-0 ux 60 uy lineto stroke
+0 ubp 40 ubp moveto
+0 ubp 60 ubp lineto stroke
 newpath
-100 ux 40 uy moveto
-100 ux 60 uy lineto stroke
+100 ubp 40 ubp moveto
+100 ubp 60 ubp lineto stroke
 newpath
-40 ux 0 uy moveto
-60 ux 0 uy lineto stroke
+40 ubp 0 ubp moveto
+60 ubp 0 ubp lineto stroke
 newpath
-40 ux 100 uy moveto
-60 ux 100 uy lineto stroke
+40 ubp 100 ubp moveto
+60 ubp 100 ubp lineto stroke
 %%EOF
 %%EndDocument
 EndEPSF
-0.5 0 0 setrgbcolor
+0.49804 0 0 setrgbcolor
 newpath
-14 ux 270 uy moveto
+14 umm 270 umm moveto
 ($ps->importepsfile\("demo-square.eps", 20, 210, 45, 260\);)  -90 rotate   show stroke  90 rotate 
 0 0.8 0 setrgbcolor
-80 ux 210 uy 105 ux 260 uy box stroke
+80 umm 210 umm 105 umm 260 umm box stroke
 BeginEPSF
-80 ux 210 uy translate
-1 ux 1 uy scale
+80 umm 210 umm translate
+1 umm 1 umm scale
 0.25 0.5 scale
 0 0 translate
 newpath 0 0 moveto
 100 0 lineto 100 100 lineto
-0 100 lineto closepath clip
-%%BeginDocument: demo-square.eps
+0 100 lineto closepath clip newpath
+%%BeginDocument: (demo-square.eps)
 %!PS-Adobe-3.0 EPSF-1.2
 %%Title: (demo-square.eps)
 %%LanguageLevel: 1
-%%Creator: PostScript::Simple perl module version 0.06
-%%CreationDate: Thu Jun 24 01:52:29 2004
-%%For: comcn
+%%Creator: PostScript::Simple perl module version 0.07
+%%CreationDate: Sat Jun 21 01:35:17 2014
+%%For: mcn
 %%Orientation: Portrait
 %%BoundingBox: 0 0 100 100
 %%EndComments
@@ -133,62 +186,60 @@ newpath 0 0 moveto
 /ll 1 def systemdict /languagelevel known {
 /ll languagelevel def } if
 %%BeginResource: PostScript::Simple
-/ux {} def
-/uy {} def
-/u {} def
 /box {
   newpath 3 copy pop exch 4 copy pop pop
   8 copy pop pop pop pop exch pop exch
   3 copy pop pop exch moveto lineto
   lineto lineto pop pop pop pop closepath
 } bind def
+/ubp {} def
 %%EndResource
 %%EndProlog
-5 u setlinewidth
-10 ux 10 uy 90 ux 90 uy box stroke
-0.4 setlinewidth
+5 ubp setlinewidth
+10 ubp 10 ubp 90 ubp 90 ubp box stroke
+0.4 ubp setlinewidth
 newpath
-0 ux 50 uy moveto
-100 ux 50 uy lineto stroke
+0 ubp 50 ubp moveto
+100 ubp 50 ubp lineto stroke
 newpath
-50 ux 0 uy moveto
-50 ux 100 uy lineto stroke
+50 ubp 0 ubp moveto
+50 ubp 100 ubp lineto stroke
 newpath
-0 ux 40 uy moveto
-0 ux 60 uy lineto stroke
+0 ubp 40 ubp moveto
+0 ubp 60 ubp lineto stroke
 newpath
-100 ux 40 uy moveto
-100 ux 60 uy lineto stroke
+100 ubp 40 ubp moveto
+100 ubp 60 ubp lineto stroke
 newpath
-40 ux 0 uy moveto
-60 ux 0 uy lineto stroke
+40 ubp 0 ubp moveto
+60 ubp 0 ubp lineto stroke
 newpath
-40 ux 100 uy moveto
-60 ux 100 uy lineto stroke
+40 ubp 100 ubp moveto
+60 ubp 100 ubp lineto stroke
 %%EOF
 %%EndDocument
 EndEPSF
-0 0.5 0 setrgbcolor
+0 0.49804 0 setrgbcolor
 newpath
-74 ux 270 uy moveto
+74 umm 270 umm moveto
 ($ps->importepsfile\({stretch => 1}, "demo-square.eps", 80, 210, 105, 260\);)  -90 rotate   show stroke  90 rotate 
 0 0 0.8 setrgbcolor
-140 ux 210 uy 165 ux 260 uy box stroke
+140 umm 210 umm 165 umm 260 umm box stroke
 BeginEPSF
-140 ux 210 uy translate
-1 ux 1 uy scale
+140 umm 210 umm translate
+1 umm 1 umm scale
 0.5 0.5 scale
 0 0 translate
 newpath 0 0 moveto
 100 0 lineto 100 100 lineto
-0 100 lineto closepath clip
-%%BeginDocument: demo-square.eps
+0 100 lineto closepath clip newpath
+%%BeginDocument: (demo-square.eps)
 %!PS-Adobe-3.0 EPSF-1.2
 %%Title: (demo-square.eps)
 %%LanguageLevel: 1
-%%Creator: PostScript::Simple perl module version 0.06
-%%CreationDate: Thu Jun 24 01:52:29 2004
-%%For: comcn
+%%Creator: PostScript::Simple perl module version 0.07
+%%CreationDate: Sat Jun 21 01:35:17 2014
+%%For: mcn
 %%Orientation: Portrait
 %%BoundingBox: 0 0 100 100
 %%EndComments
@@ -196,64 +247,62 @@ newpath 0 0 moveto
 /ll 1 def systemdict /languagelevel known {
 /ll languagelevel def } if
 %%BeginResource: PostScript::Simple
-/ux {} def
-/uy {} def
-/u {} def
 /box {
   newpath 3 copy pop exch 4 copy pop pop
   8 copy pop pop pop pop exch pop exch
   3 copy pop pop exch moveto lineto
   lineto lineto pop pop pop pop closepath
 } bind def
+/ubp {} def
 %%EndResource
 %%EndProlog
-5 u setlinewidth
-10 ux 10 uy 90 ux 90 uy box stroke
-0.4 setlinewidth
+5 ubp setlinewidth
+10 ubp 10 ubp 90 ubp 90 ubp box stroke
+0.4 ubp setlinewidth
 newpath
-0 ux 50 uy moveto
-100 ux 50 uy lineto stroke
+0 ubp 50 ubp moveto
+100 ubp 50 ubp lineto stroke
 newpath
-50 ux 0 uy moveto
-50 ux 100 uy lineto stroke
+50 ubp 0 ubp moveto
+50 ubp 100 ubp lineto stroke
 newpath
-0 ux 40 uy moveto
-0 ux 60 uy lineto stroke
+0 ubp 40 ubp moveto
+0 ubp 60 ubp lineto stroke
 newpath
-100 ux 40 uy moveto
-100 ux 60 uy lineto stroke
+100 ubp 40 ubp moveto
+100 ubp 60 ubp lineto stroke
 newpath
-40 ux 0 uy moveto
-60 ux 0 uy lineto stroke
+40 ubp 0 ubp moveto
+60 ubp 0 ubp lineto stroke
 newpath
-40 ux 100 uy moveto
-60 ux 100 uy lineto stroke
+40 ubp 100 ubp moveto
+60 ubp 100 ubp lineto stroke
 %%EOF
 %%EndDocument
 EndEPSF
-0 0 0.5 setrgbcolor
+0 0 0.49804 setrgbcolor
 newpath
-134 ux 270 uy moveto
+134 umm 270 umm moveto
 ($ps->importepsfile\({overlap => 1}, "demo-square.eps", 140, 210, 165, 260\);)  -90 rotate   show stroke  90 rotate 
-0.784313725490196 0 0.784313725490196 setrgbcolor
-30 ux 30 uy 90 ux 90 uy box stroke
+0.78431 0 0.78431 setrgbcolor
+30 umm 30 umm 90 umm 90 umm box stroke
 BeginEPSF
-30 ux 30 uy translate
-1 ux 1 uy scale
+30 umm 30 umm translate
+1 umm 1 umm scale
 0.6 0.6 scale
 50 50 translate
 20 rotate
 -50 -50 translate
 newpath 0 0 moveto
 100 0 lineto 100 100 lineto
-0 100 lineto closepath clip
-%%BeginDocument: demo-square.eps
+0 100 lineto closepath clip newpath
+%%BeginDocument: (demo-square.eps)
 %!PS-Adobe-3.0 EPSF-1.2
 %%Title: (demo-square.eps)
 %%LanguageLevel: 1
-%%Creator: PostScript::Simple perl module version 0.06
-%%CreationDate: Thu Jun 24 01:52:29 2004
-%%For: comcn
+%%Creator: PostScript::Simple perl module version 0.07
+%%CreationDate: Sat Jun 21 01:35:17 2014
+%%For: mcn
 %%Orientation: Portrait
 %%BoundingBox: 0 0 100 100
 %%EndComments
@@ -261,62 +310,60 @@ newpath 0 0 moveto
 /ll 1 def systemdict /languagelevel known {
 /ll languagelevel def } if
 %%BeginResource: PostScript::Simple
-/ux {} def
-/uy {} def
-/u {} def
 /box {
   newpath 3 copy pop exch 4 copy pop pop
   8 copy pop pop pop pop exch pop exch
   3 copy pop pop exch moveto lineto
   lineto lineto pop pop pop pop closepath
 } bind def
+/ubp {} def
 %%EndResource
 %%EndProlog
-5 u setlinewidth
-10 ux 10 uy 90 ux 90 uy box stroke
-0.4 setlinewidth
+5 ubp setlinewidth
+10 ubp 10 ubp 90 ubp 90 ubp box stroke
+0.4 ubp setlinewidth
 newpath
-0 ux 50 uy moveto
-100 ux 50 uy lineto stroke
+0 ubp 50 ubp moveto
+100 ubp 50 ubp lineto stroke
 newpath
-50 ux 0 uy moveto
-50 ux 100 uy lineto stroke
+50 ubp 0 ubp moveto
+50 ubp 100 ubp lineto stroke
 newpath
-0 ux 40 uy moveto
-0 ux 60 uy lineto stroke
+0 ubp 40 ubp moveto
+0 ubp 60 ubp lineto stroke
 newpath
-100 ux 40 uy moveto
-100 ux 60 uy lineto stroke
+100 ubp 40 ubp moveto
+100 ubp 60 ubp lineto stroke
 newpath
-40 ux 0 uy moveto
-60 ux 0 uy lineto stroke
+40 ubp 0 ubp moveto
+60 ubp 0 ubp lineto stroke
 newpath
-40 ux 100 uy moveto
-60 ux 100 uy lineto stroke
+40 ubp 100 ubp moveto
+60 ubp 100 ubp lineto stroke
 %%EOF
 %%EndDocument
 EndEPSF
 /Courier findfont 10 scalefont setfont
 newpath
-100 ux 85 uy moveto
+100 umm 85 umm moveto
 ($eps = new PostScript::Simple::EPS)   show stroke 
 newpath
-110 ux 80 uy moveto
+110 umm 80 umm moveto
 (\(file => "demo-square.eps"\);)   show stroke 
 newpath
-100 ux 75 uy moveto
+100 umm 75 umm moveto
 ($eps->scale\(60/100\);)   show stroke 
 newpath
-100 ux 70 uy moveto
+100 umm 70 umm moveto
 ($eps->translate\(50, 50\);)   show stroke 
 newpath
-100 ux 65 uy moveto
+100 umm 65 umm moveto
 ($eps->rotate\(20\);)   show stroke 
 newpath
-100 ux 60 uy moveto
+100 umm 60 umm moveto
 ($eps->translate\(-50, -50\);)   show stroke 
 newpath
-100 ux 55 uy moveto
+100 umm 55 umm moveto
 ($ps->importeps\($eps, 30, 30\);)   show stroke 
 %%PageTrailer
 pagelevel restore
@@ -325,30 +372,31 @@ showpage
 %%BeginPageSetup
 /pagelevel save def
 %%EndPageSetup
-10 ux 10 uy 200 ux 287 uy box stroke
+10 umm 10 umm 200 umm 287 umm box stroke
 newpath
-10 ux 277 uy moveto
-200 ux 277 uy lineto stroke
+10 umm 277 umm moveto
+200 umm 277 umm lineto stroke
 /Times-Roman findfont 14 scalefont setfont
 newpath
-15 ux 280 uy moveto
+15 umm 280 umm moveto
 (PostScript::Simple example file: EPS import functions \(using internal EPS object\))   show stroke 
 /Courier findfont 10 scalefont setfont
 0.8 0 0 setrgbcolor
-20 ux 210 uy 45 ux 260 uy box stroke
+20 umm 210 umm 45 umm 260 umm box stroke
 BeginEPSF
-20 ux 210 uy translate
-1 ux 1 uy scale
+20 umm 210 umm translate
+1 umm 1 umm scale
 0.25 0.25 scale
 newpath 0 0 moveto
 100 0 lineto 100 100 lineto
-0 100 lineto closepath clip
+0 100 lineto closepath clip newpath
+%%BeginDocument: (undef)
 %!PS-Adobe-3.0 EPSF-1.2
 %%Title: (PostScript::Simple generated page)
 %%LanguageLevel: 1
-%%Creator: PostScript::Simple perl module version 0.06
-%%CreationDate: Thu Jun 24 01:52:29 2004
-%%For: comcn
+%%Creator: PostScript::Simple perl module version 0.07
+%%CreationDate: Sat Jun 21 01:35:17 2014
+%%For: mcn
 %%Orientation: Portrait
 %%BoundingBox: 0 0 100 100
 %%EndComments
@@ -356,65 +404,65 @@ newpath 0 0 moveto
 /ll 1 def systemdict /languagelevel known {
 /ll languagelevel def } if
 %%BeginResource: PostScript::Simple
-/ux {} def
-/uy {} def
-/u {} def
 /box {
   newpath 3 copy pop exch 4 copy pop pop
   8 copy pop pop pop pop exch pop exch
   3 copy pop pop exch moveto lineto
   lineto lineto pop pop pop pop closepath
 } bind def
+/ubp {} def
 %%EndResource
 %%EndProlog
-5 u setlinewidth
-10 ux 10 uy 90 ux 90 uy box stroke
-0.4 setlinewidth
+5 ubp setlinewidth
+10 ubp 10 ubp 90 ubp 90 ubp box stroke
+0.4 ubp setlinewidth
 newpath
-0 ux 50 uy moveto
-100 ux 50 uy lineto stroke
+0 ubp 50 ubp moveto
+100 ubp 50 ubp lineto stroke
 newpath
-50 ux 0 uy moveto
-50 ux 100 uy lineto stroke
+50 ubp 0 ubp moveto
+50 ubp 100 ubp lineto stroke
 newpath
-0 ux 40 uy moveto
-0 ux 60 uy lineto stroke
+0 ubp 40 ubp moveto
+0 ubp 60 ubp lineto stroke
 newpath
-100 ux 40 uy moveto
-100 ux 60 uy lineto stroke
+100 ubp 40 ubp moveto
+100 ubp 60 ubp lineto stroke
 newpath
-40 ux 0 uy moveto
-60 ux 0 uy lineto stroke
+40 ubp 0 ubp moveto
+60 ubp 0 ubp lineto stroke
 newpath
-40 ux 100 uy moveto
-60 ux 100 uy lineto stroke
+40 ubp 100 ubp moveto
+60 ubp 100 ubp lineto stroke
 %%EOF
+%%EndDocument
 EndEPSF
-0.5 0 0 setrgbcolor
+0.49804 0 0 setrgbcolor
 newpath
-30 ux 205 uy moveto
+30 umm 205 umm moveto
 ($directeps->reset\(\);)  -60 rotate   show stroke  60 rotate 
 newpath
-25 ux 205 uy moveto
+25 umm 205 umm moveto
 ($directeps->scale\(25/$directeps->width\(\)\);)  -60 rotate   show stroke  60 rotate 
 newpath
-20 ux 205 uy moveto
+20 umm 205 umm moveto
 ($ps->importeps\($directeps, 20, 210\);)  -60 rotate   show stroke  60 rotate 
 0 0.8 0 setrgbcolor
-80 ux 210 uy 105 ux 260 uy box stroke
+80 umm 210 umm 105 umm 260 umm box stroke
 BeginEPSF
-80 ux 210 uy translate
-1 ux 1 uy scale
+80 umm 210 umm translate
+1 umm 1 umm scale
 0.25 0.5 scale
 newpath 0 0 moveto
 100 0 lineto 100 100 lineto
-0 100 lineto closepath clip
+0 100 lineto closepath clip newpath
+%%BeginDocument: (undef)
 %!PS-Adobe-3.0 EPSF-1.2
 %%Title: (PostScript::Simple generated page)
 %%LanguageLevel: 1
-%%Creator: PostScript::Simple perl module version 0.06
-%%CreationDate: Thu Jun 24 01:52:29 2004
-%%For: comcn
+%%Creator: PostScript::Simple perl module version 0.07
+%%CreationDate: Sat Jun 21 01:35:17 2014
+%%For: mcn
 %%Orientation: Portrait
 %%BoundingBox: 0 0 100 100
 %%EndComments
@@ -422,65 +470,65 @@ newpath 0 0 moveto
 /ll 1 def systemdict /languagelevel known {
 /ll languagelevel def } if
 %%BeginResource: PostScript::Simple
-/ux {} def
-/uy {} def
-/u {} def
 /box {
   newpath 3 copy pop exch 4 copy pop pop
   8 copy pop pop pop pop exch pop exch
   3 copy pop pop exch moveto lineto
   lineto lineto pop pop pop pop closepath
 } bind def
+/ubp {} def
 %%EndResource
 %%EndProlog
-5 u setlinewidth
-10 ux 10 uy 90 ux 90 uy box stroke
-0.4 setlinewidth
+5 ubp setlinewidth
+10 ubp 10 ubp 90 ubp 90 ubp box stroke
+0.4 ubp setlinewidth
 newpath
-0 ux 50 uy moveto
-100 ux 50 uy lineto stroke
+0 ubp 50 ubp moveto
+100 ubp 50 ubp lineto stroke
 newpath
-50 ux 0 uy moveto
-50 ux 100 uy lineto stroke
+50 ubp 0 ubp moveto
+50 ubp 100 ubp lineto stroke
 newpath
-0 ux 40 uy moveto
-0 ux 60 uy lineto stroke
+0 ubp 40 ubp moveto
+0 ubp 60 ubp lineto stroke
 newpath
-100 ux 40 uy moveto
-100 ux 60 uy lineto stroke
+100 ubp 40 ubp moveto
+100 ubp 60 ubp lineto stroke
 newpath
-40 ux 0 uy moveto
-60 ux 0 uy lineto stroke
+40 ubp 0 ubp moveto
+60 ubp 0 ubp lineto stroke
 newpath
-40 ux 100 uy moveto
-60 ux 100 uy lineto stroke
+40 ubp 100 ubp moveto
+60 ubp 100 ubp lineto stroke
 %%EOF
+%%EndDocument
 EndEPSF
-0 0.5 0 setrgbcolor
+0 0.49804 0 setrgbcolor
 newpath
-90 ux 205 uy moveto
+90 umm 205 umm moveto
 ($directeps->reset\(\);)  -60 rotate   show stroke  60 rotate 
 newpath
-85 ux 205 uy moveto
+85 umm 205 umm moveto
 ($directeps->scale\(25/$directeps->width\(\), 50/$directeps->height\(\)\);)  -60 rotate   show stroke  60 rotate 
 newpath
-80 ux 205 uy moveto
+80 umm 205 umm moveto
 ($ps->importeps\($directeps, 80, 210\);)  -60 rotate   show stroke  60 rotate 
 0 0 0.8 setrgbcolor
-140 ux 210 uy 165 ux 260 uy box stroke
+140 umm 210 umm 165 umm 260 umm box stroke
 BeginEPSF
-140 ux 210 uy translate
-1 ux 1 uy scale
+140 umm 210 umm translate
+1 umm 1 umm scale
 0.5 0.5 scale
 newpath 0 0 moveto
 100 0 lineto 100 100 lineto
-0 100 lineto closepath clip
+0 100 lineto closepath clip newpath
+%%BeginDocument: (undef)
 %!PS-Adobe-3.0 EPSF-1.2
 %%Title: (PostScript::Simple generated page)
 %%LanguageLevel: 1
-%%Creator: PostScript::Simple perl module version 0.06
-%%CreationDate: Thu Jun 24 01:52:29 2004
-%%For: comcn
+%%Creator: PostScript::Simple perl module version 0.07
+%%CreationDate: Sat Jun 21 01:35:17 2014
+%%For: mcn
 %%Orientation: Portrait
 %%BoundingBox: 0 0 100 100
 %%EndComments
@@ -488,65 +536,65 @@ newpath 0 0 moveto
 /ll 1 def systemdict /languagelevel known {
 /ll languagelevel def } if
 %%BeginResource: PostScript::Simple
-/ux {} def
-/uy {} def
-/u {} def
 /box {
   newpath 3 copy pop exch 4 copy pop pop
   8 copy pop pop pop pop exch pop exch
   3 copy pop pop exch moveto lineto
   lineto lineto pop pop pop pop closepath
 } bind def
+/ubp {} def
 %%EndResource
 %%EndProlog
-5 u setlinewidth
-10 ux 10 uy 90 ux 90 uy box stroke
-0.4 setlinewidth
+5 ubp setlinewidth
+10 ubp 10 ubp 90 ubp 90 ubp box stroke
+0.4 ubp setlinewidth
 newpath
-0 ux 50 uy moveto
-100 ux 50 uy lineto stroke
+0 ubp 50 ubp moveto
+100 ubp 50 ubp lineto stroke
 newpath
-50 ux 0 uy moveto
-50 ux 100 uy lineto stroke
+50 ubp 0 ubp moveto
+50 ubp 100 ubp lineto stroke
 newpath
-0 ux 40 uy moveto
-0 ux 60 uy lineto stroke
+0 ubp 40 ubp moveto
+0 ubp 60 ubp lineto stroke
 newpath
-100 ux 40 uy moveto
-100 ux 60 uy lineto stroke
+100 ubp 40 ubp moveto
+100 ubp 60 ubp lineto stroke
 newpath
-40 ux 0 uy moveto
-60 ux 0 uy lineto stroke
+40 ubp 0 ubp moveto
+60 ubp 0 ubp lineto stroke
 newpath
-40 ux 100 uy moveto
-60 ux 100 uy lineto stroke
+40 ubp 100 ubp moveto
+60 ubp 100 ubp lineto stroke
 %%EOF
+%%EndDocument
 EndEPSF
-0 0 0.5 setrgbcolor
+0 0 0.49804 setrgbcolor
 newpath
-150 ux 205 uy moveto
+150 umm 205 umm moveto
 ($directeps->reset\(\);)  -60 rotate   show stroke  60 rotate 
 newpath
-145 ux 205 uy moveto
+145 umm 205 umm moveto
 ($directeps->scale\(50/$directeps->height\(\)\);)  -60 rotate   show stroke  60 rotate 
 newpath
-140 ux 205 uy moveto
+140 umm 205 umm moveto
 ($ps->importeps\($directeps, 140, 210\);)  -60 rotate   show stroke  60 rotate 
-0.784313725490196 0 0.784313725490196 setrgbcolor
-30 ux 30 uy 90 ux 90 uy box stroke
+0.78431 0 0.78431 setrgbcolor
+30 umm 30 umm 90 umm 90 umm box stroke
 BeginEPSF
-30 ux 30 uy translate
-1 ux 1 uy scale
+30 umm 30 umm translate
+1 umm 1 umm scale
 0.6 0.6 scale
 newpath 0 0 moveto
 100 0 lineto 100 100 lineto
-0 100 lineto closepath clip
+0 100 lineto closepath clip newpath
+%%BeginDocument: (undef)
 %!PS-Adobe-3.0 EPSF-1.2
 %%Title: (PostScript::Simple generated page)
 %%LanguageLevel: 1
-%%Creator: PostScript::Simple perl module version 0.06
-%%CreationDate: Thu Jun 24 01:52:29 2004
-%%For: comcn
+%%Creator: PostScript::Simple perl module version 0.07
+%%CreationDate: Sat Jun 21 01:35:17 2014
+%%For: mcn
 %%Orientation: Portrait
 %%BoundingBox: 0 0 100 100
 %%EndComments
@@ -554,16 +602,13 @@ newpath 0 0 moveto
 /ll 1 def systemdict /languagelevel known {
 /ll languagelevel def } if
 %%BeginResource: PostScript::Simple
-/ux {} def
-/uy {} def
-/u {} def
 /STARTDIFFENC { mark } bind def
 /ENDDIFFENC { 
 
 % /NewEnc BaseEnc STARTDIFFENC number or glyphname ... ENDDIFFENC -
 	counttomark 2 add -1 roll 256 array copy
 	/TempEncode exch def
-	
+
 	% pointer for sequential encodings
 	/EncodePointer 0 def
 	{
@@ -585,7 +630,7 @@ newpath 0 0 moveto
 			/EncodePointer exch def
 			} ifelse
 		} ifelse
-	} loop	
+	} loop
 
 	TempEncode def
 } bind def
@@ -666,23 +711,25 @@ newpath 0 0 moveto
 false setstrokeadjust false setoverprint } if } if } bind def
 /EndEPSF { count op_count sub {pop} repeat countdictstack dict_count
 sub {end} repeat b4_Inc_state restore } bind def
+/ubp {} def
 %%EndResource
 %%EndProlog
 BeginEPSF
-0 ux 0 uy translate
-1 ux 1 uy scale
+0 ubp 0 ubp translate
+1 ubp 1 ubp scale
 50 50 translate
 20 rotate
 -50 -50 translate
 newpath 0 0 moveto
 100 0 lineto 100 100 lineto
-0 100 lineto closepath clip
+0 100 lineto closepath clip newpath
+%%BeginDocument: (undef)
 %!PS-Adobe-3.0 EPSF-1.2
 %%Title: (PostScript::Simple generated page)
 %%LanguageLevel: 1
-%%Creator: PostScript::Simple perl module version 0.06
-%%CreationDate: Thu Jun 24 01:52:29 2004
-%%For: comcn
+%%Creator: PostScript::Simple perl module version 0.07
+%%CreationDate: Sat Jun 21 01:35:17 2014
+%%For: mcn
 %%Orientation: Portrait
 %%BoundingBox: 0 0 100 100
 %%EndComments
@@ -690,76 +737,237 @@ newpath 0 0 moveto
 /ll 1 def systemdict /languagelevel known {
 /ll languagelevel def } if
 %%BeginResource: PostScript::Simple
-/ux {} def
-/uy {} def
-/u {} def
 /box {
   newpath 3 copy pop exch 4 copy pop pop
   8 copy pop pop pop pop exch pop exch
   3 copy pop pop exch moveto lineto
   lineto lineto pop pop pop pop closepath
 } bind def
+/ubp {} def
 %%EndResource
 %%EndProlog
-5 u setlinewidth
-10 ux 10 uy 90 ux 90 uy box stroke
-0.4 setlinewidth
+5 ubp setlinewidth
+10 ubp 10 ubp 90 ubp 90 ubp box stroke
+0.4 ubp setlinewidth
 newpath
-0 ux 50 uy moveto
-100 ux 50 uy lineto stroke
+0 ubp 50 ubp moveto
+100 ubp 50 ubp lineto stroke
 newpath
-50 ux 0 uy moveto
-50 ux 100 uy lineto stroke
+50 ubp 0 ubp moveto
+50 ubp 100 ubp lineto stroke
 newpath
-0 ux 40 uy moveto
-0 ux 60 uy lineto stroke
+0 ubp 40 ubp moveto
+0 ubp 60 ubp lineto stroke
 newpath
-100 ux 40 uy moveto
-100 ux 60 uy lineto stroke
+100 ubp 40 ubp moveto
+100 ubp 60 ubp lineto stroke
 newpath
-40 ux 0 uy moveto
-60 ux 0 uy lineto stroke
+40 ubp 0 ubp moveto
+60 ubp 0 ubp lineto stroke
 newpath
-40 ux 100 uy moveto
-60 ux 100 uy lineto stroke
+40 ubp 100 ubp moveto
+60 ubp 100 ubp lineto stroke
 %%EOF
+%%EndDocument
 EndEPSF
 %%EOF
+%%EndDocument
 EndEPSF
 /Courier findfont 10 scalefont setfont
 newpath
-100 ux 75 uy moveto
+100 umm 75 umm moveto
 ($directeps->reset\(\);)   show stroke 
 newpath
-100 ux 70 uy moveto
+100 umm 70 umm moveto
 ($directeps->translate\(50, 50\);)   show stroke 
 newpath
-100 ux 65 uy moveto
+100 umm 65 umm moveto
 ($directeps->rotate\(20\);)   show stroke 
 newpath
-100 ux 60 uy moveto
+100 umm 60 umm moveto
 ($directeps->translate\(-50, -50\);)   show stroke 
 newpath
-100 ux 55 uy moveto
+100 umm 55 umm moveto
 (# round-about way to set clipping path)   show stroke 
 newpath
-100 ux 50 uy moveto
+100 umm 50 umm moveto
 ($eps = new PostScript::Simple\(eps => 1,)   show stroke 
 newpath
-110 ux 45 uy moveto
+110 umm 45 umm moveto
 (xsize => 100, ysize => 100\);)   show stroke 
 newpath
-100 ux 40 uy moveto
+100 umm 40 umm moveto
 ($eps->importeps\($directeps, 0, 0\);)   show stroke 
 newpath
-100 ux 35 uy moveto
+100 umm 35 umm moveto
 ($directeps = $eps->geteps\(\);)   show stroke 
 newpath
-100 ux 30 uy moveto
+100 umm 30 umm moveto
 ($directeps->scale\(60/100\);)   show stroke 
 newpath
-100 ux 25 uy moveto
+100 umm 25 umm moveto
 ($ps->importeps\($directeps, 30, 30\);)   show stroke 
+%%PageTrailer
+pagelevel restore
+showpage
+%%Page: 3 3
+%%BeginPageSetup
+/pagelevel save def
+%%EndPageSetup
+10 umm 10 umm 200 umm 287 umm box stroke
+newpath
+10 umm 277 umm moveto
+200 umm 277 umm lineto stroke
+/Times-Roman findfont 14 scalefont setfont
+newpath
+15 umm 280 umm moveto
+(PostScript::Simple example file: Using different units)   show stroke 
+/Courier findfont 10 scalefont setfont
+0.8 0 0 setrgbcolor
+newpath
+20 umm 268 umm moveto
+($ps->line\(20,265, 190,265\);  # default units is mm)   show stroke 
+newpath
+20 umm 265 umm moveto
+190 umm 265 umm lineto stroke
+0 0 0.8 setrgbcolor
+newpath
+20 umm 258 umm moveto
+($ps->setlinewidth\("5 pt"\);)   show stroke 
+newpath
+20 umm 253 umm moveto
+($ps->line\(20,255,  190,255\);)   show stroke 
+5 upt setlinewidth
+newpath
+20 umm 250 umm moveto
+190 umm 250 umm lineto stroke
+0 0.8 0 setrgbcolor
+newpath
+20 umm 243 umm moveto
+($ps->setlinewidth\([0.25, "in"\);)   show stroke 
+newpath
+20 umm 238 umm moveto
+($ps->line\(20,232,  190,232\);)   show stroke 
+0.25 uin setlinewidth
+newpath
+20 umm 232 umm moveto
+190 umm 232 umm lineto stroke
+0.50196 0 0.50196 setrgbcolor
+newpath
+20 umm 224 umm moveto
+($ps->setlinewidth\("thin"\);  # thin is 0.4 pt)   show stroke 
+newpath
+20 umm 219 umm moveto
+($ps->line\(20,216,  190,216\);)   show stroke 
+0.4 ubp setlinewidth
+newpath
+20 umm 216 umm moveto
+190 umm 216 umm lineto stroke
+8 udd setlinewidth
+1 0.50196 0.50196 setrgbcolor
+newpath
+1 uin 210 umm moveto
+2 uin 210 umm lineto stroke
+0.4 ubp setlinewidth
+0 0 0 setrgbcolor
+newpath
+1 uin 212 umm moveto
+1 uin 198 umm lineto stroke
+8 udd setlinewidth
+0.5 0.50196 0.50196 setrgbcolor
+newpath
+2 uin 208 umm moveto
+3 uin 208 umm lineto stroke
+0.4 ubp setlinewidth
+0 0 0 setrgbcolor
+newpath
+2 uin 212 umm moveto
+2 uin 198 umm lineto stroke
+8 udd setlinewidth
+0.33333 0.50196 0.50196 setrgbcolor
+newpath
+3 uin 206 umm moveto
+4 uin 206 umm lineto stroke
+0.4 ubp setlinewidth
+0 0 0 setrgbcolor
+newpath
+3 uin 212 umm moveto
+3 uin 198 umm lineto stroke
+8 udd setlinewidth
+0.25 0.50196 0.50196 setrgbcolor
+newpath
+4 uin 204 umm moveto
+5 uin 204 umm lineto stroke
+0.4 ubp setlinewidth
+0 0 0 setrgbcolor
+newpath
+4 uin 212 umm moveto
+4 uin 198 umm lineto stroke
+8 udd setlinewidth
+0.2 0.50196 0.50196 setrgbcolor
+newpath
+5 uin 202 umm moveto
+6 uin 202 umm lineto stroke
+0.4 ubp setlinewidth
+0 0 0 setrgbcolor
+newpath
+5 uin 212 umm moveto
+5 uin 198 umm lineto stroke
+8 udd setlinewidth
+0.16667 0.50196 0.50196 setrgbcolor
+newpath
+6 uin 200 umm moveto
+7 uin 200 umm lineto stroke
+0.4 ubp setlinewidth
+0 0 0 setrgbcolor
+newpath
+6 uin 212 umm moveto
+6 uin 198 umm lineto stroke
+0 0 0 setrgbcolor
+newpath
+7 uin 212 umm moveto
+7 uin 198 umm lineto stroke
+newpath
+20 umm 193 umm moveto
+($y = 210;)   show stroke 
+newpath
+20 umm 188 umm moveto
+(for \(my $x = 1; $x < 7; $x++\) {)   show stroke 
+newpath
+20 umm 183 umm moveto
+(  $ps->setlinewidth\([8, "dd"]\);)   show stroke 
+newpath
+20 umm 178 umm moveto
+(  $ps->line\([$x, "in"],$y, [$x+1, "in"],$y, 255/$x, 128, 128\);  # also set colour)   show stroke 
+newpath
+20 umm 173 umm moveto
+(  $ps->setlinewidth\("thin"\);)   show stroke 
+newpath
+20 umm 168 umm moveto
+(  $ps->line\([$x, "in"],212, [$x, "in"],198, 0,0,0\);  # set black)   show stroke 
+newpath
+20 umm 163 umm moveto
+(  $y -= 2;)   show stroke 
+newpath
+20 umm 158 umm moveto
+(})   show stroke 
+newpath
+20 umm 153 umm moveto
+($ps->line\([7, "in"],212, [7, "in"],198, 0,0,0\);)   show stroke 
+15 upt setlinewidth
+50 umm 4.5 uin 1 uin circle stroke
+/Courier-Bold findfont 10 scalefont setfont
+1 1 0 setrgbcolor
+gsave
+  50 umm 4.5 uin translate
+  ($ps->setlinewidth("10 pt"); $ps->circle(50, "4.5in", "2in");) 10 90 0.96 uin outsidecircletext
+grestore
+0.49804 0 0 setrgbcolor
+/Courier findfont 8 scalefont setfont
+gsave
+  50 umm 4.5 uin translate
+  ($ps->circletext({align => "outside"}, 50, "4.5in", "0.96in", 90, "...");) 8 90 0.78 uin outsidecircletext
+grestore
 %%PageTrailer
 pagelevel restore
 showpage
