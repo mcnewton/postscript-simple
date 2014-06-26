@@ -968,12 +968,12 @@ sub setcolour
   $b = 0 + sprintf("%0.5f", $b / 255);
 
   if ($self->{colour}) {
-    $self->{pspages} .= "$r $g $b setrgbcolor\n";
+    $self->_addtopage("$r $g $b setrgbcolor\n");
   } else {
     # Better colour->grey conversion than just 0.33 of each:
     $r = 0.3*$r + 0.59*$g + 0.11*$b;
     $r = 0 + sprintf("%0.5f", $r / 255);
-    $self->{pspages} .= "$r setgray\n";
+    $self->_addtopage("$r setgray\n");
   }
   
   return 1;
@@ -1013,7 +1013,7 @@ sub setcmykcolour
   # Don't currently convert to grey if colour is not set. Patches welcome for
   # something that gives a reasonable approximation...
 
-  $self->{pspages} .= "$c $m $y $k setcmykcolor\n";
+  $self->_addtopage("$c $m $y $k setcmykcolor\n");
   
   return 1;
 }
@@ -1043,7 +1043,7 @@ sub setlinewidth
 
   $width = "0.4 bp" if $width eq "thin";
 
-  $self->{pspages} .= $self->_u($width) . "setlinewidth\n";
+  $self->_addtopage($self->_u($width) . "setlinewidth\n");
   
   return 1;
 }
@@ -1091,7 +1091,7 @@ sub line
   
   $self->newpath;
   $self->moveto($x1, $y1);
-  $self->{pspages} .= $self->_uxy($x2, $y2) . "lineto stroke\n";
+  $self->_addtopage($self->_uxy($x2, $y2) . "lineto stroke\n");
   
   return 1;
 }
@@ -1122,18 +1122,19 @@ sub linextend
 {
   my $self = shift;
   my ($x, $y) = @_;
-  
+
   unless ( @_ == 2 ) {
     $self->_error( "wrong number of args for linextend" );
     return 0;
   }
-  
+
   my $out = $self->_uxy($x, $y) . "lineto stroke\n";
   $self->{pspages} =~ s/eto stroke\n$/eto\n$out/;
-  
+
+  # FIXMEFIXMEFIXME
   # perhaps we need something like $self->{_lastcommand} to know if operations
   # are valid, rather than using a regexp?
-    
+
   return 1;
 }
 
@@ -1189,11 +1190,11 @@ sub arc
   }
 
   $self->newpath;
-  $self->{pspages} .= $self->_uxy($x, $y) . $self->_u($r) . "$sa $ea arc ";
+  $self->_addtopage($self->_uxy($x, $y) . $self->_u($r) . "$sa $ea arc ");
   if ($opt{'filled'}) {
-    $self->{pspages} .= "fill\n"
+    $self->_addtopage("fill\n");
   } else {
-    $self->{pspages} .= "stroke\n"
+    $self->_addtopage("stroke\n");
   }
   
   return 1;
@@ -1297,11 +1298,11 @@ sub polygon
   my $savestate = ($xoffset || $yoffset || $rotate) ? 1 : 0 ;
   
   if ( $savestate ) {
-    $self->{pspages} .= "gsave ";
+    $self->_addtopage("gsave ");
   }
 
   if ($xoffset || $yoffset) {
-    $self->{pspages} .= $self->_uxy($xoffset, $yoffset) . "translate\n";
+    $self->_addtopage($self->_uxy($xoffset, $yoffset) . "translate\n");
   }
 
   if ($rotate) {
@@ -1314,7 +1315,7 @@ sub polygon
 EOP
     }
 
-    $self->{pspages} .= $self->_uxy($rotatex, $rotatey) . "$rotate rotabout\n";
+    $self->_addtopage($self->_uxy($rotatex, $rotatey) . "$rotate rotabout\n");
   }
   
   $self->newpath;
@@ -1324,17 +1325,17 @@ EOP
     my $x = shift;
     my $y = shift;
     
-    $self->{pspages} .= $self->_uxy($x, $y) . "lineto ";
+    $self->_addtopage($self->_uxy($x, $y) . "lineto ");
   }
 
   if ($opt{'filled'}) {
-    $self->{pspages} .= "fill\n";
+    $self->_addtopage("fill\n");
   } else {
-    $self->{pspages} .= "stroke\n";
+    $self->_addtopage("stroke\n");
   }
 
   if ( $savestate ) {
-    $self->{pspages} .= "grestore\n";
+    $self->_addtopage("grestore\n");
   }
   
   return 1;
@@ -1385,9 +1386,12 @@ sub circle
     $self->{psresources}{circle} = "/circle {newpath 0 360 arc closepath} bind def\n";
   }
 
-  $self->{pspages} .= $self->_uxy($x, $y) . $self->_u($r) . "circle ";
-  if ($opt{'filled'}) { $self->{pspages} .= "fill\n" }
-  else {$self->{pspages} .= "stroke\n" }
+  $self->_addtopage($self->_uxy($x, $y) . $self->_u($r) . "circle ");
+  if ($opt{'filled'}) {
+    $self->_addtopage("fill\n");
+  } else {
+    $self->_addtopage("stroke\n");
+  }
   
   return 1;
 }
@@ -1497,15 +1501,15 @@ end
 EOP
   }
 
-  $self->{pspages} .= "gsave\n";
-  $self->{pspages} .= "  " . $self->_uxy($x, $y) . "translate\n";
-  $self->{pspages} .= "  ($text) $self->{lastfontsize} $a " . $self->_u($r);
+  $self->_addtopage("gsave\n");
+  $self->_addtopage("  " . $self->_uxy($x, $y) . "translate\n");
+  $self->_addtopage("  ($text) $self->{lastfontsize} $a " . $self->_u($r));
   if ($opt{'align'} && ($opt{'align'} eq "outside")) {
-    $self->{pspages} .= "outsidecircletext\n";
+    $self->_addtopage("outsidecircletext\n");
   } else {
-    $self->{pspages} .= "insidecircletext\n";
+    $self->_addtopage("insidecircletext\n");
   }
-  $self->{pspages} .= "grestore\n";
+  $self->_addtopage("grestore\n");
   
   return 1;
 }
@@ -1571,10 +1575,13 @@ sub box
 EOP
   }
 
-  $self->{pspages} .= $self->_uxy($x1, $y1);
-  $self->{pspages} .= $self->_uxy($x2, $y2) . "box ";
-  if ($opt{'filled'}) { $self->{pspages} .= "fill\n" }
-  else {$self->{pspages} .= "stroke\n" }
+  $self->_addtopage($self->_uxy($x1, $y1));
+  $self->_addtopage($self->_uxy($x2, $y2) . "box ");
+  if ($opt{'filled'}) {
+    $self->_addtopage("fill\n");
+  } else {
+    $self->_addtopage("stroke\n");
+  }
 
   return 1;
 }
@@ -1604,7 +1611,7 @@ sub setfont
   }
 
 # set font y size XXXXX
-  $self->{pspages} .= "/$name findfont $size scalefont setfont\n";
+  $self->_addtopage("/$name findfont $size scalefont setfont\n");
 
   $self->{lastfontsize} = $size;
 
@@ -1699,7 +1706,7 @@ sub text
         if $opt{ 'align' } eq 'center' or $opt{ 'align' } eq 'centre';
   }
   
-  $self->{pspages} .= "($text) $rot $align $rot_m\n";
+  $self->_addtopage("($text) $rot $align $rot_m\n");
 
   return 1;
 }
@@ -1731,9 +1738,9 @@ sub curve
 
   $self->newpath;
   $self->moveto($x1, $y1);
-  $self->{pspages} .= $self->_uxy($x2, $y2);
-  $self->{pspages} .= $self->_uxy($x3, $y3);
-  $self->{pspages} .= $self->_uxy($x4, $y4) . "curveto stroke\n";
+  $self->_addtopage($self->_uxy($x2, $y2));
+  $self->_addtopage($self->_uxy($x3, $y3));
+  $self->_addtopage($self->_uxy($x4, $y4) . "curveto stroke\n");
 
   return 1;
 }
@@ -1764,6 +1771,7 @@ sub curvextend
   $out .= $self->_uxy($x2, $y2);
   $out .= $self->_uxy($x3, $y3) . "curveto stroke\n";
 
+  # FIXMEFIXMEFIXME
   # curveto may follow a lineto etc...
   $self->{pspages} =~ s/eto stroke\n$/eto\n$out/;
   
@@ -1784,7 +1792,7 @@ sub newpath
 {
   my $self = shift;
 
-  $self->{pspages} .= "newpath\n";
+  $self->_addtopage("newpath\n");
 
   return 1;
 }
@@ -1804,7 +1812,7 @@ sub moveto
   my $self = shift;
   my ($x, $y) = @_;
 
-  $self->{pspages} .= $self->_uxy($x, $y) . "moveto\n";
+  $self->_addtopage($self->_uxy($x, $y) . "moveto\n");
 
   return 1;
 }
@@ -1976,6 +1984,16 @@ sub importeps
 ################################################################################
 # PRIVATE methods
 
+sub _addtopage
+{
+  my ($self, $data) = @_;
+
+  $self->{pspages} .= $data;
+}
+
+
+#-------------------------------------------------------------------------------
+
 sub _add_eps
 {
   my $self = shift;
@@ -2012,11 +2030,13 @@ EOP
 
   ($epsobj, $xpos, $ypos) = @_;
 
-  $self->{pspages} .= "BeginEPSF\n";
-  $self->{pspages} .= $self->_uxy($xpos, $ypos) . "translate\n";
-  $self->{pspages} .= $self->_uxy(1, 1) . "scale\n";
-  $self->{pspages} .= $epsobj->_get_include_data($xpos, $ypos);
-  $self->{pspages} .= "EndEPSF\n";
+  my $eps = "BeginEPSF\n";
+  $eps .= $self->_uxy($xpos, $ypos) . "translate\n";
+  $eps .= $self->_uxy(1, 1) . "scale\n";
+  $eps .= $epsobj->_get_include_data($xpos, $ypos);
+  $eps .= "EndEPSF\n";
+
+  $self->_addtopage($eps);
   
   return 1;
 }
@@ -2028,7 +2048,7 @@ sub _error {
   my $self = shift;
   my $msg = shift;
 
-  $self->{pspages} .= "(error: $msg\n) print flush\n";
+  $self->_addtopage("(error: $msg\n) print flush\n");
 }
 
 
