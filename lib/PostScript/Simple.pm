@@ -380,7 +380,7 @@ sub new
 
     pscomments     => "",       # the following entries store data
     psprolog       => "",       # for the same DSC areas of the
-    psfunctions    => {},       # postscript file.
+    psresources    => {},       # postscript file.
     pssetup        => "",
     pspages        => "",
     pstrailer      => "",
@@ -520,7 +520,7 @@ sub init
   if ($self->{landscape}) {
     my $swap;
 
-    $self->{psfunctions}{landscape} = <<"EOP";
+    $self->{psresources}{landscape} = <<"EOP";
 /landscape {
   $self->{bbx2} 0 translate 90 rotate
 } bind def
@@ -542,7 +542,7 @@ EOP
   
 # Clipping
   if ($self->{clip}) {
-    $self->{psfunctions}{pageclip} = <<"EOP";
+    $self->{psresources}{pageclip} = <<"EOP";
 /pageclip {
   newpath
   $self->{bbx1} $self->{bby1} moveto
@@ -571,7 +571,7 @@ EOP
       $ext = '-iso';
     }
 
-    $self->{psfunctions}{REENCODEFONT} = <<'EOP';
+    $self->{psresources}{REENCODEFONT} = <<'EOP';
 /STARTDIFFENC { mark } bind def
 /ENDDIFFENC { 
 
@@ -664,7 +664,7 @@ EOP
 EOP
 
     for my $font (@fonts) {
-      $self->{psfunctions}{REENCODEFONT} .= "/${font}$ext $encoding /$font REENCODEFONT\n";
+      $self->{psresources}{REENCODEFONT} .= "/${font}$ext $encoding /$font REENCODEFONT\n";
     }
   }
 }
@@ -791,9 +791,9 @@ sub _builddocument
   push @$page, "/ll 1 def systemdict /languagelevel known {\n";
   push @$page, "/ll languagelevel def } if\n";
   push @$page, \$self->{psprolog};
-  foreach my $fn (sort keys %{$self->{psfunctions}}) {
+  foreach my $fn (sort keys %{$self->{psresources}}) {
     push @$page, "\%\%BeginResource: PostScript::Simple-$fn\n";
-    push @$page, $self->{psfunctions}{$fn};
+    push @$page, $self->{psresources}{$fn};
     push @$page, "\%\%EndResource\n";
   }
   push @$page, "\%\%EndProlog\n";
@@ -1305,8 +1305,8 @@ sub polygon
   }
 
   if ($rotate) {
-    unless (defined $self->{psfunctions}{rotabout}) {
-      $self->{psfunctions}{rotabout} = <<'EOP';
+    unless (defined $self->{psresources}{rotabout}) {
+      $self->{psresources}{rotabout} = <<'EOP';
 /rotabout {
   3 copy pop translate rotate exch
   0 exch sub exch 0 exch sub translate
@@ -1381,8 +1381,8 @@ sub circle
     return 0;
   }
 
-  unless (defined $self->{psfunctions}{circle}) {
-    $self->{psfunctions}{circle} = "/circle {newpath 0 360 arc closepath} bind def\n";
+  unless (defined $self->{psresources}{circle}) {
+    $self->{psresources}{circle} = "/circle {newpath 0 360 arc closepath} bind def\n";
   }
 
   $self->{pspages} .= $self->_uxy($x, $y) . $self->_u($r) . "circle ";
@@ -1440,8 +1440,8 @@ sub circletext
     return 0;
   }
 
-  unless (defined $self->{psfunctions}{circletext}) {
-    $self->{psfunctions}{circletext} = <<'EOP';
+  unless (defined $self->{psresources}{circletext}) {
+    $self->{psresources}{circletext} = <<'EOP';
 /outsidecircletext
   { $circtextdict begin
       /radius exch def
@@ -1560,8 +1560,8 @@ sub box
     $opt{'filled'} = 0;
   }
   
-  unless (defined $self->{psfunctions}{box}) {
-    $self->{psfunctions}{box} = <<'EOP';
+  unless (defined $self->{psresources}{box}) {
+    $self->{psresources}{box} = <<'EOP';
 /box {
   newpath 3 copy pop exch 4 copy pop pop
   8 copy pop pop pop pop exch pop exch
@@ -1998,8 +1998,8 @@ sub _add_eps
     return 0;
   }
 
-  unless (defined $self->{psfunctions}{importeps}) {
-    $self->{psfunctions}{importeps} = <<'EOP';
+  unless (defined $self->{psresources}{importeps}) {
+    $self->{psresources}{importeps} = <<'EOP';
 /BeginEPSF { /b4_Inc_state save def /dict_count countdictstack def
 /op_count count 1 sub def userdict begin /showpage { } def 0 setgray
 0 setlinecap 1 setlinewidth 0 setlinejoin 10 setmiterlimit [ ]
