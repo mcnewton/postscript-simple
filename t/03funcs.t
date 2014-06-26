@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 use strict;
 use lib qw(./lib ../lib t/lib);
-use Test::Simple tests => 44;
+use Test::Simple tests => 47;
 #use Data::Dumper;
 use PostScript::Simple;
 
@@ -21,6 +21,9 @@ ok( ! $s->setcolour('Geddy lee') );
 ok( ! $s->setcolour(120, 240) );
 ok( $s->setcolour(120, 240, 0) );
 
+ok( $s->setcmykcolour(0.2, 0.4, 0.6, 0.8) );
+ok( ! $s->setcmykcolour(0.2, 0.4, 0.6) );
+ok( ! $s->setcmykcolour("black") );
 
 ok( $s->setlinewidth(1) );
 ok( ! $s->setlinewidth );
@@ -73,9 +76,12 @@ ok( $s->curve(10,310, 10,320, 110,310, 110,320) );
 ok( $s->curvextend(110,330, 210,330, 210,320) );
 ok( ! $s->curvextend(110,330, 210,330, 210) );
 
+#print STDERR "\n>>>" . $s->{'pspages'} . "<<<\n";
 
 ok( length($s->{'pspages'}) eq length(CANNED()) );
 ok( $s->{'pspages'} eq CANNED() );
+
+#print STDERR "\n>>>" . $s->{'psfunctions'} . "<<<\n";
 
 ok( length($s->{'psfunctions'}) eq length(FUNCS()) );
 ok( $s->{'psfunctions'} eq FUNCS() );
@@ -211,6 +217,11 @@ return '(error: Do not use newpage for eps files!
 (error: setcolour given invalid arguments: 120, 240, undef
 ) print flush
 0.47059 0.94118 0 setrgbcolor
+0.2 0.4 0.6 0.8 setcmykcolor
+(error: setcmykcolour given incorrect number of arguments
+) print flush
+(error: setcmykcolour given incorrect number of arguments
+) print flush
 1 ubp setlinewidth
 (error: setlinewidth not given a width
 ) print flush

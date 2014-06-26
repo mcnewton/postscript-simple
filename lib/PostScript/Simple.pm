@@ -982,6 +982,45 @@ sub setcolour
 
 #-------------------------------------------------------------------------------
 
+=item C<setcmykcolour(cyan, magenta, yellow, black)>
+
+Sets the new drawing colour to the CMYK values specified in C<cyan>,
+C<magenta>, C<yellow} and C<black>. The values range from 0 to 1. Note that
+PostScript::Simple does not do any colour management, so the output colour (as
+also with C<setcolour>) may vary according to output device.
+
+Example:
+
+    # set new colour to a shade of blue
+    $p->setcmykcolour(0.1, 0.5, 0, 0.2);
+    # set new colour to black
+    $p->setcmykcolour(0, 0, 0, 1);
+    # set new colour to a rich black
+    $p->setcmykcolour(0.5, 0.5, 0.5, 1);
+
+=cut
+
+sub setcmykcolour
+{
+  my $self = shift;
+  my ($c, $m, $y, $k) = @_;
+
+  if ( @_ != 4 ) {
+    $self->_error( "setcmykcolour given incorrect number of arguments" );
+    return 0;
+  }
+
+  # Don't currently convert to grey if colour is not set. Patches welcome for
+  # something that gives a reasonable approximation...
+
+  $self->{pspages} .= "$c $m $y $k setcmykcolor\n";
+  
+  return 1;
+}
+
+
+#-------------------------------------------------------------------------------
+
 =item C<setlinewidth(width)>
 
 Sets the new line width to C<width> units.
