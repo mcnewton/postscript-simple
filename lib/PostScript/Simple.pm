@@ -795,21 +795,19 @@ sub _builddocument
   foreach my $fn (sort keys %{$self->{psfunctions}}) {
     push @$page, $self->{psfunctions}{$fn};
   }
-  foreach my $un (sort keys %{$self->{usedunits}}) {
-    push @$page, $self->{usedunits}{$un} . "\n";
-  }
   push @$page, "\%\%EndResource\n";
   push @$page, "\%\%EndProlog\n";
 
 # Setup Section
-  if (length($self->{pssetup}) || ($self->{copies} > 1)) {
-    push @$page, "\%\%BeginSetup\n";
-    if ($self->{copies} > 1) {
-      push @$page, "/#copies " . $self->{copies} . " def\n";
-    }
-    push @$page, \$self->{pssetup};
-    push @$page, "\%\%EndSetup\n";
+  push @$page, "\%\%BeginSetup\n";
+  foreach my $un (sort keys %{$self->{usedunits}}) {
+    push @$page, $self->{usedunits}{$un} . "\n";
   }
+  if ($self->{copies} > 1) {
+    push @$page, "/#copies " . $self->{copies} . " def\n";
+  }
+  push @$page, \$self->{pssetup};
+  push @$page, "\%\%EndSetup\n";
 
 # Pages
   push @$page, \$self->{pspages};
