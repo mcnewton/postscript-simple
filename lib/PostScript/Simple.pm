@@ -791,11 +791,11 @@ sub _builddocument
   push @$page, "/ll 1 def systemdict /languagelevel known {\n";
   push @$page, "/ll languagelevel def } if\n";
   push @$page, \$self->{psprolog};
-  push @$page, "\%\%BeginResource: PostScript::Simple\n";
   foreach my $fn (sort keys %{$self->{psfunctions}}) {
+    push @$page, "\%\%BeginResource: PostScript::Simple-$fn\n";
     push @$page, $self->{psfunctions}{$fn};
+    push @$page, "\%\%EndResource\n";
   }
-  push @$page, "\%\%EndResource\n";
   push @$page, "\%\%EndProlog\n";
 
 # Setup Section
