@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 use strict;
 use lib qw(./lib ../lib t/lib);
-use Test::Simple tests => 47;
+use Test::Simple tests => 50;
 #use Data::Dumper;
 use PostScript::Simple;
 
@@ -83,8 +83,13 @@ ok( $s->{'pspages'} eq CANNED() );
 
 #print STDERR "\n>>>" . $s->{'psfunctions'} . "<<<\n";
 
-ok( length($s->{'psfunctions'}) eq length(FUNCS()) );
-ok( $s->{'psfunctions'} eq FUNCS() );
+ok( length($s->{psresources}{REENCODEFONT}) eq length(REENCODEFONT()) );
+ok( $s->{psresources}{REENCODEFONT} eq REENCODEFONT() );
+
+ok( length($s->{psresources}{box}) eq length(RESBOX()) );
+ok( $s->{psresources}{box} eq RESBOX() );
+
+ok( scalar keys %{$s->{psresources}} == 4 );
 
 ok( $s->output('x03.eps') );
 unlink 'x03.eps';
@@ -93,7 +98,7 @@ unlink 'x03.eps';
 
 ###
 
-sub FUNCS {
+sub REENCODEFONT {
 return '/STARTDIFFENC { mark } bind def
 /ENDDIFFENC { 
 
@@ -196,9 +201,11 @@ return '/STARTDIFFENC { mark } bind def
 /Times-BoldItalic-iso ISOLatin1Encoding /Times-BoldItalic REENCODEFONT
 /Times-Italic-iso ISOLatin1Encoding /Times-Italic REENCODEFONT
 /Symbol-iso ISOLatin1Encoding /Symbol REENCODEFONT
-/rotabout {3 copy pop translate rotate exch 0 exch sub exch 0 exch sub translate} def
-/circle {newpath 0 360 arc closepath} bind def
-/box {
+';
+}
+
+sub RESBOX {
+return '/box {
   newpath 3 copy pop exch 4 copy pop pop
   8 copy pop pop pop pop exch pop exch
   3 copy pop pop exch moveto lineto

@@ -48,6 +48,7 @@ while (<FILE>) {
 close FILE;
 
 ok( $lines eq CANNED() );
+#print STDERR "\n>>>$lines<<<\n";
 
 ###
 
@@ -62,7 +63,10 @@ return q[%!PS-Adobe-3.0
   lineto lineto pop pop pop pop closepath
 } bind def
 /circle {newpath 0 360 arc closepath} bind def
-/rotabout {3 copy pop translate rotate exch 0 exch sub exch 0 exch sub translate} def
+/rotabout {
+  3 copy pop translate rotate exch
+  0 exch sub exch 0 exch sub translate
+} def
 /uin {72 mul} def
 ll 2 ge { << /PageSize [ 595.27559 841.88976 ] /ImagingBBox null >> setpagedevice } if
 /pagelevel save def

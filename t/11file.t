@@ -80,7 +80,9 @@ ok( $lines =~ m/%%Orientation: Portrait/s );
 ok( $lines =~ m/%%Pages: 3/s );
 
 ok( index($lines, "%!PS-Adobe-3.0\n") == 0 );
-my ( $prolog ) = ( $lines =~ m/%%BeginResource: PostScript::Simple\n(.*)%%EndResource/s );
+my ( $prolog ) = ( $lines =~ m/%%BeginResource: PostScript::Simple-REENCODEFONT\n(.*)%%EndResource/s );
+#print STDERR "\n>>>$prolog<<<\n";
+
 ok( $prolog );
 ok( $prolog eq PROLOG());
 
@@ -88,7 +90,7 @@ my ( $body ) = ( $lines =~ m/%%EndProlog\n(.*)%%EOF/s );
 ok( $body );
 ok( $body eq BODY());
 
-#print STDERR ">>>$body<<<<<<\n";
+#print STDERR "\n>>>$body<<<\n";
 
 ### Subs
 
@@ -195,21 +197,30 @@ sub PROLOG {
 /Times-BoldItalic-iso ISOLatin1Encoding /Times-BoldItalic REENCODEFONT
 /Times-Italic-iso ISOLatin1Encoding /Times-Italic REENCODEFONT
 /Symbol-iso ISOLatin1Encoding /Symbol REENCODEFONT
-/circle {newpath 0 360 arc closepath} bind def
-/rotabout {3 copy pop translate rotate exch 0 exch sub exch 0 exch sub translate} def
+%%EndResource
+%%BeginResource: PostScript::Simple-box
 /box {
   newpath 3 copy pop exch 4 copy pop pop
   8 copy pop pop pop pop exch pop exch
   3 copy pop pop exch moveto lineto
   lineto lineto pop pop pop pop closepath
 } bind def
-/ubp {} def
-/umm {72 mul 25.4 div} def
+%%EndResource
+%%BeginResource: PostScript::Simple-circle
+/circle {newpath 0 360 arc closepath} bind def
+%%EndResource
+%%BeginResource: PostScript::Simple-rotabout
+/rotabout {
+  3 copy pop translate rotate exch
+  0 exch sub exch 0 exch sub translate
+} def
 ];
 }
 
 sub BODY {
 	return q[%%BeginSetup
+/ubp {} def
+/umm {72 mul 25.4 div} def
 ll 2 ge { << /PageSize [ 595.27559 841.88976 ] /ImagingBBox null >> setpagedevice } if
 %%EndSetup
 %%Page: -1 1
