@@ -380,7 +380,7 @@ sub new
 
     pscomments     => "",       # the following entries store data
     psprolog       => "",       # for the same DSC areas of the
-    psfunctions    => "",       # postscript file.
+    psfunctions    => {},       # postscript file.
     pssetup        => "",
     pspages        => "",
     pstrailer      => "",
@@ -388,11 +388,6 @@ sub new
 
     lastfontsize   => 0,
     pspagecount    => 0,
-    usedcircle     => 0,
-    usedcircletext => 0,
-    usedbox        => 0,
-    usedrotabout   => 0,
-    usedimporteps  => 0,
 
     coordorigin    => 'LeftBottom',
     direction      => 'RightUp',
@@ -525,11 +520,12 @@ sub init
   if ($self->{landscape}) {
     my $swap;
 
-    $self->{psfunctions} .= "/landscape {
-  $self->{bbx2} 0 translate
-  90 rotate
+    $self->{psfunctions}{landscape} = <<"EOP";
+/landscape {
+  $self->{bbx2} 0 translate 90 rotate
 } bind def
-";
+EOP
+
     # I now think that Portrait is the correct thing here, as the page is
     # rotated.
     $self->{pscomments} .= "\%\%Orientation: Portrait\n";
@@ -546,13 +542,17 @@ sub init
   
 # Clipping
   if ($self->{clip}) {
-    $self->{psfunctions} .= "/pageclip {newpath $self->{bbx1} $self->{bby1} moveto
-$self->{bbx1} $self->{bby2} lineto
-$self->{bbx2} $self->{bby2} lineto
-$self->{bbx2} $self->{bby1} lineto
-$self->{bbx1} $self->{bby1} lineto
-closepath clip} bind def
-";
+    $self->{psfunctions}{pageclip} = <<"EOP";
+/pageclip {
+  newpath
+  $self->{bbx1} $self->{bby1} moveto
+  $self->{bbx1} $self->{bby2} lineto
+  $self->{bbx2} $self->{bby2} lineto
+  $self->{bbx2} $self->{bby1} lineto
+  $self->{bbx1} $self->{bby1} lineto
+  closepath clip
+} bind def
+EOP
     if ($self->{eps}) { $self->{pssetup} .= "pageclip\n" }
   }
 
@@ -571,7 +571,7 @@ closepath clip} bind def
       $ext = '-iso';
     }
 
-    $self->{psfunctions} .= <<'EOP';
+    $self->{psfunctions}{REENCODEFONT} = <<'EOP';
 /STARTDIFFENC { mark } bind def
 /ENDDIFFENC { 
 
@@ -662,9 +662,9 @@ closepath clip} bind def
 
 % Reencode the std fonts: 
 EOP
-    
+
     for my $font (@fonts) {
-      $self->{psfunctions} .= "/${font}$ext $encoding /$font REENCODEFONT\n";
+      $self->{psfunctions}{REENCODEFONT} .= "/${font}$ext $encoding /$font REENCODEFONT\n";
     }
   }
 }
@@ -792,7 +792,9 @@ sub _builddocument
   push @$page, "/ll languagelevel def } if\n";
   push @$page, \$self->{psprolog};
   push @$page, "\%\%BeginResource: PostScript::Simple\n";
-  push @$page, \$self->{psfunctions};
+  foreach my $fn (sort keys %{$self->{psfunctions}}) {
+    push @$page, $self->{psfunctions}{$fn};
+  }
   foreach my $un (sort keys %{$self->{usedunits}}) {
     push @$page, $self->{usedunits}{$un} . "\n";
   }
@@ -1305,10 +1307,13 @@ sub polygon
   }
 
   if ($rotate) {
-    if (!$self->{usedrotabout}) {
-      $self->{psfunctions} .= "/rotabout {3 copy pop translate rotate exch ";
-      $self->{psfunctions} .= "0 exch sub exch 0 exch sub translate} def\n";
-      $self->{usedrotabout} = 1;
+    unless (defined $self->{psfunctions}{rotabout}) {
+      $self->{psfunctions}{rotabout} = <<'EOP';
+/rotabout {
+  3 copy pop translate rotate exch
+  0 exch sub exch 0 exch sub translate
+} def
+EOP
     }
 
     $self->{pspages} .= $self->_uxy($rotatex, $rotatey) . "$rotate rotabout\n";
@@ -1378,9 +1383,8 @@ sub circle
     return 0;
   }
 
-  if (!$self->{usedcircle}) {
-    $self->{psfunctions} .= "/circle {newpath 0 360 arc closepath} bind def\n";
-    $self->{usedcircle} = 1;
+  unless (defined $self->{psfunctions}{circle}) {
+    $self->{psfunctions}{circle} = "/circle {newpath 0 360 arc closepath} bind def\n";
   }
 
   $self->{pspages} .= $self->_uxy($x, $y) . $self->_u($r) . "circle ";
@@ -1438,8 +1442,8 @@ sub circletext
     return 0;
   }
 
-  if (!$self->{usedcircletext}) {
-    $self->{psfunctions} .= <<'EOCT';
+  unless (defined $self->{psfunctions}{circletext}) {
+    $self->{psfunctions}{circletext} = <<'EOP';
 /outsidecircletext
   { $circtextdict begin
       /radius exch def
@@ -1492,8 +1496,7 @@ $circtextdict begin
     } def
   /pi 3.1415926 def
 end
-EOCT
-    $self->{usedcircletext} = 1;
+EOP
   }
 
   $self->{pspages} .= "gsave\n";
@@ -1559,15 +1562,15 @@ sub box
     $opt{'filled'} = 0;
   }
   
-  unless ($self->{usedbox}) {
-    $self->{psfunctions} .= "/box {
+  unless (defined $self->{psfunctions}{box}) {
+    $self->{psfunctions}{box} = <<'EOP';
+/box {
   newpath 3 copy pop exch 4 copy pop pop
   8 copy pop pop pop pop exch pop exch
   3 copy pop pop exch moveto lineto
   lineto lineto pop pop pop pop closepath
 } bind def
-";
-    $self->{usedbox} = 1;
+EOP
   }
 
   $self->{pspages} .= $self->_uxy($x1, $y1);
@@ -1997,8 +2000,8 @@ sub _add_eps
     return 0;
   }
 
-  unless ($self->{usedimporteps}) {
-    $self->{psfunctions} .= <<'EOEPS';
+  unless (defined $self->{psfunctions}{importeps}) {
+    $self->{psfunctions}{importeps} = <<'EOP';
 /BeginEPSF { /b4_Inc_state save def /dict_count countdictstack def
 /op_count count 1 sub def userdict begin /showpage { } def 0 setgray
 0 setlinecap 1 setlinewidth 0 setlinejoin 10 setmiterlimit [ ]
@@ -2006,8 +2009,7 @@ sub _add_eps
 false setstrokeadjust false setoverprint } if } if } bind def
 /EndEPSF { count op_count sub {pop} repeat countdictstack dict_count
 sub {end} repeat b4_Inc_state restore } bind def
-EOEPS
-    $self->{usedimporteps} = 1;
+EOP
   }
 
   ($epsobj, $xpos, $ypos) = @_;
