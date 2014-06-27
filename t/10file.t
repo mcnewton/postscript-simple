@@ -16,7 +16,8 @@ $s->output( $f );
 
 # check object
 ok( $s->{psresources}{REENCODEFONT} =~ m|/START| );
-ok( index( $s->{pspages}, q[10 ubp 10 ubp 40 ubp 190 ubp box stroke]) > -1 );
+ok( index( $s->_buildpage($s->{pspages}[0]),
+           q[10 ubp 10 ubp 40 ubp 190 ubp box stroke]) > -1 );
 
 # check output
 ok( -e $f );

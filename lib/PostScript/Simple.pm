@@ -382,7 +382,7 @@ sub new
     psprolog       => "",       # for the same DSC areas of the
     psresources    => {},       # postscript file.
     pssetup        => "",
-    pspages        => "",
+    pspages        => [],
     pstrailer      => "",
     usedunits      => {},       # units that have been used
 
@@ -480,6 +480,13 @@ sub init
 
   my ($m, $d) = (1, 1);
   my ($u, $mm);
+
+# Create a blank "page" for EPS
+  if ($self->{eps}) {
+    $self->{currentpage} = [];
+    $self->{pspages} = [$self->{currentpage}];
+  }
+
 
 # Units
   $self->{units} = lc $self->{units};
@@ -734,29 +741,35 @@ sub _openpage
 
   $self->{pspagecount}++;
 
-  $self->{pspages} .= "\%\%Page: $self->{page} $self->{pspagecount}\n";
+  $self->{currentpage} = [];
+  push @{$self->{pspages}}, $self->{currentpage};
+
+  $self->_addtopage("\%\%Page: $self->{page} $self->{pspagecount}\n");
+
   if ($self->{page} >= 0) {    
     $self->{page} ++;
   } else {
     $self->{page} --;
   }
 
-  $self->{pspages} .= "\%\%BeginPageSetup\n";
-  $self->{pspages} .= "/pagelevel save def\n";
-  if ($self->{landscape}) { $self->{pspages} .= "landscape\n" }
-  if ($self->{clip}) { $self->{pspages} .= "pageclip\n" }
+  $self->_addtopage("\%\%BeginPageSetup\n");
+  $self->_addtopage("/pagelevel save def\n");
+
+  if ($self->{landscape}) { $self->_addtopage("landscape\n"); }
+  if ($self->{clip}) { $self->_addtopage("pageclip\n"); }
+
   ($x, $y) = @{$psorigin{$self->{coordorigin}}};
   $x = $self->{xsize} if ($x < 0);
   $y = $self->{ysize} if ($y < 0);
-  $self->{pspages} .= "$x $y translate\n" if (($x != 0) || ($y != 0));
-  $self->{pspages} .= "\%\%EndPageSetup\n";
+  $self->_addtopage("$x $y translate\n") if (($x != 0) || ($y != 0));
+  $self->_addtopage("\%\%EndPageSetup\n");
 }
 
 sub _closepage
 {
   my $self = shift;
 
-  $self->{pspages} .= "\%\%PageTrailer\npagelevel restore\nshowpage\n";
+  $self->_addtopage("\%\%PageTrailer\npagelevel restore\nshowpage\n");
 }
 
 
@@ -778,75 +791,90 @@ sub _builddocument
   my $self = shift;
   my $title = shift;
   
-  my $page;
+  my $doc;
   my $date = scalar localtime;
   my $user;
 
   $title = 'undefined' unless $title;
 
-  $page = [];
+  $doc = [];
 
 # getlogin is unimplemented on some systems
   eval { $user = getlogin; };
   $user = 'Console' unless $user;
 
 # Comments Section
-  push @$page, "%!PS-Adobe-3.0";
-  push @$page, " EPSF-1.2" if ($self->{eps});
-  push @$page, "\n";
-  push @$page, "\%\%Title: ($title)\n";
-  push @$page, "\%\%LanguageLevel: 1\n";
-  push @$page, "\%\%Creator: PostScript::Simple perl module version $VERSION\n";
-  push @$page, "\%\%CreationDate: $date\n";
-  push @$page, "\%\%For: $user\n";
-  push @$page, \$self->{pscomments};
-#  push @$page, "\%\%DocumentFonts: \n";
+  push @$doc, "%!PS-Adobe-3.0";
+  push @$doc, " EPSF-1.2" if ($self->{eps});
+  push @$doc, "\n";
+  push @$doc, "\%\%Title: ($title)\n";
+  push @$doc, "\%\%LanguageLevel: 1\n";
+  push @$doc, "\%\%Creator: PostScript::Simple perl module version $VERSION\n";
+  push @$doc, "\%\%CreationDate: $date\n";
+  push @$doc, "\%\%For: $user\n";
+  push @$doc, \$self->{pscomments};
+#  push @$doc, "\%\%DocumentFonts: \n";
   if ($self->{eps}) {
-    push @$page, "\%\%BoundingBox: $self->{bbx1} $self->{bby1} $self->{bbx2} $self->{bby2}\n";
+    push @$doc, "\%\%BoundingBox: $self->{bbx1} $self->{bby1} $self->{bbx2} $self->{bby2}\n";
   } else {
-    push @$page, "\%\%Pages: $self->{pspagecount}\n";
+    push @$doc, "\%\%Pages: $self->{pspagecount}\n";
   }
-  push @$page, "\%\%EndComments\n";
+  push @$doc, "\%\%EndComments\n";
   
 # Prolog Section
-  push @$page, "\%\%BeginProlog\n";
-  push @$page, "/ll 1 def systemdict /languagelevel known {\n";
-  push @$page, "/ll languagelevel def } if\n";
-  push @$page, \$self->{psprolog};
+  push @$doc, "\%\%BeginProlog\n";
+  push @$doc, "/ll 1 def systemdict /languagelevel known {\n";
+  push @$doc, "/ll languagelevel def } if\n";
+  push @$doc, \$self->{psprolog};
   foreach my $fn (sort keys %{$self->{psresources}}) {
-    push @$page, "\%\%BeginResource: PostScript::Simple-$fn\n";
-    push @$page, $self->{psresources}{$fn};
-    push @$page, "\%\%EndResource\n";
+    push @$doc, "\%\%BeginResource: PostScript::Simple-$fn\n";
+    push @$doc, $self->{psresources}{$fn};
+    push @$doc, "\%\%EndResource\n";
   }
-  push @$page, "\%\%EndProlog\n";
+  push @$doc, "\%\%EndProlog\n";
 
 # Setup Section
-  push @$page, "\%\%BeginSetup\n";
+  push @$doc, "\%\%BeginSetup\n";
   foreach my $un (sort keys %{$self->{usedunits}}) {
-    push @$page, $self->{usedunits}{$un} . "\n";
+    push @$doc, $self->{usedunits}{$un} . "\n";
   }
   if ($self->{copies} > 1) {
-    push @$page, "/#copies " . $self->{copies} . " def\n";
+    push @$doc, "/#copies " . $self->{copies} . " def\n";
   }
-  push @$page, \$self->{pssetup};
-  push @$page, "\%\%EndSetup\n";
+  push @$doc, \$self->{pssetup};
+  push @$doc, "\%\%EndSetup\n";
 
 # Pages
   if ((!$self->{eps}) && ($self->{pspagecount} > 0)) {
     $self->_closepage();
   }
-  push @$page, \$self->{pspages};
+
+  foreach my $page (@{$self->{pspages}}) {
+    push @$doc, $self->_buildpage($page);
+  }
 
 # Trailer Section
   if (length($self->{pstrailer})) {
-    push @$page, "\%\%Trailer\n";
-    push @$page, \$self->{pstrailer};
+    push @$doc, "\%\%Trailer\n";
+    push @$doc, \$self->{pstrailer};
   }
-  push @$page, "\%\%EOF\n";
+  push @$doc, "\%\%EOF\n";
   
-  return $page;
+  return $doc;
 }
 
+sub _buildpage
+{
+  my ($self, $page) = @_;
+
+  my $data = "";
+
+  foreach my $statement (@$page) {
+    $data .= $$statement[1];
+  }
+
+  return $data;
+}
 
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -1149,7 +1177,12 @@ sub linextend
   }
 
   my $out = $self->_uxy($x, $y) . "lineto stroke\n";
-  $self->{pspages} =~ s/eto stroke\n$/eto\n$out/;
+
+  my $p = $self->{currentpage};
+  my $last = pop @$p;
+  $last = $$last[1];
+  $last =~ s/eto stroke\n$/eto\n$out/;
+  $self->_addtopage($last);
 
   # FIXMEFIXMEFIXME
   # perhaps we need something like $self->{_lastcommand} to know if operations
@@ -1793,7 +1826,11 @@ sub curvextend
 
   # FIXMEFIXMEFIXME
   # curveto may follow a lineto etc...
-  $self->{pspages} =~ s/eto stroke\n$/eto\n$out/;
+  my $p = $self->{currentpage};
+  my $last = pop @$p;
+  $last = $$last[1];
+  $last =~ s/eto stroke\n$/eto\n$out/;
+  $self->_addtopage($last);
   
   return 1;
 }
@@ -2031,7 +2068,11 @@ sub _addtopage
 {
   my ($self, $data) = @_;
 
-  $self->{pspages} .= $data;
+  if (defined $self->{currentpage}) {
+    push @{$self->{currentpage}}, ["ps", $data];
+  } else {
+    confess "internal page error";
+  }
 }
 
 

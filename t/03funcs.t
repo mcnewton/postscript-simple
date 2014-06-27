@@ -76,10 +76,12 @@ ok( $s->curve(10,310, 10,320, 110,310, 110,320) );
 ok( $s->curvextend(110,330, 210,330, 210,320) );
 ok( ! $s->curvextend(110,330, 210,330, 210) );
 
-#print STDERR "\n>>>" . $s->{'pspages'} . "<<<\n";
 
-ok( length($s->{'pspages'}) eq length(CANNED()) );
-ok( $s->{'pspages'} eq CANNED() );
+my $pages = $s->_buildpage($s->{pspages}[0]);
+#print STDERR "\n>>>" . $pages . "<<<\n";
+
+ok( length($pages) eq length(CANNED()) );
+ok( $pages eq CANNED() );
 
 #print STDERR "\n>>>" . $s->{'psfunctions'} . "<<<\n";
 

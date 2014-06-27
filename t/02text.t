@@ -20,10 +20,11 @@ $s->text( 10, 80, join('', map { chr $_ } (120 .. 139)) );
 $s->text( 10, 90, join('', map { chr $_ } (140 .. 159)) );
 $s->text( 10, 100, '((()))()()()}{}{}][[]]})()})(]' );
 
-ok( length($s->{'pspages'}) eq length(CANNED()) );
-ok( $s->{'pspages'} eq CANNED() );
+my $pages = $s->_buildpage($s->{pspages}[0]);
+ok( length($pages) eq length(CANNED()) );
+ok( $pages eq CANNED() );
 
-#print STDERR $s->{'pspages'} . "\n";
+#print STDERR "\n>>>$pages<<<\n";
 
 #print Dumper $s;
 #$s->output('text.eps');

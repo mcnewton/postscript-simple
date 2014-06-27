@@ -1,9 +1,10 @@
 Revision history for Perl extension PostScript::Simple.
 
-0.09 - 26 June 2014
+0.09 - 28 June 2014
   Matthew Newton:
     - add setcmykcolour method
     - add err method to find last error
+    - internal data structure updates
 
 0.08 - 20 June 2014
   Satoshi Azuma:
