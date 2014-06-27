@@ -706,7 +706,6 @@ sub newpage
 {
   my $self = shift;
   my $nextpage = shift;
-  my ($x, $y);
   
   if (defined($nextpage)) { $self->{page} = $nextpage; }
 
@@ -716,11 +715,25 @@ sub newpage
     return 0;
   }
 
+  # close old page if required
   if ($self->{pspagecount} != 0) {
-    $self->{pspages} .= "\%\%PageTrailer\npagelevel restore\nshowpage\n";
+    $self->_closepage();
   }
 
-  $self->{pspagecount} ++;
+  # start new page
+  $self->_openpage();
+
+  return 1;
+}
+
+
+sub _openpage
+{
+  my $self = shift;
+  my ($x, $y);
+
+  $self->{pspagecount}++;
+
   $self->{pspages} .= "\%\%Page: $self->{page} $self->{pspagecount}\n";
   if ($self->{page} >= 0) {    
     $self->{page} ++;
@@ -737,9 +750,15 @@ sub newpage
   $y = $self->{ysize} if ($y < 0);
   $self->{pspages} .= "$x $y translate\n" if (($x != 0) || ($y != 0));
   $self->{pspages} .= "\%\%EndPageSetup\n";
-
-  return 1;
 }
+
+sub _closepage
+{
+  my $self = shift;
+
+  $self->{pspages} .= "\%\%PageTrailer\npagelevel restore\nshowpage\n";
+}
+
 
 
 #-------------------------------------------------------------------------------
@@ -813,12 +832,10 @@ sub _builddocument
   push @$page, "\%\%EndSetup\n";
 
 # Pages
-  push @$page, \$self->{pspages};
   if ((!$self->{eps}) && ($self->{pspagecount} > 0)) {
-    push @$page, "\%\%PageTrailer\n";
-    push @$page, "pagelevel restore\n";
-    push @$page, "showpage\n";
+    $self->_closepage();
   }
+  push @$page, \$self->{pspages};
 
 # Trailer Section
   if (length($self->{pstrailer})) {
