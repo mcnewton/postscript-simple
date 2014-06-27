@@ -391,6 +391,8 @@ sub new
 
     coordorigin    => 'LeftBottom',
     direction      => 'RightUp',
+
+    lasterror      => undef,
   };
 
   foreach (keys %data) {
@@ -674,8 +676,9 @@ EOP
 
 =head1 OBJECT METHODS
 
-All object methods return 1 for success or 0 in some error condition (e.g.
-insufficient arguments). Error message text is also drawn on the page.
+Unless otherwise specified, object methods return 1 for success or 0 in some
+error condition (e.g. insufficient arguments). Error message text is also
+drawn on the page.
 
 =over 4
 
@@ -1981,6 +1984,29 @@ sub importeps
 }
 
 
+#-------------------------------------------------------------------------------
+
+=item C<err()>
+
+Returns the last error generated.
+
+Example:
+
+  unless ($ps->setcolour("purplewithyellowspots")) {
+    print $ps->err();
+  }
+
+  # prints "bad colour name 'purplewithyellowspots'";
+
+=cut
+
+sub err {
+  my $self = shift;
+
+  return $self->{lasterror};
+}
+
+
 ################################################################################
 # PRIVATE methods
 
@@ -2048,6 +2074,7 @@ sub _error {
   my $self = shift;
   my $msg = shift;
 
+  $self->{lasterror} = $msg;
   $self->_addtopage("(error: $msg\n) print flush\n");
 }
 
