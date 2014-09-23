@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 use strict;
 use lib qw(./lib ../lib t/lib);
-use Test::Simple tests => 50;
+use Test::Simple tests => 51;
 #use Data::Dumper;
 use PostScript::Simple;
 
@@ -33,6 +33,7 @@ ok( $s->line(10,10, 10,20) );
 ok( ! $s->line(10,10, 10,20, 50, 50) );
 ok( ! $s->line(10,10, 10) );
 ok( $s->line(10,10, 10,20, 50, 50, 50) );
+ok( $s->line(10,-10, -10,20, 0, 127, 255) );
 
 
 ok( $s->linextend(100,100) );
@@ -244,7 +245,11 @@ newpath
 0.19608 0.19608 0.19608 setrgbcolor
 newpath
 10 ubp 10 ubp moveto
-10 ubp 20 ubp lineto
+10 ubp 20 ubp lineto stroke
+0 0.49804 1 setrgbcolor
+newpath
+10 ubp -10 ubp moveto
+-10 ubp 20 ubp lineto
 100 ubp 100 ubp lineto stroke
 (error: wrong number of args for linextend
 ) print flush

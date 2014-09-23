@@ -425,7 +425,7 @@ sub _u
     $unit = $$u[1];
     confess "Invalid array" if @$u != 2;
   } else {
-    if ($u =~ /^\s*(\d+(?:\.\d+)?)\s*([a-z][a-z])?\s*$/) {
+    if ($u =~ /^\s*(-?\d+(?:\.\d+)?)\s*([a-z][a-z])?\s*$/) {
       $val = $1;
       $unit = $2 || $self->{units};
     }
